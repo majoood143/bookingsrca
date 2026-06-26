@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Filament\Resources\EventResource\Pages;
+
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\EventResource;
+use Filament\Actions;
+use Filament\Resources\Pages\EditRecord;
+
+class EditEvent extends EditRecord
+{
+    protected static string $resource = EventResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            ViewAction::make(),
+            DeleteAction::make(),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return __('event.notifications.updated');
+    }
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" dir="<?php echo e(app()->getLocale() === 'ar' ? 'rtl' : 'ltr'); ?>">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php echo e(__('Booking Confirmed')); ?> — <?php echo e(config('app.name')); ?></title>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-lg">
+        <!-- Success Card -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-10 text-center text-white">
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold"><?php echo e(__('Booking Confirmed!')); ?></h1>
+                <p class="mt-2 text-green-100"><?php echo e(__('Your spot is reserved')); ?></p>
+            </div>
+
+            <!-- Reference -->
+            <div class="bg-gray-50 border-b border-gray-100 px-8 py-4 text-center">
+                <p class="text-sm text-gray-500 uppercase tracking-wide font-semibold"><?php echo e(__('Booking Reference')); ?></p>
+                <p class="text-2xl font-bold font-mono text-gray-900 mt-1"><?php echo e($booking->booking_reference); ?></p>
+            </div>
+
+            <!-- Details -->
+            <div class="px-8 py-6 space-y-4">
+                <div class="flex justify-between items-start">
+                    <span class="text-sm text-gray-500"><?php echo e(__('event.navigation.label')); ?></span>
+                    <span class="text-sm font-semibold text-gray-900 text-right max-w-xs">
+                        <?php echo e($booking->event->getTranslation('title', app()->getLocale())); ?>
+
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500"><?php echo e(__('Date')); ?></span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        <?php echo e($booking->event_date->format('l, F j, Y')); ?>
+
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500"><?php echo e(__('Time')); ?></span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        <?php echo e($booking->timeSlot->getTimeRange()); ?>
+
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500"><?php echo e(__('Ticket Type')); ?></span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        <?php echo e($booking->ticketType->getTranslation('name', app()->getLocale())); ?>
+
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500"><?php echo e(__('Quantity')); ?></span>
+                    <span class="text-sm font-semibold text-gray-900"><?php echo e($booking->quantity); ?> <?php echo e(__('ticket(s)')); ?></span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <span class="text-base font-bold text-gray-900"><?php echo e(__('Total Paid')); ?></span>
+                    <span class="text-xl font-bold text-green-600">$<?php echo e(number_format($booking->total_price, 2)); ?></span>
+                </div>
+            </div>
+
+            <?php $firstAttendee = $booking->attendees->first(); ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($firstAttendee && $firstAttendee->email): ?>
+                <div class="px-8 pb-6">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                        <p class="text-sm text-blue-700">
+                            <?php echo e(__('A confirmation email has been sent to')); ?>
+
+                            <strong><?php echo e($firstAttendee->email); ?></strong>
+                        </p>
+                    </div>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <!-- QR Code -->
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($firstAttendee && $firstAttendee->getQrCodeUrl()): ?>
+                <div class="px-8 pb-6 text-center">
+                    <p class="text-sm text-gray-500 mb-3"><?php echo e(__('Present this QR code at the entrance')); ?></p>
+                    <img src="<?php echo e($firstAttendee->getQrCodeUrl()); ?>" alt="QR Code"
+                        class="w-40 h-40 mx-auto border border-gray-200 rounded-xl p-2">
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <!-- Actions -->
+            <div class="px-8 pb-8 flex flex-col sm:flex-row gap-3">
+                <a href="<?php echo e(route('event.booking', $booking->event->slug)); ?>"
+                    class="flex-1 text-center px-4 py-2.5 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors">
+                    <?php echo e(__('Book Again')); ?>
+
+                </a>
+                <a href="<?php echo e(url('/')); ?>"
+                    class="flex-1 text-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+                    <?php echo e(__('Back to Events')); ?>
+
+                </a>
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-6"><?php echo e(config('app.name')); ?></p>
+    </div>
+</body>
+</html>
+<?php /**PATH C:\Apache24\htdocs\bookings\resources\views\booking\success.blade.php ENDPATH**/ ?>

@@ -1,0 +1,24 @@
+/* RTL Support */
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .fi-sidebar {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .fi-main {
+    margin-left: 0;
+    margin-right: 18rem;
+}
+
+[dir="rtl"] .fi-dropdown-list {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .fi-form-field-wrapper {
+    text-align: right;
+}

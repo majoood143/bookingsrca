@@ -1,0 +1,2 @@
+<img src="<?php echo e(asset('storage/images/Razat-farm-logo.png')); ?>" alt="Custom Logo" class="h-40">
+<?php /**PATH C:\Apache24\htdocs\bookings\resources\views/filament/admin/logo.blade.php ENDPATH**/ ?>

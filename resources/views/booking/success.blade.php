@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ __('Booking Confirmed') }} — {{ config('app.name') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-lg">
+        <!-- Success Card -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-10 text-center text-white">
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold">{{ __('Booking Confirmed!') }}</h1>
+                <p class="mt-2 text-green-100">{{ __('Your spot is reserved') }}</p>
+            </div>
+
+            <!-- Reference -->
+            <div class="bg-gray-50 border-b border-gray-100 px-8 py-4 text-center">
+                <p class="text-sm text-gray-500 uppercase tracking-wide font-semibold">{{ __('Booking Reference') }}</p>
+                <p class="text-2xl font-bold font-mono text-gray-900 mt-1">{{ $booking->booking_reference }}</p>
+            </div>
+
+            <!-- Details -->
+            <div class="px-8 py-6 space-y-4">
+                <div class="flex justify-between items-start">
+                    <span class="text-sm text-gray-500">{{ __('event.navigation.label') }}</span>
+                    <span class="text-sm font-semibold text-gray-900 text-right max-w-xs">
+                        {{ $booking->event->getTranslation('title', app()->getLocale()) }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">{{ __('Date') }}</span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        {{ $booking->event_date->format('l, F j, Y') }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">{{ __('Time') }}</span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        {{ $booking->timeSlot->getTimeRange() }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">{{ __('Ticket Type') }}</span>
+                    <span class="text-sm font-semibold text-gray-900">
+                        {{ $booking->ticketType->getTranslation('name', app()->getLocale()) }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">{{ __('Quantity') }}</span>
+                    <span class="text-sm font-semibold text-gray-900">{{ $booking->quantity }} {{ __('ticket(s)') }}</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <span class="text-base font-bold text-gray-900">{{ __('Total Paid') }}</span>
+                    <span class="text-xl font-bold text-green-600">OMR {{ number_format($booking->total_price, 3) }}</span>
+                </div>
+            </div>
+
+            @php $firstAttendee = $booking->attendees->first(); @endphp
+            @if ($firstAttendee && $firstAttendee->email)
+                <div class="px-8 pb-6">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                        <p class="text-sm text-blue-700">
+                            {{ __('A confirmation email has been sent to') }}
+                            <strong>{{ $firstAttendee->email }}</strong>
+                        </p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- QR Code -->
+            @if ($firstAttendee && $firstAttendee->getQrCodeUrl())
+                <div class="px-8 pb-6 text-center">
+                    <p class="text-sm text-gray-500 mb-3">{{ __('Present this QR code at the entrance') }}</p>
+                    <img src="{{ $firstAttendee->getQrCodeUrl() }}" alt="QR Code"
+                        class="w-40 h-40 mx-auto border border-gray-200 rounded-xl p-2">
+                </div>
+            @endif
+
+            <!-- Print Tickets -->
+            @if ($booking->attendees->isNotEmpty())
+                <div class="px-8 pb-6 space-y-2">
+                    @foreach ($booking->attendees as $attendee)
+                        @if ($attendee->getPdfUrl())
+                            <a href="{{ $attendee->getPdfUrl() }}" target="_blank" rel="noopener"
+                                class="flex items-center justify-center gap-2 w-full px-4 py-2.5 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/>
+                                </svg>
+                                {{ __('Print Ticket') }}
+                                @if ($booking->attendees->count() > 1)
+                                    — {{ $attendee->getFullName() }}
+                                @endif
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- Actions -->
+            <div class="px-8 pb-8 flex flex-col sm:flex-row gap-3">
+                <a href="{{ route('event.booking', $booking->event->slug) }}"
+                    class="flex-1 flex items-center justify-center gap-2 text-center px-4 py-2.5 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4.5 9a8 8 0 0113.4-3.4L20 8M19.5 15a8 8 0 01-13.4 3.4L4 16"/>
+                    </svg>
+                    {{ __('Book Again') }}
+                </a>
+                <a href="{{ url('/') }}"
+                    class="flex-1 flex items-center justify-center gap-2 text-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/>
+                    </svg>
+                    {{ __('Back to Events') }}
+                </a>
+
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-6">{{ config('app.name') }}</p>
+    </div>
+</body>
+</html>

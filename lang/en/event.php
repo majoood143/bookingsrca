@@ -1,0 +1,123 @@
+<?php
+
+return [
+
+    'navigation' => [
+        'group'  => 'Event Management',
+        'label'  => 'Event',
+        'plural' => 'Events',
+    ],
+
+    'sections' => [
+        'information'       => 'Event Information',
+        'information_desc'  => 'Enter the basic event details in both languages',
+        'location_schedule' => 'Location & Schedule',
+        'location_desc'     => 'Set the event location and dates',
+        'recurring'         => 'Recurring Event Settings',
+        'recurring_desc'    => 'Configure if this event repeats on specific days',
+        'media_status'      => 'Media & Status',
+        'media_desc'        => 'Upload event image and set status',
+    ],
+
+    'fields' => [
+        'title_en'         => 'Title (English)',
+        'title_ar'         => 'Title (Arabic)',
+        'slug'             => 'Slug',
+        'slug_helper'      => 'Auto-generated from English title, but you can customize it',
+        'description_en'   => 'Description (English)',
+        'description_ar'   => 'Description (Arabic)',
+        'organizer'        => 'Organizer',
+        'location_en'      => 'Location (English)',
+        'location_ar'      => 'Location (Arabic)',
+        'start_date'       => 'Start Date',
+        'end_date'         => 'End Date',
+        'max_attendees'    => 'Max Attendees',
+        'max_attendees_helper' => 'Maximum number of attendees for this event',
+        'is_recurring'     => 'Is Recurring Event?',
+        'is_recurring_helper' => 'Enable if the event repeats on specific weekdays',
+        'recurring_days'   => 'Select Recurring Days',
+        'recurring_days_helper' => 'The event will only occur on these selected days between start and end dates',
+        'image'            => 'Event Image',
+        'image_helper'     => 'Upload an image (max 2MB). Recommended size: 1200x675px',
+        'status'           => 'Event Status',
+        'status_helper'    => 'Only published events are visible to users',
+    ],
+
+    'placeholders' => [
+        'organizer'   => 'Organization or person organizing the event',
+        'location_en' => 'e.g., Dubai World Trade Centre',
+        'location_ar' => 'مثال: مركز دبي التجاري العالمي',
+    ],
+
+    'options' => [
+        'status' => [
+            'draft'     => 'Draft',
+            'published' => 'Published',
+            'cancelled' => 'Cancelled',
+        ],
+        'days' => [
+            'monday'    => 'Monday',
+            'tuesday'   => 'Tuesday',
+            'wednesday' => 'Wednesday',
+            'thursday'  => 'Thursday',
+            'friday'    => 'Friday',
+            'saturday'  => 'Saturday',
+            'sunday'    => 'Sunday',
+        ],
+    ],
+
+    'columns' => [
+        'image'       => 'Image',
+        'title'       => 'Title',
+        'organizer'   => 'Organizer',
+        'location'    => 'Location',
+        'start_date'  => 'Start Date',
+        'end_date'    => 'End Date',
+        'is_recurring'=> 'Recurring',
+        'status'      => 'Status',
+        'bookings'    => 'Bookings',
+        'capacity'    => 'Capacity',
+        'created_at'  => 'Created At',
+        'updated_at'  => 'Updated At',
+    ],
+
+    'filters' => [
+        'status'           => 'Status',
+        'recurring'        => 'Recurring Events',
+        'recurring_all'    => 'All events',
+        'recurring_true'   => 'Recurring only',
+        'recurring_false'  => 'Non-recurring only',
+        'start_date'       => 'Start Date',
+        'start_from'       => 'Start Date From',
+        'start_until'      => 'Start Date Until',
+        'indicator_from'   => 'Start from: :date',
+        'indicator_until'  => 'Start until: :date',
+    ],
+
+    'actions' => [
+        'new_event'       => 'New Event',
+        'duplicate'       => 'Duplicate',
+        'publish_selected'=> 'Publish Selected',
+        'move_to_draft'   => 'Move to Draft',
+        'create_first'    => 'Create your first event',
+    ],
+
+    'empty_state' => [
+        'heading'     => 'No events yet',
+        'description' => 'Create your first event to get started with bookings.',
+    ],
+
+    'notifications' => [
+        'duplicated'        => 'Event duplicated',
+        'duplicated_body'   => 'The event has been duplicated successfully.',
+        'published'         => 'Events published',
+        'moved_to_draft'    => 'Events moved to draft',
+        'created'           => 'Event created successfully',
+        'updated'           => 'Event updated successfully',
+    ],
+
+    'suffix' => [
+        'people' => 'people',
+    ],
+
+];

@@ -1,0 +1,1 @@
+<x-filament::loading-indicator wire:loading wire:target="previousPage,gotoPage,nextPage" class="ml-3 h-5 w-5" />

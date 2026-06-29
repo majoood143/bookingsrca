@@ -13,10 +13,12 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class PaymentGateways extends Page implements HasForms
 {
     use InteractsWithForms;
+    use HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-credit-card';
 

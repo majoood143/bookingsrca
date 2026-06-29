@@ -26,13 +26,14 @@ return [
         'slug_helper'          => 'يُولَّد تلقائيًا من العنوان الإنجليزي، ويمكنك تخصيصه',
         'description_en'       => 'الوصف (إنجليزي)',
         'description_ar'       => 'الوصف (عربي)',
-        'organizer'            => 'المنظِّم',
+        'organizer_en'         => 'المنظِّم (إنجليزي)',
+        'organizer_ar'         => 'المنظِّم (عربي)',
         'location_en'          => 'الموقع (إنجليزي)',
         'location_ar'          => 'الموقع (عربي)',
         'start_date'           => 'تاريخ البداية',
         'end_date'             => 'تاريخ النهاية',
         'max_attendees'        => 'الحد الأقصى للحضور',
-        'max_attendees_helper' => 'الحد الأقصى لعدد الحضور في هذه الفعالية',
+        'max_attendees_helper' => 'الحد الأقصى لعدد الزوار في هذه الفعالية',
         'is_recurring'         => 'هل الفعالية متكررة؟',
         'is_recurring_helper'  => 'فعّل هذا الخيار إذا كانت الفعالية تتكرر في أيام محددة من الأسبوع',
         'recurring_days'       => 'اختر أيام التكرار',
@@ -44,7 +45,8 @@ return [
     ],
 
     'placeholders' => [
-        'organizer'   => 'المنظمة أو الشخص المسؤول عن الفعالية',
+        'organizer_en' => 'Organization or person organizing the event',
+        'organizer_ar' => 'المنظمة أو الشخص المسؤول عن الفعالية',
         'location_en' => 'e.g., Dubai World Trade Centre',
         'location_ar' => 'مثال: مركز دبي التجاري العالمي',
     ],
@@ -96,6 +98,7 @@ return [
 
     'actions' => [
         'new_event'        => 'فعالية جديدة',
+        'view_on_site'     => 'عرض في الموقع',
         'duplicate'        => 'نسخ',
         'publish_selected' => 'نشر المحدد',
         'move_to_draft'    => 'نقل إلى المسودة',

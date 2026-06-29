@@ -16,6 +16,9 @@ use BezhanSalleh\LanguageSwitch\LanguageSwitch;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Gate;
+use RickDBCN\FilamentEmail\Models\Email;
+use App\Policies\EmailPolicy;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -33,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Email::class, EmailPolicy::class);
 
         // Force HTTPS if you are on production SSL
         // if (config('app.env') === 'production' || str_contains(config('app.url'), 'https://')) {

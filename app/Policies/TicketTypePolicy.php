@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TicketType;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TicketTypePolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_ticket::type');
+        return $authUser->can('ViewAny:TicketType');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, TicketType $ticketType): bool
+    public function view(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('view_ticket::type');
+        return $authUser->can('View:TicketType');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_ticket::type');
+        return $authUser->can('Create:TicketType');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, TicketType $ticketType): bool
+    public function update(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('update_ticket::type');
+        return $authUser->can('Update:TicketType');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TicketType $ticketType): bool
+    public function delete(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('delete_ticket::type');
+        return $authUser->can('Delete:TicketType');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_ticket::type');
+        return $authUser->can('DeleteAny:TicketType');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, TicketType $ticketType): bool
+    public function restore(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('force_delete_ticket::type');
+        return $authUser->can('Restore:TicketType');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('force_delete_any_ticket::type');
+        return $authUser->can('ForceDelete:TicketType');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, TicketType $ticketType): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_ticket::type');
+        return $authUser->can('ForceDeleteAny:TicketType');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_ticket::type');
+        return $authUser->can('RestoreAny:TicketType');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, TicketType $ticketType): bool
+    public function replicate(AuthUser $authUser, TicketType $ticketType): bool
     {
-        return $user->can('replicate_ticket::type');
+        return $authUser->can('Replicate:TicketType');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_ticket::type');
+        return $authUser->can('Reorder:TicketType');
     }
+
 }

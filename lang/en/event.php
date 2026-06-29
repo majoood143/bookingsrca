@@ -26,7 +26,8 @@ return [
         'slug_helper'      => 'Auto-generated from English title, but you can customize it',
         'description_en'   => 'Description (English)',
         'description_ar'   => 'Description (Arabic)',
-        'organizer'        => 'Organizer',
+        'organizer_en'     => 'Organizer (English)',
+        'organizer_ar'     => 'Organizer (Arabic)',
         'location_en'      => 'Location (English)',
         'location_ar'      => 'Location (Arabic)',
         'start_date'       => 'Start Date',
@@ -44,7 +45,8 @@ return [
     ],
 
     'placeholders' => [
-        'organizer'   => 'Organization or person organizing the event',
+        'organizer_en' => 'Organization or person organizing the event',
+        'organizer_ar' => 'الجهة أو الشخص المنظم للفعالية',
         'location_en' => 'e.g., Dubai World Trade Centre',
         'location_ar' => 'مثال: مركز دبي التجاري العالمي',
     ],
@@ -96,6 +98,7 @@ return [
 
     'actions' => [
         'new_event'       => 'New Event',
+        'view_on_site'    => 'View on Site',
         'duplicate'       => 'Duplicate',
         'publish_selected'=> 'Publish Selected',
         'move_to_draft'   => 'Move to Draft',

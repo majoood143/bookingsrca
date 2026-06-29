@@ -33,6 +33,7 @@ class BookingAttendee extends Model
         'date_of_birth',
         'gender',
         'nationality',
+        'identity_number',
         'ticket_number',
         'qr_code',
         'pdf_path',

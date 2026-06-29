@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TimeSlot;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TimeSlotPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_time::slot');
+        return $authUser->can('ViewAny:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, TimeSlot $timeSlot): bool
+    public function view(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('view_time::slot');
+        return $authUser->can('View:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_time::slot');
+        return $authUser->can('Create:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, TimeSlot $timeSlot): bool
+    public function update(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('update_time::slot');
+        return $authUser->can('Update:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TimeSlot $timeSlot): bool
+    public function delete(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('delete_time::slot');
+        return $authUser->can('Delete:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_time::slot');
+        return $authUser->can('DeleteAny:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, TimeSlot $timeSlot): bool
+    public function restore(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('force_delete_time::slot');
+        return $authUser->can('Restore:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('force_delete_any_time::slot');
+        return $authUser->can('ForceDelete:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, TimeSlot $timeSlot): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_time::slot');
+        return $authUser->can('ForceDeleteAny:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_time::slot');
+        return $authUser->can('RestoreAny:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, TimeSlot $timeSlot): bool
+    public function replicate(AuthUser $authUser, TimeSlot $timeSlot): bool
     {
-        return $user->can('replicate_time::slot');
+        return $authUser->can('Replicate:TimeSlot');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_time::slot');
+        return $authUser->can('Reorder:TimeSlot');
     }
+
 }

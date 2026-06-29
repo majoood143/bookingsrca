@@ -122,6 +122,10 @@ class NboCallbackController extends Controller
 
             $booking->update(['payment_status' => 'failed']);
 
+            if ($result === 'CANCELED' || $result === 'CANCELLED') {
+                $booking->cancel();
+            }
+
             return redirect()
                 ->route('event.booking', $booking->event->slug)
                 ->with('error', __('Payment was not completed. Please try again.'));

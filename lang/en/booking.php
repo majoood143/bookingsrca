@@ -31,6 +31,7 @@ return [
         'date_of_birth'          => 'Date of Birth',
         'gender'                 => 'Gender',
         'nationality'            => 'Nationality',
+        'identity_number'        => 'Identity Number',
         'ticket_type'            => 'Ticket Type',
         'ticket_price'           => 'Ticket Price',
         'ticket_info'            => 'Ticket Information',
@@ -51,6 +52,7 @@ return [
         'date'          => 'Select date',
         'gender'        => 'Select gender',
         'nationality'   => 'Select your country',
+        'identity_number' => 'Enter identity number',
     ],
 
     'columns' => [
@@ -350,7 +352,6 @@ return [
         'navigation_label' => 'Booking Wizard',
         'title'             => 'Booking Wizard',
         'available'         => 'available',
-        'no_services_note'  => 'No extra services are available for this event — you can skip this step.',
         'summary_heading'   => 'Booking Summary',
         'attendee_names'    => 'Attendees',
         'copy_contact_to_all' => "Apply attendee 1's email & phone to all other attendees",
@@ -364,17 +365,16 @@ return [
         'steps' => [
             'event'               => 'Event & Schedule',
             'event_description'   => 'Pick the event, date, time and number of tickets',
-            'services'             => 'Extra Services',
-            'services_description' => 'Optional add-ons for this booking',
             'attendees'            => 'Attendee Details',
             'review'               => 'Payment & Confirm',
             'review_description'   => 'Review the order and take payment',
         ],
         'notifications' => [
-            'no_capacity'        => 'Not enough capacity in the selected time slot',
-            'ticket_unavailable' => 'One of the selected ticket types no longer has enough availability',
-            'created'            => 'Booking created',
-            'created_body'       => 'Booking :reference confirmed and tickets sent to attendees.',
+            'no_capacity'         => 'Not enough capacity in the selected time slot',
+            'ticket_unavailable'  => 'One of the selected ticket types no longer has enough availability',
+            'service_unavailable' => 'One of the selected extra services no longer has enough availability',
+            'created'             => 'Booking created',
+            'created_body'        => 'Booking :reference confirmed and tickets sent to attendees.',
         ],
     ],
 

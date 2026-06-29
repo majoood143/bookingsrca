@@ -116,11 +116,20 @@ class EventResource extends Resource
                                     ->columnSpanFull(),
                             ]),
 
-                        TextInput::make('organizer')
-                            ->label(__('event.fields.organizer'))
-                            ->required()
-                            ->maxLength(255)
-                            ->placeholder(__('event.placeholders.organizer')),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('organizer.en')
+                                    ->label(__('event.fields.organizer_en'))
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder(__('event.placeholders.organizer_en')),
+
+                                TextInput::make('organizer.ar')
+                                    ->label(__('event.fields.organizer_ar'))
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder(__('event.placeholders.organizer_ar')),
+                            ]),
                     ])
                     ->columns(1)
                     ->collapsible(),
@@ -246,8 +255,8 @@ class EventResource extends Resource
 
                 TextColumn::make('organizer')
                     ->label(__('event.columns.organizer'))
-                    ->searchable()
-                    ->sortable()
+                    ->getStateUsing(fn($record) => $record->getTranslation('organizer', app()->getLocale()))
+                    ->searchable(['organizer->en', 'organizer->ar'])
                     ->toggleable(),
 
                 TextColumn::make('location')
@@ -367,6 +376,13 @@ class EventResource extends Resource
                     ViewAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),
+
+                    Action::make('viewOnSite')
+                        ->label(__('event.actions.view_on_site'))
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->color('info')
+                        ->url(fn(Event $record): string => route('event.booking', $record->slug))
+                        ->openUrlInNewTab(),
 
                     Action::make('duplicate')
                         ->label(__('event.actions.duplicate'))

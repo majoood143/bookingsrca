@@ -16,10 +16,12 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class Reports extends Page implements HasForms
 {
     use InteractsWithForms;
+    use HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
 

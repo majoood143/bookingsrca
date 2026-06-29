@@ -24,6 +24,7 @@ return [
         'date_of_birth'     => 'Date of Birth',
         'gender'            => 'Gender',
         'nationality'       => 'Nationality',
+        'identity_number'   => 'Identity Number',
         'ticket_number'     => 'Ticket Number',
         'ticket_type'       => 'Ticket Type',
         'ticket_price'      => 'Ticket Price',
@@ -55,6 +56,7 @@ return [
         'booking_reference' => 'Booking Ref',
         'booking_status'    => 'Booking Status',
         'created_at'        => 'Registered At',
+        'phone'             => 'Phone',
     ],
 
     'actions' => [

@@ -27,7 +27,7 @@ class Event extends Model
         'max_attendees',
     ];
 
-    protected $translatable = ['title', 'description', 'location'];
+    protected $translatable = ['title', 'description', 'location', 'organizer'];
 
     protected $casts = [
         'recurring_days' => 'array',
@@ -106,12 +106,22 @@ class Event extends Model
     }
 
     // Dates within getAvailableDates() that also have at least one active,
-    // generated TimeSlot — i.e. dates customers can actually book.
+    // generated TimeSlot whose start time hasn't already passed — i.e. dates
+    // customers can actually book.
     public function getBookableDates()
     {
+        $today   = now()->format('Y-m-d');
+        $nowTime = now()->format('H:i');
+
         $slotDates = $this->timeSlots()
             ->where('is_active', true)
             ->get()
+            ->filter(function ($slot) use ($today, $nowTime) {
+                if ($slot->date->format('Y-m-d') === $today) {
+                    return $slot->start_time->format('H:i') > $nowTime;
+                }
+                return true;
+            })
             ->map(fn($slot) => $slot->date->format('Y-m-d'))
             ->unique();
 

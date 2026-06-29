@@ -1,13 +1,12 @@
 <div class="space-y-4">
     @foreach($booking->attendees as $attendee)
-        <div class="border rounded-lg p-4 bg-white">
-            <div class="flex justify-between items-start">
+        <div class="border rounded-xl p-4 bg-white shadow-sm">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div class="flex-1">
                     <h3 class="text-lg font-bold">{{ $attendee->getFullName() }}</h3>
                     <p class="text-sm text-gray-600">{{ $attendee->email }}</p>
                     <p class="text-sm text-gray-600">Ticket: <span class="font-mono">{{ $attendee->ticket_number }}</span></p>
 
-                     {{-- ADD THIS: Show ticket type --}}
                     @if($attendee->ticketType)
                         <p class="text-sm text-gray-700 mt-1">
                             <span class="font-semibold">Ticket Type:</span>
@@ -18,28 +17,32 @@
 
                     <div class="mt-2 flex gap-2">
                         @if($attendee->email_sent)
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 ✓ Email Sent
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                 ✗ Email Not Sent
                             </span>
                         @endif
 
                         @if($attendee->checked_in)
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 ✓ Checked In
                             </span>
                         @endif
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 w-full md:w-auto">
                     @if($attendee->qr_code)
                         <a href="{{ $attendee->getQrCodeUrl() }}"
                            target="_blank"
-                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                           class="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white shadow-sm transition-colors duration-150"
+                           style="background-color: #2563eb;"
+                           onmouseover="this.style.backgroundColor='#1d4ed8'"
+                           onmouseout="this.style.backgroundColor='#2563eb'">
+                            @svg('heroicon-o-qr-code', 'w-4 h-4', ['style' => 'width:16px;height:16px;flex-shrink:0;'])
                             View QR Code
                         </a>
                     @endif
@@ -47,7 +50,11 @@
                     @if($attendee->pdf_path)
                         <a href="{{ $attendee->getPdfUrl() }}"
                            download
-                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                           class="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white shadow-sm transition-colors duration-150"
+                           style="background-color: #16a34a;"
+                           onmouseover="this.style.backgroundColor='#15803d'"
+                           onmouseout="this.style.backgroundColor='#16a34a'">
+                            @svg('heroicon-o-arrow-down-tray', 'w-4 h-4', ['style' => 'width:16px;height:16px;flex-shrink:0;'])
                             Download Ticket
                         </a>
                     @endif
@@ -55,13 +62,23 @@
                     @if(!$attendee->email_sent)
                         <button
                             wire:click="sendTicketEmail({{ $attendee->id }})"
-                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                            type="button"
+                            class="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white shadow-sm transition-colors duration-150"
+                            style="background-color: #7c3aed;"
+                            onmouseover="this.style.backgroundColor='#6d28d9'"
+                            onmouseout="this.style.backgroundColor='#7c3aed'">
+                            @svg('heroicon-o-paper-airplane', 'w-4 h-4', ['style' => 'width:16px;height:16px;flex-shrink:0;'])
                             Send Ticket
                         </button>
                     @else
                         <button
                             wire:click="resendTicketEmail({{ $attendee->id }})"
-                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            type="button"
+                            class="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 shadow-sm transition-colors duration-150"
+                            style="background-color: #ffffff;"
+                            onmouseover="this.style.backgroundColor='#f9fafb'"
+                            onmouseout="this.style.backgroundColor='#ffffff'">
+                            @svg('heroicon-o-arrow-path', 'w-4 h-4', ['style' => 'width:16px;height:16px;flex-shrink:0;'])
                             Resend Ticket
                         </button>
                     @endif
@@ -69,7 +86,12 @@
                     @if(!$attendee->checked_in)
                         <button
                             wire:click="checkInAttendee({{ $attendee->id }})"
-                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            type="button"
+                            class="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white shadow-sm transition-colors duration-150"
+                            style="background-color: #4f46e5;"
+                            onmouseover="this.style.backgroundColor='#4338ca'"
+                            onmouseout="this.style.backgroundColor='#4f46e5'">
+                            @svg('heroicon-o-check-circle', 'w-4 h-4', ['style' => 'width:16px;height:16px;flex-shrink:0;'])
                             Check In
                         </button>
                     @endif
@@ -77,8 +99,11 @@
             </div>
 
             @if($attendee->qr_code)
-                <div class="mt-4 text-center">
-                    <img src="events{{ $attendee->getQrCodeUrl() }}" alt="QR Code" class="mx-auto" style="max-width: 150px;">
+                <div class="mt-4 flex flex-col items-center">
+                    <div class="inline-block p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <img src="{{ $attendee->getQrCodeBase64() }}" alt="QR Code" style="max-width: 160px; width: 100%; height: auto;">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Scan at entrance to check in</p>
                 </div>
             @endif
         </div>

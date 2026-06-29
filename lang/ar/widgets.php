@@ -11,7 +11,7 @@ return [
         'pending_desc'      => 'بانتظار المراجعة',
         'confirmed'         => 'الحجوزات المؤكدة',
         'cancelled_desc'    => 'ملغي: :count',
-        'total_attendees'   => 'إجمالي الحضور',
+        'total_attendees'   => 'إجمالي الزوار',
         'checked_in_desc'   => 'تم تسجيل الدخول: :count',
         'checked_in_today'  => 'تسجيل الدخول اليوم',
         'scanned_today'     => 'تم المسح اليوم',

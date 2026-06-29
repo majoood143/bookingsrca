@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\BookingResource;
 use App\Models\Booking;
+use Exception;
 use App\Models\BookingSetting;
 use App\Models\Event;
 use App\Models\ExtraService;
@@ -33,10 +34,12 @@ use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class BookingWizard extends Page implements HasForms
 {
     use InteractsWithForms;
+    use HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-device-tablet';
 
@@ -79,7 +82,6 @@ class BookingWizard extends Page implements HasForms
             'attendees_count' => $minQty,
             'attendees' => array_fill(0, max(1, (int) $minQty), []),
             'payment_method' => 'cash',
-            'extra_services' => [],
         ]);
     }
 
@@ -188,36 +190,6 @@ class BookingWizard extends Page implements HasForms
                                 ->columns(2),
                         ]),
 
-                    Step::make(__('booking.wizard.steps.services'))
-                        ->icon('heroicon-o-sparkles')
-                        ->description(__('booking.wizard.steps.services_description'))
-                        ->schema([
-                            CheckboxList::make('extra_services')
-                                ->label(__('booking.fields.extra_services'))
-                                ->options(function (Get $get) {
-                                    if (!$get('event_id')) {
-                                        return [];
-                                    }
-
-                                    return ExtraService::where('event_id', $get('event_id'))
-                                        ->where('is_active', true)
-                                        ->get()
-                                        ->mapWithKeys(fn($service) => [
-                                            $service->id => $service->getTranslation('name', app()->getLocale()) .
-                                                ' — OMR ' . number_format($service->price, 3),
-                                        ]);
-                                })
-                                ->columns(2)
-                                ->gridDirection('row')
-                                ->live()
-                                ->afterStateUpdated(fn(Set $set, Get $get) => self::calculateTotal($set, $get)),
-
-                            Placeholder::make('no_services_note')
-                                ->label('')
-                                ->content(__('booking.wizard.no_services_note'))
-                                ->visible(fn(Get $get) => filled($get('event_id')) && ExtraService::where('event_id', $get('event_id'))->where('is_active', true)->doesntExist()),
-                        ]),
-
                     Step::make(__('booking.wizard.steps.attendees'))
                         ->icon('heroicon-o-users')
                         ->description(fn(Get $get) => __('booking.attendee_details_description', ['count' => (int) $get('quantity') ?: 1]))
@@ -291,6 +263,15 @@ class BookingWizard extends Page implements HasForms
                                                 ->placeholder(__('booking.placeholders.nationality')),
                                         ]),
 
+                                    Grid::make(1)
+                                        ->visible(fn() => (bool) BookingSetting::get('show_identity_number', true))
+                                        ->schema([
+                                            TextInput::make('identity_number')
+                                                ->label(__('booking.fields.identity_number'))
+                                                ->maxLength(50)
+                                                ->placeholder(__('booking.placeholders.identity_number')),
+                                        ]),
+
                                     Grid::make(2)
                                         ->schema([
                                             Select::make('ticket_type_id')
@@ -336,6 +317,29 @@ class BookingWizard extends Page implements HasForms
                                                 ->live()
                                                 ->visible(fn(Get $get) => filled($get('ticket_type_id'))),
                                         ]),
+
+                                    CheckboxList::make('extra_service_ids')
+                                        ->label(__('booking.fields.extra_services'))
+                                        ->options(function (Get $get) {
+                                            $eventId = $get('../../event_id');
+                                            if (!$eventId) {
+                                                return [];
+                                            }
+
+                                            return ExtraService::where('event_id', $eventId)
+                                                ->where('is_active', true)
+                                                ->get()
+                                                ->mapWithKeys(fn($service) => [
+                                                    $service->id => $service->getTranslation('name', app()->getLocale()) .
+                                                        ' — OMR ' . number_format($service->price, 3),
+                                                ]);
+                                        })
+                                        ->columns(2)
+                                        ->gridDirection('row')
+                                        ->live()
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => self::calculateTotal($set, $get, '../../'))
+                                        ->visible(fn(Get $get) => filled($get('../../event_id')) && ExtraService::where('event_id', $get('../../event_id'))->where('is_active', true)->exists())
+                                        ->columnSpanFull(),
                                 ])
                                 ->itemLabel(
                                     fn(array $state): ?string =>
@@ -496,20 +500,21 @@ class BookingWizard extends Page implements HasForms
     {
         $ticketPrice = 0;
         $servicesPrice = 0;
-        $quantity = (int) $get($prefix . 'quantity') ?: 1;
 
         $attendees = $get($prefix . 'attendees') ?? [];
+
+        $serviceIds = collect($attendees)->flatMap(fn($a) => $a['extra_service_ids'] ?? [])->unique();
+        $services = ExtraService::whereIn('id', $serviceIds)->get()->keyBy('id');
+
         foreach ($attendees as $attendee) {
             if (isset($attendee['ticket_price'])) {
                 $ticketPrice += (float) $attendee['ticket_price'];
             }
-        }
 
-        if ($get($prefix . 'extra_services')) {
-            $serviceIds = is_array($get($prefix . 'extra_services')) ? $get($prefix . 'extra_services') : [];
-            $services = ExtraService::whereIn('id', $serviceIds)->get();
-            foreach ($services as $service) {
-                $servicesPrice += $service->price * $quantity;
+            foreach ($attendee['extra_service_ids'] ?? [] as $serviceId) {
+                if (isset($services[$serviceId])) {
+                    $servicesPrice += (float) $services[$serviceId]->price;
+                }
             }
         }
 
@@ -523,7 +528,7 @@ class BookingWizard extends Page implements HasForms
         $event = $get('event_id') ? Event::find($get('event_id')) : null;
         $timeSlot = $get('time_slot_id') ? TimeSlot::find($get('time_slot_id')) : null;
         $attendees = collect($get('attendees') ?? []);
-        $serviceIds = is_array($get('extra_services')) ? $get('extra_services') : [];
+        $serviceIds = $attendees->flatMap(fn($a) => $a['extra_service_ids'] ?? [])->unique();
         $services = ExtraService::whereIn('id', $serviceIds)->get();
 
         $rows = [];
@@ -594,11 +599,19 @@ class BookingWizard extends Page implements HasForms
                     $booking->attendees()->create($attendee);
                 }
 
-                if (!empty($data['extra_services'])) {
+                $serviceCounts = collect($attendeesData)->flatMap(fn($a) => $a['extra_service_ids'] ?? [])->countBy();
+
+                if ($serviceCounts->isNotEmpty()) {
+                    $services = ExtraService::whereIn('id', $serviceCounts->keys())->lockForUpdate()->get()->keyBy('id');
+
                     $syncData = [];
-                    foreach (ExtraService::whereIn('id', $data['extra_services'])->lockForUpdate()->get() as $service) {
-                        $syncData[$service->id] = [
-                            'quantity' => $quantity,
+                    foreach ($serviceCounts as $serviceId => $count) {
+                        $service = $services[$serviceId] ?? null;
+                        if (!$service || !$service->isAvailable($count)) {
+                            throw new Exception(__('booking.wizard.notifications.service_unavailable'));
+                        }
+                        $syncData[$serviceId] = [
+                            'quantity' => $count,
                             'price' => $service->price,
                         ];
                     }

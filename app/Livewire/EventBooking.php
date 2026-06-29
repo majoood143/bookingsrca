@@ -24,7 +24,7 @@ class EventBooking extends Component
     /** @var array [ticket_type_id => qty] */
     public $ticketQuantities = [];
 
-    /** @var array [ticket_type_id => [service_id, ...]] */
+    /** @var array [ticket_type_id => [service_id => count_of_that_type's_tickets_with_the_service]] */
     public $ticketTypeServices = [];
 
     /** @var array of attendee data arrays (one per ticket across all types) */
@@ -41,6 +41,7 @@ class EventBooking extends Component
     public bool $showDateOfBirth = true;
     public bool $showGender      = true;
     public bool $showNationality = true;
+    public bool $showIdentityNumber = true;
     public int  $maxAttendeeAge  = 75;
 
     // Terms and conditions
@@ -67,12 +68,13 @@ class EventBooking extends Component
             $rules["attendees.$i.first_name"]    = 'required|string|max:255';
             $rules["attendees.$i.last_name"]     = 'required|string|max:255';
             $rules["attendees.$i.email"]         = $this->showEmail       ? 'required|email|max:255'  : 'nullable';
-            $rules["attendees.$i.phone"]         = $this->showPhone       ? 'nullable|string|max:20'  : 'nullable';
+            $rules["attendees.$i.phone"]         = $this->showPhone       ? ['nullable', 'string', 'regex:/^\+?\d{7,15}$/'] : 'nullable';
             $rules["attendees.$i.date_of_birth"] = $this->showDateOfBirth
                 ? "nullable|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
                 : 'nullable';
             $rules["attendees.$i.gender"]        = $this->showGender      ? 'nullable|in:male,female' : 'nullable';
             $rules["attendees.$i.nationality"]   = $this->showNationality ? 'nullable|string|max:100' : 'nullable';
+            $rules["attendees.$i.identity_number"] = $this->showIdentityNumber ? 'nullable|string|max:50' : 'nullable';
         }
 
         return $rules;
@@ -81,8 +83,27 @@ class EventBooking extends Component
     public function messages(): array
     {
         return [
+            'attendees.*.date_of_birth.date'            => __('event_booking.step5.date_of_birth_invalid'),
             'attendees.*.date_of_birth.after_or_equal'  => __('event_booking.step5.date_of_birth_max_age', ['age' => $this->maxAttendeeAge]),
             'attendees.*.date_of_birth.before_or_equal' => __('event_booking.step5.date_of_birth_future'),
+            'attendees.*.phone.regex'                   => __('event_booking.step5.phone_invalid'),
+        ];
+    }
+
+    public function validationAttributes(): array
+    {
+        return [
+            'selectedDate'                => __('event_booking.step1.heading'),
+            'selectedSlot'                => __('event_booking.step2.heading'),
+            'agreedToTerms'                => __('event_booking.step5.terms_heading'),
+            'attendees.*.first_name'      => __('event_booking.step5.first_name'),
+            'attendees.*.last_name'       => __('event_booking.step5.last_name'),
+            'attendees.*.email'          => __('event_booking.step5.email_address'),
+            'attendees.*.phone'          => __('event_booking.step5.phone_number'),
+            'attendees.*.date_of_birth'  => __('event_booking.step5.date_of_birth'),
+            'attendees.*.gender'          => __('event_booking.step5.gender'),
+            'attendees.*.nationality'    => __('event_booking.step5.nationality'),
+            'attendees.*.identity_number' => __('event_booking.step5.identity_number'),
         ];
     }
 
@@ -101,6 +122,7 @@ class EventBooking extends Component
         $this->showDateOfBirth = (bool) BookingSetting::get('show_date_of_birth', true);
         $this->showGender      = (bool) BookingSetting::get('show_gender', true);
         $this->showNationality = (bool) BookingSetting::get('show_nationality', true);
+        $this->showIdentityNumber = (bool) BookingSetting::get('show_identity_number', true);
         $this->maxAttendeeAge  = (int) BookingSetting::get('max_attendee_age_years', 75);
 
         $this->termsEn = (string) BookingSetting::get('terms_en', '');
@@ -179,6 +201,7 @@ class EventBooking extends Component
         $current = $this->ticketQuantities[$typeId] ?? 0;
         if ($current > 0) {
             $this->ticketQuantities[$typeId] = $current - 1;
+            $this->clampServiceQuantities($typeId);
             $this->calculateTotal();
         }
     }
@@ -188,23 +211,39 @@ class EventBooking extends Component
         return (int) array_sum($this->ticketQuantities);
     }
 
-    // ── Service toggle ──────────────────────────────────────────────────────
+    // ── Service quantity (per ticket type, how many of that type's tickets include each service) ──
 
-    public function toggleService($typeId, $serviceId)
+    public function incrementServiceQty($typeId, $serviceId)
     {
-        if (!isset($this->ticketTypeServices[$typeId])) {
-            $this->ticketTypeServices[$typeId] = [];
-        }
+        $typeQty = $this->ticketQuantities[$typeId] ?? 0;
+        $current = $this->ticketTypeServices[$typeId][$serviceId] ?? 0;
 
-        if (in_array($serviceId, $this->ticketTypeServices[$typeId])) {
-            $this->ticketTypeServices[$typeId] = array_values(
-                array_diff($this->ticketTypeServices[$typeId], [$serviceId])
-            );
-        } else {
-            $this->ticketTypeServices[$typeId][] = $serviceId;
+        if ($current < $typeQty) {
+            $this->ticketTypeServices[$typeId][$serviceId] = $current + 1;
+            $this->calculateTotal();
         }
+    }
 
-        $this->calculateTotal();
+    public function decrementServiceQty($typeId, $serviceId)
+    {
+        $current = $this->ticketTypeServices[$typeId][$serviceId] ?? 0;
+
+        if ($current > 0) {
+            $this->ticketTypeServices[$typeId][$serviceId] = $current - 1;
+            $this->calculateTotal();
+        }
+    }
+
+    // Caps each service's selected count for a ticket type to its new (lower) quantity.
+    protected function clampServiceQuantities($typeId): void
+    {
+        $qty = $this->ticketQuantities[$typeId] ?? 0;
+
+        foreach ($this->ticketTypeServices[$typeId] ?? [] as $serviceId => $count) {
+            if ($count > $qty) {
+                $this->ticketTypeServices[$typeId][$serviceId] = $qty;
+            }
+        }
     }
 
     // ── Price calculation ───────────────────────────────────────────────────
@@ -222,9 +261,11 @@ class EventBooking extends Component
             }
 
             if (!empty($this->ticketTypeServices[$typeId])) {
-                $services = ExtraService::whereIn('id', $this->ticketTypeServices[$typeId])->get();
-                foreach ($services as $service) {
-                    $this->totalPrice += $service->price * $qty;
+                $services = ExtraService::whereIn('id', array_keys($this->ticketTypeServices[$typeId]))->get()->keyBy('id');
+                foreach ($this->ticketTypeServices[$typeId] as $serviceId => $count) {
+                    if ($count > 0 && isset($services[$serviceId])) {
+                        $this->totalPrice += $services[$serviceId]->price * $count;
+                    }
                 }
             }
         }
@@ -247,6 +288,7 @@ class EventBooking extends Component
                     'date_of_birth'  => null,
                     'gender'         => null,
                     'nationality'    => '',
+                    'identity_number' => '',
                 ];
             }
         }
@@ -334,9 +376,16 @@ class EventBooking extends Component
     // ── Submission ──────────────────────────────────────────────────────────
     // Step 5 "Continue to Payment" — validate attendees and move to step 6.
 
-    public function goToPaymentStep(): void
+    public function goToPaymentStep()
     {
         $this->validate();
+
+        // No payable amount (e.g. only free ticket types selected) — skip the
+        // payment gateway entirely and confirm the booking immediately.
+        if ($this->totalPrice <= 0) {
+            return $this->submitBooking();
+        }
+
         $this->step = 6;
     }
 
@@ -388,14 +437,17 @@ class EventBooking extends Component
                 $ticketPrice += $ticketType->price * $qty;
 
                 if (!empty($this->ticketTypeServices[$typeId])) {
-                    $services = ExtraService::whereIn('id', $this->ticketTypeServices[$typeId])->lockForUpdate()->get();
-                    foreach ($services as $service) {
-                        if (!$service->isAvailable($qty)) {
+                    $services = ExtraService::whereIn('id', array_keys($this->ticketTypeServices[$typeId]))->lockForUpdate()->get()->keyBy('id');
+                    foreach ($this->ticketTypeServices[$typeId] as $serviceId => $count) {
+                        if ($count <= 0) continue;
+
+                        $service = $services[$serviceId] ?? null;
+                        if (!$service || !$service->isAvailable($count)) {
                             throw new Exception(__('Service :name is not available.', [
-                                'name' => $service->getTranslation('name', app()->getLocale()),
+                                'name' => $service?->getTranslation('name', app()->getLocale()) ?? '',
                             ]));
                         }
-                        $servicesPrice += $service->price * $qty;
+                        $servicesPrice += $service->price * $count;
                     }
                 }
             }
@@ -405,6 +457,10 @@ class EventBooking extends Component
                 ->filter(fn($q) => $q > 0)
                 ->keys()
                 ->first();
+
+            // Nothing to charge (e.g. only free ticket types selected) — never
+            // send the user to a payment gateway, confirm immediately instead.
+            $isFree = ($ticketPrice + $servicesPrice) <= 0;
 
             $booking = Booking::create([
                 'event_id'        => $this->event->id,
@@ -417,7 +473,7 @@ class EventBooking extends Component
                 'total_price'     => $ticketPrice + $servicesPrice,
                 'source'          => 'online',
                 'status'          => 'pending',
-                'payment_method'  => $this->activeGateway,
+                'payment_method'  => $isFree ? 'free' : $this->activeGateway,
                 'payment_status'  => 'pending',
             ]);
 
@@ -436,21 +492,24 @@ class EventBooking extends Component
                     'date_of_birth'  => $this->showDateOfBirth ? ($attendeeData['date_of_birth'] ?? null) : null,
                     'gender'         => $this->showGender      ? ($attendeeData['gender'] ?? null)       : null,
                     'nationality'    => $this->showNationality ? ($attendeeData['nationality'] ?? null)  : null,
+                    'identity_number' => $this->showIdentityNumber ? ($attendeeData['identity_number'] ?? null) : null,
                 ]);
             }
 
             // Aggregate and attach extra services
             $aggregated = [];
-            foreach ($this->ticketTypeServices as $typeId => $serviceIds) {
+            foreach ($this->ticketTypeServices as $typeId => $serviceCounts) {
                 $qty = $this->ticketQuantities[$typeId] ?? 0;
-                if ($qty <= 0 || empty($serviceIds)) continue;
+                if ($qty <= 0 || empty($serviceCounts)) continue;
 
-                foreach ($serviceIds as $serviceId) {
+                foreach ($serviceCounts as $serviceId => $count) {
+                    if ($count <= 0) continue;
+
                     if (isset($aggregated[$serviceId])) {
-                        $aggregated[$serviceId]['quantity'] += $qty;
+                        $aggregated[$serviceId]['quantity'] += $count;
                     } else {
                         $service = ExtraService::find($serviceId);
-                        $aggregated[$serviceId] = ['quantity' => $qty, 'price' => $service->price];
+                        $aggregated[$serviceId] = ['quantity' => $count, 'price' => $service->price];
                     }
                 }
             }
@@ -461,11 +520,11 @@ class EventBooking extends Component
             DB::commit();
 
             // ── Route by gateway ────────────────────────────────────────────
-            if ($this->activeGateway === 'thawani') {
+            if (!$isFree && $this->activeGateway === 'thawani') {
                 return $this->redirectToThawani($booking);
             }
 
-            if ($this->activeGateway === 'nbo') {
+            if (!$isFree && $this->activeGateway === 'nbo') {
                 return $this->redirectToNbo($booking);
             }
 
@@ -506,14 +565,15 @@ class EventBooking extends Component
             }
 
             // Add extra-service lines
-            foreach ($this->ticketTypeServices as $typeId => $serviceIds) {
+            foreach ($this->ticketTypeServices as $typeId => $serviceCounts) {
                 $qty = $this->ticketQuantities[$typeId] ?? 0;
-                if ($qty <= 0 || empty($serviceIds)) continue;
-                foreach ($serviceIds as $serviceId) {
+                if ($qty <= 0 || empty($serviceCounts)) continue;
+                foreach ($serviceCounts as $serviceId => $count) {
+                    if ($count <= 0) continue;
                     $service = ExtraService::find($serviceId);
                     $products[] = [
                         'name'        => $service->getTranslation('name', 'en'),
-                        'quantity'    => $qty,
+                        'quantity'    => $count,
                         'unit_amount' => $thawani->toBasisa((float) $service->price),
                     ];
                 }
@@ -584,6 +644,7 @@ class EventBooking extends Component
             'showDateOfBirth' => $this->showDateOfBirth,
             'showGender'      => $this->showGender,
             'showNationality' => $this->showNationality,
+            'showIdentityNumber' => $this->showIdentityNumber,
             'minBirthDate'    => $this->minBirthDate(),
             'maxBirthDate'    => now()->format('Y-m-d'),
         ]);

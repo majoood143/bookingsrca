@@ -16,11 +16,13 @@ use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Response;
 use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class VisitorReport extends Page implements HasForms
 {
     use InteractsWithForms;
     use HasReportPeriodFilter;
+    use HasPageShield;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 

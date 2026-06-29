@@ -4,12 +4,12 @@ return [
 
     'navigation' => [
         'group' => 'إدارة الحجوزات',
-        'label' => 'الحاضر',
-        'plural' => 'الحضور',
+        'label' => 'الزائر',
+        'plural' => 'الزوار',
     ],
 
     'sections' => [
-        'attendee_info'   => 'معلومات الحاضر',
+        'attendee_info'   => 'معلومات الزائر',
         'booking_info'    => 'معلومات الحجز',
         'ticket_info'     => 'معلومات التذكرة',
         'extra_services'  => 'الخدمات الإضافية',
@@ -24,6 +24,7 @@ return [
         'date_of_birth'     => 'تاريخ الميلاد',
         'gender'            => 'الجنس',
         'nationality'       => 'الجنسية',
+        'identity_number'   => 'رقم الهوية',
         'ticket_number'     => 'رقم التذكرة',
         'ticket_type'       => 'نوع التذكرة',
         'ticket_price'      => 'سعر التذكرة',
@@ -55,6 +56,7 @@ return [
         'booking_reference' => 'رقم الحجز',
         'booking_status'    => 'حالة الحجز',
         'created_at'        => 'تاريخ التسجيل',
+        'phone'             => 'رقم الهاتف',
     ],
 
     'actions' => [
@@ -67,7 +69,7 @@ return [
     ],
 
     'tabs' => [
-        'all'            => 'جميع الحضور',
+        'all'            => 'جميع الزوار',
         'checked_in'     => 'تم تسجيل دخولهم',
         'not_checked_in' => 'لم يسجلوا دخولهم',
         'email_sent'     => 'تم إرسال البريد',
@@ -86,7 +88,7 @@ return [
         'ticket_resent_body'        => 'تم إرسال التذكرة إلى :email',
         'ticket_resend_failed'      => 'فشل الإرسال',
         'ticket_resend_failed_body' => 'تعذّر إعادة إرسال التذكرة. يرجى التحقق من البريد الإلكتروني.',
-        'checked_in'                => 'تم تسجيل دخول الحاضر',
+        'checked_in'                => 'تم تسجيل دخول الزائر',
         'checked_in_body'           => 'تم تسجيل دخول :name بنجاح.',
         'check_in_undone'           => 'تم إلغاء تسجيل الدخول',
         'check_in_undone_body'      => 'تم إلغاء تسجيل دخول :name.',
@@ -96,15 +98,15 @@ return [
         'resend_heading'       => 'إعادة إرسال التذكرة',
         'resend_description'   => 'سيتم إعادة إرسال التذكرة إلى :email. هل تريد المتابعة؟',
         'resend_submit'        => 'نعم، أعد الإرسال',
-        'check_in_heading'     => 'تسجيل دخول الحاضر',
+        'check_in_heading'     => 'تسجيل دخول الزائر',
         'check_in_description' => 'تأكيد تسجيل دخول :name؟',
         'check_in_submit'      => 'تسجيل الدخول',
     ],
 
     'tooltips' => [
-        'resend_ticket'   => 'إعادة إرسال بريد التذكرة لهذا الحاضر',
+        'resend_ticket'   => 'إعادة إرسال بريد التذكرة لهذا الزائر',
         'download_ticket' => 'تحميل تذكرة PDF',
-        'check_in'        => 'تسجيل دخول الحاضر',
+        'check_in'        => 'تسجيل دخول الزائر',
     ],
 
     'no_extra_services' => 'لا توجد خدمات إضافية محجوزة.',

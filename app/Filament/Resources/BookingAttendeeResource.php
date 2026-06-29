@@ -30,6 +30,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use App\Exports\BookingAttendeesExport;
+use Mpdf\Tag\Columns;
 
 class BookingAttendeeResource extends Resource
 {
@@ -92,6 +93,10 @@ class BookingAttendeeResource extends Resource
                         TextEntry::make('nationality')
                             ->label(__('booking_attendee.fields.nationality'))
                             ->placeholder('—'),
+
+                        TextEntry::make('identity_number')
+                            ->label(__('booking_attendee.fields.identity_number'))
+                            ->placeholder('—'),
                     ]),
 
                 Section::make(__('booking_attendee.sections.ticket_info'))
@@ -112,7 +117,7 @@ class BookingAttendeeResource extends Resource
 
                         TextEntry::make('ticket_price')
                             ->label(__('booking_attendee.fields.ticket_price'))
-                            ->money('USD')
+                            ->money('OMR')
                             ->color('success'),
 
                         IconEntry::make('email_sent')
@@ -210,7 +215,8 @@ class BookingAttendeeResource extends Resource
                     ])
                     ->collapsible()
                     ->visible(fn($record) => $record->booking->extraServices->isNotEmpty()),
-            ]);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -225,9 +231,9 @@ class BookingAttendeeResource extends Resource
                     ->sortable(['first_name'])
                     ->weight('semibold'),
 
-                TextColumn::make('email')
-                    ->label(__('booking_attendee.columns.email'))
-                    ->description(fn($record) => $record->phone)
+                TextColumn::make('phone')
+                    ->label(__('booking_attendee.columns.phone'))
+                    ->description(fn($record) => $record->email)
                     ->searchable()
                     ->copyable()
                     ->icon('heroicon-o-envelope'),

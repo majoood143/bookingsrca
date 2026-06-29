@@ -44,7 +44,7 @@ return [
         'cancelled'       => 'ملغاة',
         'checked_in'      => 'تم تسجيل الدخول',
         'total_revenue'   => 'إجمالي الإيرادات',
-        'total_attendees' => 'إجمالي الحضور',
+        'total_attendees' => 'إجمالي الزوار',
     ],
 
     'columns' => [
@@ -56,7 +56,7 @@ return [
         'cancelled'   => 'ملغاة',
         'checked_in'  => 'تسجيل الدخول',
         'revenue'     => 'الإيرادات',
-        'attendees'   => 'الحضور',
+        'attendees'   => 'الزوار',
         'bookings'    => 'الحجوزات',
     ],
 
@@ -81,7 +81,7 @@ return [
             'services_price' => 'سعر الخدمات',
             'total_price'    => 'السعر الإجمالي',
             'status'         => 'الحالة',
-            'attendees'      => 'أسماء الحضور',
+            'attendees'      => 'أسماء الزوار',
             'confirmed_at'   => 'تاريخ التأكيد',
             'cancelled_at'   => 'تاريخ الإلغاء',
             'created_at'     => 'تاريخ الإنشاء',

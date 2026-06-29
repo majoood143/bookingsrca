@@ -1,6 +1,6 @@
 <?php
 
-use RickDBCN\FilamentEmail\Filament\Resources\EmailResource;
+use App\Filament\Overrides\EmailResource;
 use RickDBCN\FilamentEmail\Models\Email;
 
 return [

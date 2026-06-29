@@ -27,7 +27,10 @@ class EventSeeder extends Seeder
                 'en' => 'Dubai World Trade Centre',
                 'ar' => 'مركز دبي التجاري العالمي'
             ],
-            'organizer' => 'Laravel Community',
+            'organizer' => [
+                'en' => 'Laravel Community',
+                'ar' => 'مجتمع لارافيل'
+            ],
             'start_date' => now()->addMonth(),
             'end_date' => now()->addMonth()->addDays(2),
             'is_recurring' => false,

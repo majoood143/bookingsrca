@@ -93,6 +93,7 @@ return [
         'deactivate_selected' => 'Deactivate Selected',
         'create_first'        => 'Create first time slot',
         'generate_slots'      => 'Generate Slots',
+        'edit_time_range'     => 'Edit Time Range',
     ],
 
     'modals' => [
@@ -100,7 +101,10 @@ return [
         'activate_heading'          => 'Activate Time Slot',
         'deactivate_description'    => 'This time slot will not be available for new bookings.',
         'activate_description'      => 'This time slot will be available for bookings.',
-        'generate_slots_description' => 'Creates one time slot for each available date of the selected event (respecting its recurring days, if any). Existing slots for a date/time combination are left untouched.',
+        'generate_slots_description'   => 'Creates one time slot for each available date of the selected event (respecting its recurring days, if any). Existing slots for a date/time combination are left untouched.',
+        'edit_time_range_heading'      => 'Edit Time Range',
+        'edit_time_range_description'  => 'Update the start and end times for the selected slots. Optionally restrict the update to a specific date range.',
+        'edit_time_range_period_hint'  => 'Leave blank to update all selected slots regardless of date.',
     ],
 
     'empty_state' => [
@@ -120,7 +124,9 @@ return [
         'created'          => 'Time slot created successfully',
         'updated'          => 'Time slot updated successfully',
         'slots_generated'      => 'Slots generated',
-        'slots_generated_body' => ':created created, :skipped already existed.',
+        'slots_generated_body'     => ':created created, :skipped already existed.',
+        'time_range_updated'       => 'Time range updated',
+        'time_range_updated_body'  => ':count slot(s) updated.',
     ],
 
     'suffix' => [

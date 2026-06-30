@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ __('event_booking.email.ticket_heading') }}</title>
     <style>
         body {
-            font-family: {{ $locale === 'ar' ? "'Segoe UI', Tahoma, Arial" : "Arial" }}, sans-serif;
+            font-family: {{ $locale === 'ar' ? "'Segoe UI', Tahoma, Arial" : 'Arial' }}, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 600px;
@@ -14,6 +15,7 @@
             padding: 20px;
             direction: {{ $locale === 'ar' ? 'rtl' : 'ltr' }};
         }
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -21,42 +23,51 @@
             text-align: center;
             border-radius: 10px 10px 0 0;
         }
+
         .content {
             background: white;
             padding: 30px;
             border: 1px solid #ddd;
             border-top: none;
         }
+
         .ticket-info {
             background: #f9f9f9;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
+
         .ticket-info table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .ticket-info td {
             padding: 8px 0;
             vertical-align: top;
         }
+
         .ticket-info td.label {
             font-weight: bold;
             width: 40%;
             color: #555;
             {{ $locale === 'ar' ? 'padding-left: 12px;' : 'padding-right: 12px;' }}
         }
+
         .qr-section {
             text-align: center;
             margin: 30px 0;
         }
+
         .qr-section img {
-            max-width: 200px;
+            max-width: 140px;
         }
+
         .attachments-list {
             {{ $locale === 'ar' ? 'padding-right: 20px; padding-left: 0;' : 'padding-left: 20px; padding-right: 0;' }}
         }
+
         .footer {
             background: #f5f5f5;
             padding: 20px;
@@ -65,11 +76,13 @@
             color: #666;
             border-radius: 0 0 10px 10px;
         }
+
         .footer p {
             margin: 4px 0;
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>{{ __('event_booking.email.ticket_heading') }}</h1>
@@ -114,10 +127,10 @@
             </table>
         </div>
 
-        @if($booking->extraServices->count() > 0)
+        @if ($booking->extraServices->count() > 0)
             <h3>{{ __('event_booking.email.ticket_extra_services') }}:</h3>
             <ul class="attachments-list">
-                @foreach($booking->extraServices as $service)
+                @foreach ($booking->extraServices as $service)
                     <li>{{ $service->getTranslation('name', $locale) }}</li>
                 @endforeach
             </ul>
@@ -126,7 +139,8 @@
         <div class="qr-section">
             <h3>{{ __('event_booking.email.ticket_qr_heading') }}</h3>
             <img src="{{ $attendee->getQrCodeBase64() }}" alt="QR Code">
-            <p><strong>{{ __('event_booking.email.ticket_qr_important') }}:</strong> {{ __('event_booking.email.ticket_qr_notice') }}</p>
+            <p><strong>{{ __('event_booking.email.ticket_qr_important') }}:</strong>
+                {{ __('event_booking.email.ticket_qr_notice') }}</p>
         </div>
 
         <p><strong>{{ __('event_booking.email.ticket_attachments') }}:</strong></p>
@@ -138,7 +152,8 @@
         <p>{{ __('event_booking.email.ticket_see_you') }}</p>
 
         <p style="margin-top: 30px;">
-            <small><strong>{{ __('event_booking.email.ticket_reference') }}:</strong> {{ $booking->booking_reference }}</small>
+            <small><strong>{{ __('event_booking.email.ticket_reference') }}:</strong>
+                {{ $booking->booking_reference }}</small>
         </p>
     </div>
 
@@ -148,4 +163,5 @@
         <p>&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('event_booking.email.ticket_all_rights') }}</p>
     </div>
 </body>
+
 </html>

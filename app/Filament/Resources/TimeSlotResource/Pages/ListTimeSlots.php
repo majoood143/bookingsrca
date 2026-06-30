@@ -22,6 +22,8 @@ class ListTimeSlots extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+
+            
             Action::make('generate_slots')
                 ->label(__('time_slot.actions.generate_slots'))
                 ->icon('heroicon-o-bolt')

@@ -531,6 +531,62 @@ class TimeSlotResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation(),
+
+                    BulkAction::make('edit_time_range')
+                        ->label(__('time_slot.actions.edit_time_range'))
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning')
+                        ->schema([
+                            DatePicker::make('from_date')
+                                ->label(__('time_slot.filters.from'))
+                                ->helperText(__('time_slot.modals.edit_time_range_period_hint'))
+                                ->native(false)
+                                ->displayFormat('Y-m-d'),
+                            DatePicker::make('to_date')
+                                ->label(__('time_slot.filters.to'))
+                                ->native(false)
+                                ->displayFormat('Y-m-d'),
+                            TimePicker::make('start_time')
+                                ->label(__('time_slot.fields.start_time'))
+                                ->required()
+                                ->seconds(false)
+                                ->native(false)
+                                ->displayFormat('H:i'),
+                            TimePicker::make('end_time')
+                                ->label(__('time_slot.fields.end_time'))
+                                ->required()
+                                ->seconds(false)
+                                ->native(false)
+                                ->displayFormat('H:i')
+                                ->after('start_time'),
+                        ])
+                        ->modalHeading(__('time_slot.modals.edit_time_range_heading'))
+                        ->modalDescription(__('time_slot.modals.edit_time_range_description'))
+                        ->action(function ($records, array $data): void {
+                            $updated = 0;
+
+                            foreach ($records as $record) {
+                                if ($data['from_date'] && $record->date->lt(\Carbon\Carbon::parse($data['from_date']))) {
+                                    continue;
+                                }
+                                if ($data['to_date'] && $record->date->gt(\Carbon\Carbon::parse($data['to_date']))) {
+                                    continue;
+                                }
+
+                                $record->update([
+                                    'start_time' => $data['start_time'],
+                                    'end_time'   => $data['end_time'],
+                                ]);
+                                $updated++;
+                            }
+
+                            Notification::make()
+                                ->success()
+                                ->title(__('time_slot.notifications.time_range_updated'))
+                                ->body(__('time_slot.notifications.time_range_updated_body', ['count' => $updated]))
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->emptyStateActions([

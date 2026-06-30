@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Support\Str;
 
 class Event extends Model
 {
-    //
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, LogsActivity;
 
     protected $fillable = [
         'title',
@@ -35,6 +36,18 @@ class Event extends Model
         'end_date' => 'date',
         'is_recurring' => 'boolean',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'title', 'description', 'location', 'organizer',
+                'status', 'start_date', 'end_date', 'max_attendees',
+                'is_recurring', 'recurring_days',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected static function boot()
     {
@@ -106,21 +119,19 @@ class Event extends Model
     }
 
     // Dates within getAvailableDates() that also have at least one active,
-    // generated TimeSlot whose start time hasn't already passed — i.e. dates
-    // customers can actually book.
+    // generated TimeSlot whose start datetime hasn't already passed.
     public function getBookableDates()
     {
-        $today   = now()->format('Y-m-d');
-        $nowTime = now()->format('H:i');
+        $now = now();
 
         $slotDates = $this->timeSlots()
             ->where('is_active', true)
             ->get()
-            ->filter(function ($slot) use ($today, $nowTime) {
-                if ($slot->date->format('Y-m-d') === $today) {
-                    return $slot->start_time->format('H:i') > $nowTime;
-                }
-                return true;
+            ->filter(function ($slot) use ($now) {
+                $slotStart = \Carbon\Carbon::parse(
+                    $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
+                );
+                return $slotStart->gt($now);
             })
             ->map(fn($slot) => $slot->date->format('Y-m-d'))
             ->unique();

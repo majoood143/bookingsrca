@@ -32,6 +32,7 @@ use App\Filament\Resources\BookingResource\Pages\ListBookings;
 use App\Filament\Resources\BookingResource\Pages\CreateBooking;
 use App\Filament\Resources\BookingResource\Pages\EditBooking;
 use App\Filament\Resources\BookingResource\Pages\ViewBooking;
+use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
 use App\Filament\Resources\BookingResource\Pages;
 use App\Models\Booking;
 use App\Models\Event;
@@ -756,10 +757,11 @@ class BookingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListBookings::route('/'),
-            'create' => CreateBooking::route('/create'),
-            'edit'   => EditBooking::route('/{record}/edit'),
-            'view'   => ViewBooking::route('/{record}'),
+            'index'      => ListBookings::route('/'),
+            'create'     => CreateBooking::route('/create'),
+            'edit'       => EditBooking::route('/{record}/edit'),
+            'view'       => ViewBooking::route('/{record}'),
+            'activities' => ListBookingActivities::route('/{record}/activities'),
         ];
     }
 

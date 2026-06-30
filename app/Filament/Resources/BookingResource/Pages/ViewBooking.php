@@ -7,6 +7,8 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use App\Mail\BookingConfirmation;
 use App\Filament\Resources\BookingResource;
+use App\Filament\Resources\BookingResource\Pages\EditBooking;
+use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +16,20 @@ use Illuminate\Support\Facades\Mail;
 class ViewBooking extends ViewRecord
 {
     protected static string $resource = BookingResource::class;
+
+    public function getSubNavigation(): array
+    {
+        return $this->generateNavigationItems([
+            self::class,
+            EditBooking::class,
+            ListBookingActivities::class,
+        ]);
+    }
+
+    public function getSubNavigationParameters(): array
+    {
+        return ['record' => $this->getRecord()];
+    }
 
     protected function getHeaderActions(): array
     {

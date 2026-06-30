@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Event Ticket</title>
+    <title>{{ __('event_booking.email.ticket_heading') }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: {{ $locale === 'ar' ? "'Segoe UI', Tahoma, Arial" : "Arial" }}, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+            direction: {{ $locale === 'ar' ? 'rtl' : 'ltr' }};
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -34,13 +35,17 @@
         }
         .ticket-info table {
             width: 100%;
+            border-collapse: collapse;
         }
         .ticket-info td {
             padding: 8px 0;
+            vertical-align: top;
         }
-        .ticket-info td:first-child {
+        .ticket-info td.label {
             font-weight: bold;
             width: 40%;
+            color: #555;
+            {{ $locale === 'ar' ? 'padding-left: 12px;' : 'padding-right: 12px;' }}
         }
         .qr-section {
             text-align: center;
@@ -49,14 +54,8 @@
         .qr-section img {
             max-width: 200px;
         }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 10px 0;
+        .attachments-list {
+            {{ $locale === 'ar' ? 'padding-right: 20px; padding-left: 0;' : 'padding-left: 20px; padding-right: 0;' }}
         }
         .footer {
             background: #f5f5f5;
@@ -66,84 +65,87 @@
             color: #666;
             border-radius: 0 0 10px 10px;
         }
+        .footer p {
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Your Event Ticket</h1>
-        <p>{{ $booking->event->getTranslation('title', 'en') }}</p>
+        <h1>{{ __('event_booking.email.ticket_heading') }}</h1>
+        <p>{{ $booking->event->getTranslation('title', $locale) }}</p>
     </div>
-    
+
     <div class="content">
-        <h2>Hello {{ $attendee->first_name }}!</h2>
-        
-        <p>Thank you for your booking! Your ticket is ready. Please find your ticket details below:</p>
-        
+        <h2>{{ __('event_booking.email.ticket_hello', ['name' => $attendee->first_name]) }}</h2>
+
+        <p>{{ __('event_booking.email.ticket_intro') }}</p>
+
         <div class="ticket-info">
             <table>
                 <tr>
-                    <td>Ticket Number:</td>
+                    <td class="label">{{ __('event_booking.email.ticket_number') }}:</td>
                     <td><strong>{{ $attendee->ticket_number }}</strong></td>
                 </tr>
                 <tr>
-                    <td>Attendee:</td>
+                    <td class="label">{{ __('event_booking.email.ticket_attendee') }}:</td>
                     <td>{{ $attendee->getFullName() }}</td>
                 </tr>
                 <tr>
-                    <td>Event:</td>
-                    <td>{{ $booking->event->getTranslation('title', 'en') }}</td>
+                    <td class="label">{{ __('event_booking.email.event') }}:</td>
+                    <td>{{ $booking->event->getTranslation('title', $locale) }}</td>
                 </tr>
                 <tr>
-                    <td>Date:</td>
+                    <td class="label">{{ __('event_booking.email.date') }}:</td>
                     <td>{{ $booking->event_date->format('l, F j, Y') }}</td>
                 </tr>
                 <tr>
-                    <td>Time:</td>
+                    <td class="label">{{ __('event_booking.email.time') }}:</td>
                     <td>{{ $booking->timeSlot->getTimeRange() }}</td>
                 </tr>
                 <tr>
-                    <td>Location:</td>
-                    <td>{{ $booking->event->getTranslation('location', 'en') }}</td>
+                    <td class="label">{{ __('event_booking.email.location') }}:</td>
+                    <td>{{ $booking->event->getTranslation('location', $locale) }}</td>
                 </tr>
                 <tr>
-                    <td>Ticket Type:</td>
-                    <td>{{ $booking->ticketType->getTranslation('name', 'en') }}</td>
+                    <td class="label">{{ __('event_booking.email.ticket_type') }}:</td>
+                    <td>{{ $booking->ticketType->getTranslation('name', $locale) }}</td>
                 </tr>
             </table>
         </div>
-        
+
         @if($booking->extraServices->count() > 0)
-            <h3>Extra Services Included:</h3>
-            <ul>
+            <h3>{{ __('event_booking.email.ticket_extra_services') }}:</h3>
+            <ul class="attachments-list">
                 @foreach($booking->extraServices as $service)
-                    <li>{{ $service->getTranslation('name', 'en') }}</li>
+                    <li>{{ $service->getTranslation('name', $locale) }}</li>
                 @endforeach
             </ul>
         @endif
-        
+
         <div class="qr-section">
-            <h3>Your QR Code</h3>
+            <h3>{{ __('event_booking.email.ticket_qr_heading') }}</h3>
             <img src="{{ $attendee->getQrCodeBase64() }}" alt="QR Code">
-            <p><strong>Important:</strong> Please present this QR code at the event entrance.</p>
+            <p><strong>{{ __('event_booking.email.ticket_qr_important') }}:</strong> {{ __('event_booking.email.ticket_qr_notice') }}</p>
         </div>
-        
-        <p><strong>Attachments:</strong></p>
-        <ul>
-            <li>📄 PDF Ticket (ticket-{{ $attendee->ticket_number }}.pdf)</li>
-            <li>📱 QR Code (qr-code-{{ $attendee->ticket_number }}.png)</li>
+
+        <p><strong>{{ __('event_booking.email.ticket_attachments') }}:</strong></p>
+        <ul class="attachments-list">
+            <li>{{ __('event_booking.email.ticket_pdf_label', ['number' => $attendee->ticket_number]) }}</li>
+            <li>{{ __('event_booking.email.ticket_qr_label', ['number' => $attendee->ticket_number]) }}</li>
         </ul>
-        
-        <p>We look forward to seeing you at the event!</p>
-        
+
+        <p>{{ __('event_booking.email.ticket_see_you') }}</p>
+
         <p style="margin-top: 30px;">
-            <small><strong>Booking Reference:</strong> {{ $booking->booking_reference }}</small>
+            <small><strong>{{ __('event_booking.email.ticket_reference') }}:</strong> {{ $booking->booking_reference }}</small>
         </p>
     </div>
-    
+
     <div class="footer">
-        <p>This is an automated email. Please do not reply to this message.</p>
-        <p>If you have any questions, please contact event support.</p>
-        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+        <p>{{ __('event_booking.email.ticket_automated') }}</p>
+        <p>{{ __('event_booking.email.ticket_support') }}</p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('event_booking.email.ticket_all_rights') }}</p>
     </div>
 </body>
 </html>

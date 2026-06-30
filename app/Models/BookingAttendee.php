@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Exception;
 use App\Mail\IndividualTicket;
+use App\Support\MpdfAlmarai;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -134,9 +135,9 @@ class BookingAttendee extends Model
         }
     }
 
-    public function getQrCodeUrl()
+    public function getQrCodeUrl(): ?string
     {
-        return $this->qr_code ? Storage::disk('public')->url($this->qr_code) : null;
+        return $this->qr_code ? asset('storage/' . $this->qr_code) : null;
     }
 
     // Base64-encoded QR code image, used so mPDF can embed it without filesystem path lookups.
@@ -153,21 +154,30 @@ class BookingAttendee extends Model
     public function generatePdfTicket()
     {
         try {
+            $locale = app()->getLocale();
+
             $html = view('tickets.individual', [
                 'attendee' => $this,
-                'booking' => $this->booking,
-                'qrCode' => $this->getQrCodeBase64(),
+                'booking'  => $this->booking,
+                'qrCode'   => $this->getQrCodeBase64(),
+                'headerBg' => $this->booking->getHeaderBackgroundBase64(),
+                'locale'   => $locale,
             ])->render();
 
-            $mpdf = new Mpdf([
+            $mpdf = new Mpdf(array_merge([
                 'mode' => 'utf-8',
                 'format' => 'A4',
                 'margin_left' => 12,
                 'margin_right' => 12,
                 'margin_top' => 12,
                 'margin_bottom' => 15,
-                'default_font' => 'dejavusans',
-            ]);
+                'default_font' => 'almarai',
+            ], MpdfAlmarai::config()));
+
+            if ($locale === 'ar') {
+                MpdfAlmarai::applyArabicSettings($mpdf);
+            }
+
             $mpdf->WriteHTML($html);
 
             $pdfPath = 'tickets/' . $this->ticket_number . '.pdf';
@@ -236,9 +246,9 @@ class BookingAttendee extends Model
         }
     }
 
-    public function resendTicketEmail($attendeeId)
+    public function resendTicketEmail(): bool
     {
-        $this->sendTicketEmail($attendeeId);
+        return $this->sendTicketEmail();
     }
 
     // Check in attendee

@@ -68,13 +68,13 @@ class EventBooking extends Component
             $rules["attendees.$i.first_name"]    = 'required|string|max:255';
             $rules["attendees.$i.last_name"]     = 'required|string|max:255';
             $rules["attendees.$i.email"]         = $this->showEmail       ? 'required|email|max:255'  : 'nullable';
-            $rules["attendees.$i.phone"]         = $this->showPhone       ? ['nullable', 'string', 'regex:/^\+?\d{7,15}$/'] : 'nullable';
+            $rules["attendees.$i.phone"]         = $this->showPhone       ? ['required', 'string', 'regex:/^\+?\d{7,15}$/'] : 'nullable';
             $rules["attendees.$i.date_of_birth"] = $this->showDateOfBirth
                 ? "nullable|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
                 : 'nullable';
-            $rules["attendees.$i.gender"]        = $this->showGender      ? 'nullable|in:male,female' : 'nullable';
+            $rules["attendees.$i.gender"]        = $this->showGender      ? 'required|in:male,female' : 'nullable';
             $rules["attendees.$i.nationality"]   = $this->showNationality ? 'nullable|string|max:100' : 'nullable';
-            $rules["attendees.$i.identity_number"] = $this->showIdentityNumber ? 'nullable|string|max:50' : 'nullable';
+            $rules["attendees.$i.identity_number"] = $this->showIdentityNumber ? 'required|string|max:50' : 'nullable';
         }
 
         return $rules;
@@ -168,19 +168,18 @@ class EventBooking extends Component
         $this->step = 3;
     }
 
-    // A slot is bookable if it's active, and—when the selected date is today—its
-    // start time hasn't already passed.
+    // A slot is bookable if it's active and its start datetime hasn't passed.
     protected function isSlotBookable(TimeSlot $slot): bool
     {
         if (!$slot->is_active) {
             return false;
         }
 
-        if ($this->selectedDate && \Carbon\Carbon::parse($this->selectedDate)->isToday()) {
-            return $slot->start_time->format('H:i') > now()->format('H:i');
-        }
+        $slotStart = \Carbon\Carbon::parse(
+            $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
+        );
 
-        return true;
+        return $slotStart->isFuture();
     }
 
     // ── Quantity helpers ────────────────────────────────────────────────────
@@ -472,6 +471,7 @@ class EventBooking extends Component
                 'services_price'  => $servicesPrice,
                 'total_price'     => $ticketPrice + $servicesPrice,
                 'source'          => 'online',
+                'locale'          => app()->getLocale(),
                 'status'          => 'pending',
                 'payment_method'  => $isFree ? 'free' : $this->activeGateway,
                 'payment_status'  => 'pending',

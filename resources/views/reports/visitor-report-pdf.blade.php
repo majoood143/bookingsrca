@@ -19,10 +19,11 @@
 <html dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
 <meta charset="UTF-8">
+@include('reports.partials.pdf-fonts')
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        font-family: 'Almarai', 'Segoe UI', Tahoma, Arial, sans-serif;
         font-size: 12px;
         color: #1f2937;
     }

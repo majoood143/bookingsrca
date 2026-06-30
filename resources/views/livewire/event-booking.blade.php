@@ -269,10 +269,10 @@
                                             {{ $ticketType->getTranslation('description', app()->getLocale()) }}
                                         </p>
                                     @endif
-                                    <p class="text-xs text-gray-400 mt-1">
+                                    {{-- <p class="text-xs text-gray-400 mt-1">
                                         {{ $ticketType->getRemainingQuantity() }}
                                         {{ __('event_booking.step3.tickets_available') }}
-                                    </p>
+                                    </p> --}}
                                 </div>
 
                                 {{-- Price --}}
@@ -283,7 +283,8 @@
                                     @else
                                         <div class="text-2xl font-black text-gray-900">
                                             OMR{{ number_format($ticketType->price, 3) }}</div>
-                                        <div class="text-xs text-gray-400">{{ __('event_booking.step3.per_ticket') }}</div>
+                                        <div class="text-xs text-gray-400">{{ __('event_booking.step3.per_ticket') }}
+                                        </div>
                                     @endif
                                 </div>
 
@@ -591,8 +592,10 @@
                                     {{-- Phone --}}
                                     @if ($showPhone)
                                         <div>
-                                            <label
-                                                class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('event_booking.step5.phone_number') }}</label>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                {{ __('event_booking.step5.phone_number') }} <span
+                                                    class="text-red-500">*</span>
+                                            </label>
                                             <input type="tel" pattern="\+?\d{7,15}" inputmode="numeric"
                                                 autocomplete="tel"
                                                 wire:model.live="attendees.{{ $i }}.phone"
@@ -636,8 +639,10 @@
                                             @endif
                                             @if ($showGender)
                                                 <div>
-                                                    <label
-                                                        class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('event_booking.step5.gender') }}</label>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        {{ __('event_booking.step5.gender') }} <span
+                                                            class="text-red-500">*</span>
+                                                    </label>
                                                     <select wire:model="attendees.{{ $i }}.gender"
                                                         class="w-full px-4 py-2.5 border rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
                                                             {{ $errors->has("attendees.$i.gender") ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
@@ -698,8 +703,10 @@
                                             @endif
                                             @if ($showIdentityNumber)
                                                 <div>
-                                                    <label
-                                                        class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('event_booking.step5.identity_number') }}</label>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        {{ __('event_booking.step5.identity_number') }} <span
+                                                            class="text-red-500">*</span>
+                                                    </label>
                                                     <input type="text"
                                                         wire:model="attendees.{{ $i }}.identity_number"
                                                         placeholder="{{ __('booking.placeholders.identity_number') }}"
@@ -719,31 +726,44 @@
 
                         {{-- Terms and Conditions --}}
                         @if ($termsEn || $termsAr)
-                            <div class="rounded-xl border border-gray-200 overflow-hidden">
-                                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <div class="rounded-xl border border-gray-200 overflow-hidden"
+                                x-data="{ open: false }">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between bg-gray-50 px-4 py-3 text-left focus:outline-none"
+                                    @click="open = !open"
+                                    :aria-expanded="open">
                                     <h4 class="font-semibold text-gray-800 text-sm">
                                         {{ __('event_booking.step5.terms_heading') }}</h4>
+                                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
+                                        :class="{ 'rotate-180': open }"
+                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div x-show="open"
+                                    x-transition:enter="transition-all duration-200 ease-out"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-96"
+                                    x-transition:leave="transition-all duration-150 ease-in"
+                                    x-transition:leave-start="opacity-100 max-h-96"
+                                    x-transition:leave-end="opacity-0 max-h-0"
+                                    class="border-t border-gray-200 overflow-hidden">
+                                    @if (app()->getLocale() === 'ar' && $termsAr)
+                                        <div class="px-4 py-3">
+                                            <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
+                                                dir="rtl">
+                                                {!! $termsAr !!}
+                                            </div>
+                                        </div>
+                                    @elseif ($termsEn)
+                                        <div class="px-4 py-3">
+                                            <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
+                                                dir="ltr">
+                                                {!! $termsEn !!}
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
-                                @if ($termsEn)
-                                    <div class="px-4 py-3 {{ $termsAr ? 'border-b border-gray-100' : '' }}">
-                                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                                            English</p>
-                                        <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
-                                            dir="ltr">
-                                            {!! $termsEn !!}
-                                        </div>
-                                    </div>
-                                @endif
-                                @if ($termsAr)
-                                    <div class="px-4 py-3">
-                                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">عربي
-                                        </p>
-                                        <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
-                                            dir="rtl">
-                                            {!! $termsAr !!}
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
 
                             <div class="flex items-start gap-3">
@@ -752,8 +772,9 @@
                                         {{ $errors->has('agreedToTerms') ? 'border-red-400 ring-1 ring-red-300' : '' }}">
                                 <label for="agreedToTerms" class="text-sm text-gray-700 cursor-pointer leading-snug">
                                     {{ __('event_booking.step5.terms_agree') }}
-                                    <span
-                                        class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
+                                    <a href="{{ app()->getLocale() === 'ar' ? 'https://razatfarm.gov.om/terms-of-use/' : 'https://razatfarm.gov.om/en/terms-of-use/' }}"
+                                        target="_blank" rel="noopener noreferrer"
+                                        class="font-semibold text-gray-900 underline hover:text-brand">{{ __('event_booking.step5.terms_heading') }}</a>
                                     <span class="text-red-500 ml-0.5">*</span>
                                 </label>
                             </div>
@@ -810,7 +831,8 @@
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         {{ __('event_booking.summary.date') }}</p>
                                     <p class="font-medium text-gray-800">
-                                        {{ \Carbon\Carbon::parse($selectedDate)->locale(app()->getLocale())->translatedFormat('M d, Y') }}</p>
+                                        {{ \Carbon\Carbon::parse($selectedDate)->locale(app()->getLocale())->translatedFormat('M d, Y') }}
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
@@ -1114,7 +1136,8 @@
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         {{ __('event_booking.summary.date') }}</p>
                                     <p class="font-medium text-gray-800">
-                                        {{ \Carbon\Carbon::parse($selectedDate)->locale(app()->getLocale())->translatedFormat('M d, Y') }}</p>
+                                        {{ \Carbon\Carbon::parse($selectedDate)->locale(app()->getLocale())->translatedFormat('M d, Y') }}
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">

@@ -37,6 +37,7 @@ use App\Filament\Resources\EventResource\Pages\ListEvents;
 use App\Filament\Resources\EventResource\Pages\CreateEvent;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Filament\Resources\EventResource\Pages\ViewEvent;
+use App\Filament\Resources\EventResource\Pages\ListEventActivities;
 use App\Filament\Resources\EventResource\Pages;
 use App\Filament\Resources\EventResource\RelationManagers;
 use App\Models\Event;
@@ -462,10 +463,11 @@ class EventResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListEvents::route('/'),
-            'create' => CreateEvent::route('/create'),
-            'edit'   => EditEvent::route('/{record}/edit'),
-            'view'   => ViewEvent::route('/{record}'),
+            'index'      => ListEvents::route('/'),
+            'create'     => CreateEvent::route('/create'),
+            'edit'       => EditEvent::route('/{record}/edit'),
+            'view'       => ViewEvent::route('/{record}'),
+            'activities' => ListEventActivities::route('/{record}/activities'),
         ];
     }
 

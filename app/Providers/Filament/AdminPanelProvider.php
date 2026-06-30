@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -43,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(Login::class)
             ->profile()
+            ->font('Almarai', url: asset('fonts/almarai/almarai.css'), provider: LocalFontProvider::class)
             ->brandLogo(fn() => view('filament.admin.logo'))
             //->routes(fn() => FilamentMails::routes())
             ->colors([

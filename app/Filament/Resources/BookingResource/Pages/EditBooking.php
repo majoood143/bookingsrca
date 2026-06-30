@@ -6,12 +6,27 @@ use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
 use App\Models\ExtraService;
 use App\Filament\Resources\BookingResource;
-use Filament\Actions;
+use App\Filament\Resources\BookingResource\Pages\ViewBooking;
+use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
 use Filament\Resources\Pages\EditRecord;
 
 class EditBooking extends EditRecord
 {
     protected static string $resource = BookingResource::class;
+
+    public function getSubNavigation(): array
+    {
+        return $this->generateNavigationItems([
+            ViewBooking::class,
+            self::class,
+            ListBookingActivities::class,
+        ]);
+    }
+
+    public function getSubNavigationParameters(): array
+    {
+        return ['record' => $this->getRecord()];
+    }
 
     protected function getHeaderActions(): array
     {

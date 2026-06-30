@@ -21,11 +21,16 @@ class IndividualTicket extends Mailable
 
     public function build()
     {
-        $email = $this->subject('Your Event Ticket - ' . $this->attendee->ticket_number)
+        $booking = $this->attendee->booking;
+        $locale  = $booking->locale ?? 'en';
+
+        $email = $this->locale($locale)
+            ->subject(__('event_booking.email.ticket_subject', ['ticket_number' => $this->attendee->ticket_number], $locale))
             ->view('emails.individual-ticket')
             ->with([
                 'attendee' => $this->attendee,
-                'booking' => $this->attendee->booking,
+                'booking'  => $booking,
+                'locale'   => $locale,
             ]);
 
         // Attach PDF ticket

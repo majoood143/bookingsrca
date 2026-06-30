@@ -23,8 +23,11 @@ class BookingConfirmation extends Mailable
 
     public function build()
     {
-        return $this->subject(__('Booking Confirmation - :reference', ['reference' => $this->booking->booking_reference]))
+        $locale = $this->booking->locale ?? 'en';
+
+        return $this->locale($locale)
+            ->subject(__('event_booking.email.subject', ['reference' => $this->booking->booking_reference], $locale))
             ->view('emails.booking-confirmation')
-            ->with(['booking' => $this->booking]);
+            ->with(['booking' => $this->booking, 'locale' => $locale]);
     }
 }

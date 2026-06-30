@@ -73,8 +73,9 @@ return [
     'currency' => 'ر.ع.',
 
     'actions' => [
-        'download_pdf' => 'تحميل PDF',
-        'download_csv' => 'تحميل CSV',
+        'download_pdf'   => 'تحميل PDF',
+        'download_csv'   => 'تحميل CSV',
+        'download_excel' => 'تحميل Excel',
     ],
 
     'export' => [

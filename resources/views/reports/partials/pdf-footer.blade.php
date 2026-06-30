@@ -4,10 +4,11 @@
 <!DOCTYPE html>
 <html dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
+@include('reports.partials.pdf-fonts')
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        font-family: 'Almarai', 'Segoe UI', Tahoma, Arial, sans-serif;
         font-size: 8px;
         color: #6b7280;
         width: 100%;

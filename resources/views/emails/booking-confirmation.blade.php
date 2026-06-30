@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('Booking Confirmation') }}</title>
+    <title>{{ __('event_booking.email.subject', ['reference' => $booking->booking_reference]) }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: {{ $locale === 'ar' ? "'Segoe UI', Tahoma, Arial" : "Arial" }}, sans-serif;
             line-height: 1.6;
             color: #333;
             margin: 0;
             padding: 20px;
             background-color: #f5f5f5;
+            direction: {{ $locale === 'ar' ? 'rtl' : 'ltr' }};
         }
         .container {
             max-width: 600px;
@@ -23,9 +24,17 @@
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: black
+            color: white;
             padding: 30px 20px;
             text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
         }
         .content {
             padding: 30px 20px;
@@ -35,6 +44,13 @@
             padding: 20px;
             border-radius: 6px;
             margin: 20px 0;
+        }
+        .booking-details h3 {
+            margin: 0 0 16px;
+            font-size: 16px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .detail-row {
             display: flex;
@@ -48,9 +64,26 @@
             margin-bottom: 0;
             padding-bottom: 0;
         }
+        .detail-label {
+            color: #666;
+            {{ $locale === 'ar' ? 'margin-left: 16px;' : 'margin-right: 16px;' }}
+        }
+        .detail-value {
+            font-weight: 600;
+            text-align: {{ $locale === 'ar' ? 'left' : 'right' }};
+        }
         .qr-code {
             text-align: center;
-            margin: 20px 0;
+            margin: 24px 0;
+        }
+        .qr-code h3 {
+            margin: 0 0 12px;
+            color: #444;
+        }
+        .qr-code p {
+            margin: 10px 0 0;
+            color: #666;
+            font-size: 14px;
         }
         .footer {
             background: #f8f9fa;
@@ -60,86 +93,80 @@
             font-size: 14px;
             color: #666;
         }
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin: 10px 0;
+        .footer p {
+            margin: 4px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{ __('Booking Confirmed!') }}</h1>
-            <p>{{ __('Reference: :reference', ['reference' => $booking->booking_reference]) }}</p>
+            <h1>{{ __('event_booking.email.confirmed') }}</h1>
+            <p>{{ __('event_booking.email.reference', ['reference' => $booking->booking_reference]) }}</p>
         </div>
 
         <div class="content">
             @php $primaryAttendee = $booking->attendees->first(); @endphp
-            <h2>{{ __('Dear :name,', ['name' => $primaryAttendee ? $primaryAttendee->getFullName() : __('Valued Customer')]) }}</h2>
+            <h2>{{ __('event_booking.email.dear', ['name' => $primaryAttendee ? $primaryAttendee->getFullName() : __('event_booking.email.valued_customer')]) }}</h2>
 
-            <p>{{ __('Your booking has been confirmed. Please find the details below:') }}</p>
+            <p>{{ __('event_booking.email.details_below') }}</p>
 
             <div class="booking-details">
-                <h3>{{ __('Event Details') }}</h3>
+                <h3>{{ __('event_booking.email.event_details') }}</h3>
+
                 <div class="detail-row">
-                    <strong>{{ __('event.navigation.label') }}:</strong>
-                    <span>{{ $booking->event->getTranslation('title', app()->getLocale()) }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.event') }}</span>
+                    <span class="detail-value">{{ $booking->event->getTranslation('title', $locale) }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>{{ __('Location') }}:</strong>
-                    <span>{{ $booking->event->getTranslation('location', app()->getLocale()) }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.location') }}</span>
+                    <span class="detail-value">{{ $booking->event->getTranslation('location', $locale) }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>{{ __('Date') }}:</strong>
-                    <span>{{ $booking->event_date->format('l, F j, Y') }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.date') }}</span>
+                    <span class="detail-value">{{ $booking->event_date->format('l, F j, Y') }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>{{ __('Time') }}:</strong>
-                    <span>{{ $booking->timeSlot->getTimeRange() }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.time') }}</span>
+                    <span class="detail-value">{{ $booking->timeSlot->getTimeRange() }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>{{ __('Ticket Type') }}:</strong>
-                    <span>{{ $booking->ticketType->getTranslation('name', app()->getLocale()) }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.ticket_type') }}</span>
+                    <span class="detail-value">{{ $booking->ticketType->getTranslation('name', $locale) }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>{{ __('Quantity') }}:</strong>
-                    <span>{{ $booking->quantity }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.quantity') }}</span>
+                    <span class="detail-value">{{ $booking->quantity }}</span>
                 </div>
                 @if($booking->extraServices->isNotEmpty())
                     <div class="detail-row">
-                        <strong>{{ __('Extra Services') }}:</strong>
-                        <span>
+                        <span class="detail-label">{{ __('event_booking.email.extra_services') }}</span>
+                        <span class="detail-value">
                             @foreach($booking->extraServices as $service)
-                                {{ $service->getTranslation('name', app()->getLocale()) }}
-                                @if(!$loop->last), @endif
+                                {{ $service->getTranslation('name', $locale) }}@if(!$loop->last), @endif
                             @endforeach
                         </span>
                     </div>
                 @endif
                 <div class="detail-row">
-                    <strong>{{ __('Total Amount') }}:</strong>
-                    <span>OMR {{ number_format($booking->total_price, 3) }}</span>
+                    <span class="detail-label">{{ __('event_booking.email.total_amount') }}</span>
+                    <span class="detail-value">OMR {{ number_format($booking->total_price, 3) }}</span>
                 </div>
             </div>
 
             @if($primaryAttendee && $primaryAttendee->getQrCodeBase64())
                 <div class="qr-code">
-                    <h3>{{ __('Your Ticket QR Code') }}</h3>
+                    <h3>{{ __('event_booking.email.qr_heading') }}</h3>
                     <img src="{{ $primaryAttendee->getQrCodeBase64() }}" alt="QR Code" style="max-width: 200px;">
-                    <p>{{ __('Please present this QR code at the event entrance.') }}</p>
+                    <p>{{ __('event_booking.email.qr_notice') }}</p>
                 </div>
             @endif
 
-            <p>{{ __('If you have any questions, please contact our support team.') }}</p>
+            <p>{{ __('event_booking.email.support') }}</p>
         </div>
 
         <div class="footer">
-            <p>{{ __('Thank you for booking with us!') }}</p>
+            <p>{{ __('event_booking.email.thank_you') }}</p>
             <p>{{ config('app.name') }}</p>
         </div>
     </div>

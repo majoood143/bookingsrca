@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Exports\FinancialReportExport;
 use App\Filament\Pages\Concerns\HasReportPeriodFilter;
 use App\Models\Booking;
 use App\Models\Event;
@@ -14,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -257,6 +259,8 @@ class FinancialReport extends Page implements HasForms
                     );
                 }),
 
+                
+
             Action::make('downloadCsv')
                 ->label(__('financial_report.actions.download_csv'))
                 ->icon('heroicon-o-table-cells')
@@ -316,6 +320,20 @@ class FinancialReport extends Page implements HasForms
 
                         fclose($out);
                     }, $filename, ['Content-Type' => 'text/csv']);
+                }),
+
+            Action::make('downloadExcel')
+                ->label(__('financial_report.actions.download_excel'))
+                ->icon('heroicon-o-table-cells')
+                ->color('success')
+                ->action(function () {
+                    $report = $this->getReportData();
+                    $locale = $this->getReportLanguage();
+                    $period = $this->data['period'] ?? 'this_month';
+                    $filename = __('financial_report.export.filename', [], $locale) . '-' . $period . '-' . now()->format('Y-m-d') . '.xlsx';
+                    $currency = __('financial_report.currency', [], $locale);
+
+                    return Excel::download(new FinancialReportExport($report, $locale, $currency), $filename);
                 }),
         ];
     }

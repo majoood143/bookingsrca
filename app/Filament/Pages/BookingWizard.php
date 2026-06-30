@@ -424,6 +424,7 @@ class BookingWizard extends Page implements HasForms
 
                                     TextInput::make('payment_reference')
                                         ->label(__('booking.payments.fields.reference'))
+                                        ->required()
                                         ->maxLength(255),
 
                                     Textarea::make('payment_notes')

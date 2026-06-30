@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class TimeSlot extends Model
 {
 
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'event_id',
@@ -19,6 +21,14 @@ class TimeSlot extends Model
         'current_bookings',
         'is_active',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['event_id', 'date', 'start_time', 'end_time', 'max_attendees', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $casts = [
         'date' => 'date',

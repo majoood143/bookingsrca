@@ -70,8 +70,9 @@ return [
     ],
 
     'actions' => [
-        'download_pdf' => 'Download PDF',
-        'download_csv' => 'Download CSV',
+        'download_pdf'   => 'Download PDF',
+        'download_csv'   => 'Download CSV',
+        'download_excel' => 'Download Excel',
     ],
 
     'export' => [

@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Translatable\HasTranslations;
 
 class ExtraService extends Model
 {
 
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, LogsActivity;
 
     protected $fillable = [
         'event_id',
@@ -22,6 +24,14 @@ class ExtraService extends Model
     ];
 
     protected $translatable = ['name', 'description'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['event_id', 'name', 'description', 'price', 'quantity_available', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $casts = [
         'price' => 'decimal:2',

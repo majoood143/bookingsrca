@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Exception;
 use App\Mail\BookingConfirmation;
+use App\Support\MpdfAlmarai;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -16,10 +17,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Booking extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'booking_reference',
@@ -42,6 +45,7 @@ class Booking extends Model
         'payment_status',
         'payment_session_id',
         'payment_reference',
+        'locale',
     ];
 
     protected $casts = [
@@ -52,6 +56,18 @@ class Booking extends Model
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'status', 'payment_status', 'payment_method',
+                'quantity', 'ticket_price', 'services_price', 'total_price',
+                'event_date', 'source', 'locale', 'confirmed_at', 'cancelled_at',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected static function boot()
     {
@@ -214,15 +230,15 @@ class Booking extends Model
                 'headerBg' => $this->getHeaderBackgroundBase64(),
             ])->render();
 
-            $mpdf = new Mpdf([
+            $mpdf = new Mpdf(array_merge([
                 'mode' => 'utf-8',
                 'format' => 'A4',
                 'margin_left' => 12,
                 'margin_right' => 12,
                 'margin_top' => 12,
                 'margin_bottom' => 15,
-                'default_font' => 'dejavusans',
-            ]);
+                'default_font' => 'almarai',
+            ], MpdfAlmarai::config()));
             $mpdf->WriteHTML($html);
 
             return $mpdf->Output('booking-' . $this->booking_reference . '.pdf', Destination::STRING_RETURN);

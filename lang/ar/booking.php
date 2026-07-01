@@ -67,6 +67,9 @@ return [
         'status' => 'الحالة',
         'source' => 'المصدر',
         'created_by' => 'تم الإنشاء بواسطة',
+         'attendee_phone' => 'رقم الجوال',
+        'attendee_identity' => 'رقم الهوية',
+        'attendee_email' => 'البريد الإلكتروني',
     ],
 
     'filters' => [
@@ -352,6 +355,7 @@ return [
         'navigation_label' => 'معالج الحجز',
         'title'             => 'معالج الحجز',
         'available'         => 'متاح',
+        'past_slot'        => 'انتهت الفترة الزمنية',
         'summary_heading'   => 'ملخص الحجز',
         'attendee_names'    => 'الزوار',
         'copy_contact_to_all' => 'تطبيق البريد الإلكتروني والهاتف للحاضر الأول على جميع الزائرين الآخرين',

@@ -26,9 +26,9 @@
 
                 </h1>
                 <img src="<?php echo e(asset('storage/images/horizontalLogo-03.svg')); ?>" alt="Logo"
-                    class="h-40 sm:h-12 w-auto shrink-0">
+                    class="h-40 sm:h-40 w-auto shrink-0">
             </div>
-            <p class="mt-2 text-blue-100 text-base sm:text-lg line-clamp-2">
+            <p class="mt-2 text-blue-100 text-base sm:text-lg line-clamp-4">
                 <?php echo e($event->getTranslation('description', app()->getLocale())); ?>
 
             </p>
@@ -246,11 +246,13 @@
                         <?php
                             $qty = $ticketQuantities[$ticketType->id] ?? 0;
                             $typeAvailable = $ticketType->isAvailable();
-                            $parentId = $ticketType->depends_on_ticket_type_id;
-                            $parentQty = $parentId ? $ticketQuantities[$parentId] ?? 0 : null;
-                            $isBlocked = $parentId !== null && $parentQty <= 0;
-                            $parentName = $parentId
-                                ? $ticketTypes->find($parentId)?->getTranslation('name', app()->getLocale())
+                            $dependencyIds = $ticketType->dependsOnMany->pluck('id')->all();
+                            $isBlocked = !empty($dependencyIds)
+                                && collect($dependencyIds)->every(fn ($id) => ($ticketQuantities[$id] ?? 0) <= 0);
+                            $parentName = !empty($dependencyIds)
+                                ? $ticketTypes->whereIn('id', $dependencyIds)
+                                    ->map(fn ($t) => $t->getTranslation('name', app()->getLocale()))
+                                    ->implode(', ')
                                 : null;
                         ?>
                         <div

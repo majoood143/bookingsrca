@@ -67,6 +67,9 @@ return [
         'status' => 'Status',
         'source' => 'Source',
         'created_by' => 'Created By',
+        'attendee_phone' => 'Mobile Number',
+        'attendee_identity' => 'Identity Number',
+        'attendee_email' => 'Email',
     ],
 
     'filters' => [
@@ -352,6 +355,7 @@ return [
         'navigation_label' => 'Booking Wizard',
         'title'             => 'Booking Wizard',
         'available'         => 'available',
+        'past_slot'        => 'Past time slot',
         'summary_heading'   => 'Booking Summary',
         'attendee_names'    => 'Attendees',
         'copy_contact_to_all' => "Apply attendee 1's email & phone to all other attendees",

@@ -254,6 +254,7 @@ class TimeSlotResource extends Resource
                     ->time('H:i')
                     ->sortable()
                     ->badge()
+                    ->searchable()
                     ->color('info'),
 
                 TextColumn::make('end_time')
@@ -261,6 +262,7 @@ class TimeSlotResource extends Resource
                     ->time('H:i')
                     ->sortable()
                     ->badge()
+                    ->searchable()
                     ->color('info'),
 
                 TextColumn::make('time_range')

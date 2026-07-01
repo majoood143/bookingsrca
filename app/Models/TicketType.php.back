@@ -20,6 +20,7 @@ class TicketType extends Model
         'sale_start_date',
         'sale_end_date',
         'is_active',
+        'depends_on_ticket_type_id',
     ];
 
     protected $translatable = ['name', 'description'];
@@ -42,24 +43,14 @@ class TicketType extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function dependsOnMany()
+    public function dependsOn()
     {
-        return $this->belongsToMany(
-            TicketType::class,
-            'ticket_type_dependencies',
-            'ticket_type_id',
-            'depends_on_ticket_type_id'
-        );
+        return $this->belongsTo(TicketType::class, 'depends_on_ticket_type_id');
     }
 
     public function dependents()
     {
-        return $this->belongsToMany(
-            TicketType::class,
-            'ticket_type_dependencies',
-            'depends_on_ticket_type_id',
-            'ticket_type_id'
-        );
+        return $this->hasMany(TicketType::class, 'depends_on_ticket_type_id');
     }
 
     // Helper methods

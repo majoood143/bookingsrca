@@ -250,25 +250,25 @@ class TicketTypeResource extends Resource
                 Section::make(__('ticket_type.sections.dependency'))
                     ->description(__('ticket_type.sections.dependency_desc'))
                     ->schema([
-                        Select::make('dependsOnMany')
+                        Select::make('depends_on_ticket_type_id')
                             ->label(__('ticket_type.fields.depends_on'))
                             ->helperText(__('ticket_type.fields.depends_on_helper'))
-                            ->relationship(
-                                name: 'dependsOnMany',
-                                titleAttribute: 'id',
-                                modifyQueryUsing: fn (Builder $query, Get $get, $record) => $query
-                                    ->where('ticket_types.event_id', $get('event_id'))
-                                    ->when($record?->id, fn ($q) => $q->where('ticket_types.id', '!=', $record->id)),
-                            )
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('name', 'en'))
+                            ->options(function (Get $get, $record) {
+                                $eventId = $get('event_id');
+                                if (!$eventId) return [];
+                                return TicketType::where('event_id', $eventId)
+                                    ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                                    ->get()
+                                    ->mapWithKeys(fn ($t) => [$t->id => $t->getTranslation('name', 'en')])
+                                    ->all();
+                            })
                             ->placeholder(__('ticket_type.fields.depends_on_placeholder'))
                             ->native(false)
-                            ->multiple()
-                            ->preload()
-                            ->searchable(),
+                            ->searchable()
+                            ->nullable(),
                     ])
                     ->collapsible()
-                    ->collapsed(fn ($record) => !$record?->dependsOnMany()->exists()),
+                    ->collapsed(fn ($record) => !$record?->depends_on_ticket_type_id),
 
                 Section::make(__('ticket_type.sections.sales_overview'))
                     ->description(__('ticket_type.sections.sales_overview_desc'))
@@ -438,11 +438,11 @@ class TicketTypeResource extends Resource
                     ->falseColor('danger')
                     ->alignCenter(),
 
-                TextColumn::make('dependsOnMany.name')
+                TextColumn::make('dependsOn.name')
                     ->label(__('ticket_type.columns.depends_on'))
-                    ->getStateUsing(fn ($record) => $record->dependsOnMany
-                        ->map(fn ($t) => $t->getTranslation('name', app()->getLocale()))
-                        ->all())
+                    ->getStateUsing(fn ($record) => $record->dependsOn
+                        ? $record->dependsOn->getTranslation('name', app()->getLocale())
+                        : null)
                     ->badge()
                     ->color('warning')
                     ->placeholder('—')

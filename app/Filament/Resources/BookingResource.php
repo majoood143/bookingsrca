@@ -478,6 +478,24 @@ class BookingResource extends Resource
                     ->badge()
                     ->color('primary'),
 
+                TextColumn::make('firstAttendee.phone')
+                    ->label(__('booking.columns.attendee_phone'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
+
+                TextColumn::make('firstAttendee.identity_number')
+                    ->label(__('booking.columns.attendee_identity'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
+
+                TextColumn::make('firstAttendee.email')
+                    ->label(__('booking.columns.attendee_email'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
+
                 TextColumn::make('event.title')
                     ->label(__('booking.columns.event'))
                     ->getStateUsing(fn($record) => $record->event->getTranslation('title', app()->getLocale()))

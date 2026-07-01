@@ -64,7 +64,7 @@ class EventBooking extends Component
 
     private function loadedTicketTypes(): Collection
     {
-        return $this->cachedTicketTypes ??= $this->event->ticketTypes()->with('dependsOnMany')->where('is_active', true)->get();
+        return $this->cachedTicketTypes ??= $this->event->ticketTypes()->where('is_active', true)->get();
     }
 
     private function loadedExtraServices(): Collection
@@ -217,22 +217,12 @@ class EventBooking extends Component
             $this->ticketQuantities[$typeId] = $current - 1;
             $this->clampServiceQuantities($typeId);
 
-            // When a dependency drops to 0, zero out dependent ticket types that no
-            // longer have any of their required dependencies selected (OR logic).
+            // When parent drops to 0, zero out any dependent ticket types
             if ($this->ticketQuantities[$typeId] === 0) {
                 foreach ($this->loadedTicketTypes() as $type) {
-                    $dependencyIds = $type->dependsOnMany->pluck('id')->all();
-
-                    if (!in_array((int) $typeId, $dependencyIds)
-                        || ($this->ticketQuantities[$type->id] ?? 0) <= 0
+                    if ((int) $type->depends_on_ticket_type_id === (int) $typeId
+                        && ($this->ticketQuantities[$type->id] ?? 0) > 0
                     ) {
-                        continue;
-                    }
-
-                    $stillSatisfied = collect($dependencyIds)
-                        ->contains(fn ($id) => ($this->ticketQuantities[$id] ?? 0) > 0);
-
-                    if (!$stillSatisfied) {
                         $this->ticketQuantities[$type->id] = 0;
                         $this->clampServiceQuantities($type->id);
                     }
@@ -385,27 +375,17 @@ class EventBooking extends Component
                 return;
             }
 
-            // Enforce ticket dependencies — at least one of the required
-            // dependency ticket types must be selected (OR logic).
+            // Enforce ticket dependencies
             foreach ($this->loadedTicketTypes() as $type) {
-                $dependencyIds = $type->dependsOnMany->pluck('id')->all();
-
-                if (empty($dependencyIds) || ($this->ticketQuantities[$type->id] ?? 0) <= 0) {
-                    continue;
-                }
-
-                $satisfied = collect($dependencyIds)
-                    ->contains(fn ($id) => ($this->ticketQuantities[$id] ?? 0) > 0);
-
-                if (!$satisfied) {
-                    $parentNames = $this->loadedTicketTypes()
-                        ->whereIn('id', $dependencyIds)
-                        ->map(fn ($t) => $t->getTranslation('name', app()->getLocale()))
-                        ->implode(', ');
-
+                $parentId = $type->depends_on_ticket_type_id;
+                if ($parentId && ($this->ticketQuantities[$type->id] ?? 0) > 0
+                    && ($this->ticketQuantities[$parentId] ?? 0) <= 0
+                ) {
+                    $parentName = $this->loadedTicketTypes()->find($parentId)
+                        ?->getTranslation('name', app()->getLocale());
                     $this->addError('ticketQuantities', __('event_booking.step3.dependency_required', [
                         'child'  => $type->getTranslation('name', app()->getLocale()),
-                        'parent' => $parentNames,
+                        'parent' => $parentName,
                     ]));
                     return;
                 }

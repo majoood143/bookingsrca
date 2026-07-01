@@ -131,15 +131,10 @@ class BookingWizard extends Page implements HasForms
                                                 ->where('is_active', true)
                                                 ->where('date', $get('event_date'))
                                                 ->get()
-                                                ->mapWithKeys(function ($slot) use ($get) {
-                                                    $label = $slot->getTimeRange() . ' (' . $slot->getRemainingCapacity() . ' ' . __('booking.wizard.available') . ')';
-
-                                                    if (!self::isSlotBookable($slot, $get('event_date'))) {
-                                                        $label .= ' — ' . __('booking.wizard.past_slot');
-                                                    }
-
-                                                    return [$slot->id => $label];
-                                                });
+                                                ->filter(fn($slot) => self::isSlotBookable($slot, $get('event_date')))
+                                                ->mapWithKeys(fn($slot) => [
+                                                    $slot->id => $slot->getTimeRange() . ' (' . $slot->getRemainingCapacity() . ' ' . __('booking.wizard.available') . ')',
+                                                ]);
                                         })
                                         ->required()
                                         ->native(false)
@@ -431,7 +426,6 @@ class BookingWizard extends Page implements HasForms
                                         ->label(__('booking.payments.fields.reference'))
                                         ->required()
                                         ->maxLength(255),
-
                                     Textarea::make('payment_notes')
                                         ->label(__('booking.payments.fields.notes'))
                                         ->rows(2),

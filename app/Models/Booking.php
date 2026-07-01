@@ -101,6 +101,11 @@ class Booking extends Model
         return $this->hasMany(BookingAttendee::class);
     }
 
+     public function firstAttendee()
+    {
+        return $this->hasOne(BookingAttendee::class)->oldestOfMany();
+    }
+
     public function extraServices()
     {
         return $this->belongsToMany(ExtraService::class, 'booking_extra_services')

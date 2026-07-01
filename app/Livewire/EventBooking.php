@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Services\ThawaniService;
 use App\Services\NboService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class EventBooking extends Component
@@ -55,6 +56,21 @@ class EventBooking extends Component
     // Payment
     public string $selectedPaymentMethod = '';
     public string $activeGateway         = 'free';
+
+    // Per-request in-memory cache — not serialized by Livewire, so these are
+    // refreshed each Livewire request but shared across all methods within it.
+    private ?Collection $cachedTicketTypes   = null;
+    private ?Collection $cachedExtraServices = null;
+
+    private function loadedTicketTypes(): Collection
+    {
+        return $this->cachedTicketTypes ??= $this->event->ticketTypes()->where('is_active', true)->get();
+    }
+
+    private function loadedExtraServices(): Collection
+    {
+        return $this->cachedExtraServices ??= $this->event->extraServices()->where('is_active', true)->get();
+    }
 
     public function rules(): array
     {
@@ -158,8 +174,7 @@ class EventBooking extends Component
         $this->selectedSlot = $slotId;
 
         // Initialise quantities to 0 for each active ticket type
-        $ticketTypes = $this->event->ticketTypes()->where('is_active', true)->get();
-        foreach ($ticketTypes as $type) {
+        foreach ($this->loadedTicketTypes() as $type) {
             if (!array_key_exists($type->id, $this->ticketQuantities)) {
                 $this->ticketQuantities[$type->id] = 0;
             }
@@ -201,6 +216,19 @@ class EventBooking extends Component
         if ($current > 0) {
             $this->ticketQuantities[$typeId] = $current - 1;
             $this->clampServiceQuantities($typeId);
+
+            // When parent drops to 0, zero out any dependent ticket types
+            if ($this->ticketQuantities[$typeId] === 0) {
+                foreach ($this->loadedTicketTypes() as $type) {
+                    if ((int) $type->depends_on_ticket_type_id === (int) $typeId
+                        && ($this->ticketQuantities[$type->id] ?? 0) > 0
+                    ) {
+                        $this->ticketQuantities[$type->id] = 0;
+                        $this->clampServiceQuantities($type->id);
+                    }
+                }
+            }
+
             $this->calculateTotal();
         }
     }
@@ -251,20 +279,20 @@ class EventBooking extends Component
     {
         $this->totalPrice = 0;
 
+        $ticketTypes   = $this->loadedTicketTypes()->keyBy('id');
+        $extraServices = $this->loadedExtraServices()->keyBy('id');
+
         foreach ($this->ticketQuantities as $typeId => $qty) {
             if ($qty <= 0) continue;
 
-            $ticketType = TicketType::find($typeId);
+            $ticketType = $ticketTypes[$typeId] ?? null;
             if ($ticketType) {
                 $this->totalPrice += $ticketType->price * $qty;
             }
 
-            if (!empty($this->ticketTypeServices[$typeId])) {
-                $services = ExtraService::whereIn('id', array_keys($this->ticketTypeServices[$typeId]))->get()->keyBy('id');
-                foreach ($this->ticketTypeServices[$typeId] as $serviceId => $count) {
-                    if ($count > 0 && isset($services[$serviceId])) {
-                        $this->totalPrice += $services[$serviceId]->price * $count;
-                    }
+            foreach ($this->ticketTypeServices[$typeId] ?? [] as $serviceId => $count) {
+                if ($count > 0 && isset($extraServices[$serviceId])) {
+                    $this->totalPrice += $extraServices[$serviceId]->price * $count;
                 }
             }
         }
@@ -346,6 +374,23 @@ class EventBooking extends Component
                 $this->addError('ticketQuantities', __('Please select at least :n ticket(s).', ['n' => $this->minTickets]));
                 return;
             }
+
+            // Enforce ticket dependencies
+            foreach ($this->loadedTicketTypes() as $type) {
+                $parentId = $type->depends_on_ticket_type_id;
+                if ($parentId && ($this->ticketQuantities[$type->id] ?? 0) > 0
+                    && ($this->ticketQuantities[$parentId] ?? 0) <= 0
+                ) {
+                    $parentName = $this->loadedTicketTypes()->find($parentId)
+                        ?->getTranslation('name', app()->getLocale());
+                    $this->addError('ticketQuantities', __('event_booking.step3.dependency_required', [
+                        'child'  => $type->getTranslation('name', app()->getLocale()),
+                        'parent' => $parentName,
+                    ]));
+                    return;
+                }
+            }
+
             $this->buildAttendees();
             $this->step = $this->hasExtraServices() ? 4 : 5;
             return;
@@ -369,7 +414,7 @@ class EventBooking extends Component
     // Whether the event has any active extra services — step 4 is skipped when it doesn't.
     protected function hasExtraServices(): bool
     {
-        return $this->event->extraServices()->where('is_active', true)->exists();
+        return $this->loadedExtraServices()->isNotEmpty();
     }
 
     // ── Submission ──────────────────────────────────────────────────────────
@@ -478,13 +523,14 @@ class EventBooking extends Component
             ]);
 
             // Create one BookingAttendee per ticket
+            $ticketTypesById = $this->loadedTicketTypes()->keyBy('id');
             foreach ($this->attendees as $attendeeData) {
-                $ticketType = TicketType::find($attendeeData['ticket_type_id']);
+                $ticketType = $ticketTypesById[$attendeeData['ticket_type_id']] ?? null;
 
                 BookingAttendee::create([
                     'booking_id'     => $booking->id,
                     'ticket_type_id' => $attendeeData['ticket_type_id'],
-                    'ticket_price'   => $ticketType->price,
+                    'ticket_price'   => $ticketType?->price ?? 0,
                     'first_name'     => $attendeeData['first_name'],
                     'last_name'      => $attendeeData['last_name'],
                     'email'          => $this->showEmail       ? ($attendeeData['email'] ?? '')         : '',
@@ -497,6 +543,7 @@ class EventBooking extends Component
             }
 
             // Aggregate and attach extra services
+            $extraServicesById = $this->loadedExtraServices()->keyBy('id');
             $aggregated = [];
             foreach ($this->ticketTypeServices as $typeId => $serviceCounts) {
                 $qty = $this->ticketQuantities[$typeId] ?? 0;
@@ -508,8 +555,8 @@ class EventBooking extends Component
                     if (isset($aggregated[$serviceId])) {
                         $aggregated[$serviceId]['quantity'] += $count;
                     } else {
-                        $service = ExtraService::find($serviceId);
-                        $aggregated[$serviceId] = ['quantity' => $count, 'price' => $service->price];
+                        $service = $extraServicesById[$serviceId] ?? null;
+                        $aggregated[$serviceId] = ['quantity' => $count, 'price' => $service?->price ?? 0];
                     }
                 }
             }
@@ -552,11 +599,15 @@ class EventBooking extends Component
                 throw new Exception(__('Payment gateway is not configured. Please contact support.'));
             }
 
+            $ticketTypesById   = $this->loadedTicketTypes()->keyBy('id');
+            $extraServicesById = $this->loadedExtraServices()->keyBy('id');
+
             // Build product line(s) — one line per distinct ticket type selected
             $products = [];
             foreach ($this->ticketQuantities as $typeId => $qty) {
                 if ($qty <= 0) continue;
-                $ticketType = TicketType::find($typeId);
+                $ticketType = $ticketTypesById[$typeId] ?? null;
+                if (!$ticketType) continue;
                 $products[] = [
                     'name'        => $ticketType->getTranslation('name', 'en'),
                     'quantity'    => $qty,
@@ -570,7 +621,8 @@ class EventBooking extends Component
                 if ($qty <= 0 || empty($serviceCounts)) continue;
                 foreach ($serviceCounts as $serviceId => $count) {
                     if ($count <= 0) continue;
-                    $service = ExtraService::find($serviceId);
+                    $service = $extraServicesById[$serviceId] ?? null;
+                    if (!$service) continue;
                     $products[] = [
                         'name'        => $service->getTranslation('name', 'en'),
                         'quantity'    => $count,
@@ -631,14 +683,12 @@ class EventBooking extends Component
         $timeSlots      = $this->selectedDate
             ? $this->event->timeSlots()->where('is_active', true)->where('date', $this->selectedDate)->get()->filter(fn ($slot) => $this->isSlotBookable($slot))->values()
             : collect();
-        $ticketTypes    = $this->event->ticketTypes()->where('is_active', true)->get();
-        $extraServices  = $this->event->extraServices()->where('is_active', true)->get();
 
         return view('livewire.event-booking', [
             'availableDates'  => $availableDates,
             'timeSlots'       => $timeSlots,
-            'ticketTypes'     => $ticketTypes,
-            'extraServices'   => $extraServices,
+            'ticketTypes'     => $this->loadedTicketTypes(),
+            'extraServices'   => $this->loadedExtraServices(),
             'showEmail'       => $this->showEmail,
             'showPhone'       => $this->showPhone,
             'showDateOfBirth' => $this->showDateOfBirth,

@@ -13,6 +13,11 @@
     <meta charset="UTF-8">
     <title>{{ $t('event_ticket') }} - {{ $attendee->ticket_number }}</title>
     <style>
+        @page {
+            size: A4 portrait;
+            margin: 14mm 12mm;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -21,318 +26,487 @@
 
         body {
             font-family: 'Almarai', 'DejaVu Sans', sans-serif;
-            font-size: 12px;
-            line-height: 1.6;
-            color: #333;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #1f2937;
             direction: {{ $dir }};
-        }
-
-        .header {
-            height: 83mm;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center top;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-
-        .header-table {
-            width: 100%;
-            height: 83mm;
-        }
-
-        .header-text {
-            @if($isAr)
-            padding: 15mm 28px 23mm 10px;
-            text-align: right;
-            @else
-            padding: 15mm 10px 23mm 28px;
-            text-align: left;
-            @endif
-            vertical-align: middle;
-        }
-
-        .header-kicker {
-            font-size: 9px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6b7280;
-            margin-bottom: 5px;
-        }
-
-        .header .event-name {
-            font-size: 19px;
-            font-weight: bold;
-            color: #14532d;
-            margin-bottom: 10px;
-        }
-
-        .ticket-number {
-            background: #ecfdf5;
-            border: 1px solid #14532d;
-            color: #14532d;
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .qr-cell {
-            width: 110px;
-            text-align: center;
-            vertical-align: middle;
-            @if($isAr)
-            padding: 15mm 10px 23mm 28px;
-            @else
-            padding: 15mm 28px 23mm 10px;
-            @endif
-        }
-
-        .qr-cell img {
-            width: 76px;
-            height: 76px;
             background: #fff;
-            padding: 4px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
         }
 
-        .qr-caption {
-            font-size: 8px;
-            margin-top: 4px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* ── TICKET WRAPPER ── */
+        .ticket {
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,.08);
         }
 
-        .section {
-            margin-bottom: 22px;
-            page-break-inside: avoid;
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #667eea;
-            text-align: {{ $isAr ? 'right' : 'left' }};
-        }
-
-        .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-
-        .info-row {
-            display: table-row;
-        }
-
-        .info-label {
-            display: table-cell;
-            font-weight: bold;
-            @if($isAr)
-            padding: 6px 0 6px 15px;
-            text-align: right;
-            @else
-            padding: 6px 15px 6px 0;
-            text-align: left;
-            @endif
-            width: 35%;
-            color: #666;
-        }
-
-        .info-value {
-            display: table-cell;
-            padding: 6px 0;
-            color: #333;
-            text-align: {{ $isAr ? 'right' : 'left' }};
-        }
-
-        .services-list {
-            list-style: none;
+        /* ── HEADER BANNER ── */
+        .header {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             padding: 0;
         }
 
+        .header-inner {
+            display: table;
+            width: 100%;
+            min-height: 52mm;
+            background: linear-gradient(
+                {{ $isAr ? '270deg' : '90deg' }},
+                rgba(0,0,0,.55) 0%,
+                rgba(0,0,0,.15) 60%,
+                transparent 100%
+            );
+        }
+
+        .header-left {
+            display: table-cell;
+            vertical-align: middle;
+            @if($isAr)
+            padding: 12mm 20px 12mm 12px;
+            text-align: right;
+            @else
+            padding: 12mm 12px 12mm 20px;
+            text-align: left;
+            @endif
+        }
+
+        .header-kicker {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,.75);
+            margin-bottom: 5px;
+        }
+
+        .event-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .ticket-badge {
+            display: inline-block;
+            background: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.5);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header-right {
+            display: table-cell;
+            vertical-align: middle;
+            width: 90px;
+            text-align: center;
+            @if($isAr)
+            padding: 12mm 20px 12mm 12px;
+            @else
+            padding: 12mm 20px 12mm 12px;
+            @endif
+        }
+
+        .header-right img {
+            width: 68px;
+            height: 68px;
+            border-radius: 8px;
+            border: 3px solid rgba(255,255,255,.85);
+            padding: 3px;
+            background: #fff;
+            display: block;
+            margin: 0 auto 4px;
+        }
+
+        .qr-caption {
+            font-size: 7px;
+            color: rgba(255,255,255,.8);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── TEAR LINE ── */
+        .tear-line {
+            display: table;
+            width: 100%;
+            background: #f3f4f6;
+        }
+
+        .tear-line-left {
+            display: table-cell;
+            width: 16px;
+        }
+
+        .tear-line-right {
+            display: table-cell;
+            width: 16px;
+        }
+
+        .tear-line-notch {
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        .tear-line-left .tear-line-notch {
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .tear-line-right .tear-line-notch {
+            border-top-left-radius: 50%;
+            border-bottom-left-radius: 50%;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .tear-line-dash {
+            display: table-cell;
+            border-top: 1.5px dashed #9ca3af;
+            vertical-align: middle;
+        }
+
+        /* ── BODY ── */
+        .ticket-body {
+            padding: 14px 20px 16px;
+            background: #fff;
+        }
+
+        /* ── TWO-COLUMN GRID ── */
+        .two-col {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 14px;
+        }
+
+        .col {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .col-divider {
+            display: table-cell;
+            width: 1px;
+            background: #e5e7eb;
+            padding: 0 10px;
+        }
+
+        .col-divider-inner {
+            width: 1px;
+            background: #e5e7eb;
+            height: 100%;
+        }
+
+        /* ── SECTION ── */
+        .section-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #667eea;
+            border-bottom: 1.5px solid #667eea;
+            padding-bottom: 4px;
+            margin-bottom: 9px;
+            text-align: {{ $isAr ? 'right' : 'left' }};
+        }
+
+        /* ── INFO ROWS ── */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 4px 0;
+            vertical-align: top;
+        }
+
+        .info-key {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 10px;
+            width: 38%;
+            text-align: {{ $isAr ? 'right' : 'left' }};
+            @if($isAr)
+            padding-left: 8px;
+            @else
+            padding-right: 8px;
+            @endif
+        }
+
+        .info-val {
+            color: #1f2937;
+            font-size: 11px;
+            text-align: {{ $isAr ? 'right' : 'left' }};
+        }
+
+        /* ── SERVICES ── */
+        .services-list {
+            list-style: none;
+        }
+
         .services-list li {
-            padding: 8px 0;
+            padding: 5px 0;
             border-bottom: 1px dashed #e5e7eb;
             text-align: {{ $isAr ? 'right' : 'left' }};
+            font-size: 10px;
         }
 
         .services-list li:last-child {
             border-bottom: none;
         }
 
-        .service-amount {
-            color: #6b7280;
-            font-size: 11px;
+        .svc-qty {
+            color: #9ca3af;
+            font-size: 9px;
         }
 
-        .entry-pass {
-            background: #f9fafb;
+        /* ── QR ENTRY STRIP ── */
+        .entry-strip {
+            background: #f8fafc;
             border: 1px solid #e5e7eb;
-            padding: 20px;
             border-radius: 8px;
-            margin-top: 15px;
+            padding: 12px 16px;
+            display: table;
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .entry-qr-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 90px;
             text-align: center;
         }
 
-        .entry-pass img {
-            width: 150px;
-            height: 150px;
+        .entry-qr-cell img {
+            width: 72px;
+            height: 72px;
+            padding: 4px;
             background: #fff;
-            padding: 8px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
         }
 
-        .entry-pass p {
-            font-size: 11px;
-            color: #6b7280;
-            margin-top: 10px;
+        .entry-info-cell {
+            display: table-cell;
+            vertical-align: middle;
+            @if($isAr)
+            padding-right: 14px;
+            text-align: right;
+            @else
+            padding-left: 14px;
+            text-align: left;
+            @endif
         }
 
-        .entry-pass .ticket-number-mono {
-            font-family: monospace;
-            font-size: 13px;
-            color: #333;
-            margin-top: 6px;
-            letter-spacing: 0.5px;
+        .entry-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin-bottom: 4px;
         }
 
-        .divider {
-            border-top: 2px dashed #d1d5db;
-            margin: 20px 0;
+        .entry-ticket-num {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: bold;
+            color: #14532d;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
         }
 
-        .footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 2px dashed #d1d5db;
-            text-align: center;
-            color: #6b7280;
+        .entry-note {
             font-size: 10px;
+            color: #6b7280;
+            line-height: 1.4;
         }
 
-        .footer p {
-            margin: 2px 0;
+        /* ── FOOTER ── */
+        .ticket-footer {
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            padding: 9px 20px;
+            display: table;
+            width: 100%;
+        }
+
+        .footer-ref {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: {{ $isAr ? 'right' : 'left' }};
+        }
+
+        .footer-copy {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: {{ $isAr ? 'left' : 'right' }};
+        }
+
+        .footer-ref, .footer-copy {
+            font-size: 9px;
+            color: #9ca3af;
+        }
+
+        .footer-ref strong {
+            color: #6b7280;
         }
     </style>
 </head>
 <body>
+<div class="ticket">
+
+    {{-- ── HEADER ── --}}
     <div class="header" style="background-image: url('{{ $headerBg }}');">
-        <table class="header-table">
-            <tr>
-                @if($isAr)
-                <td class="qr-cell">
-                    <img src="{{ $qrCode }}" alt="QR code">
-                    <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
-                </td>
-                <td class="header-text">
-                    <div class="header-kicker">{{ $t('event_ticket') }}</div>
-                    <div class="event-name">{{ $booking->event->getTranslation('title', 'ar') }}</div>
-                    <div class="ticket-number"><span dir="ltr">{{ $attendee->ticket_number }}</span></div>
-                </td>
-                @else
-                <td class="header-text">
-                    <div class="header-kicker">{{ $t('event_ticket') }}</div>
-                    <div class="event-name">{{ $booking->event->getTranslation('title', 'en') }}</div>
-                    <div class="ticket-number">{{ $attendee->ticket_number }}</div>
-                </td>
-                <td class="qr-cell">
-                    <img src="{{ $qrCode }}" alt="QR code">
-                    <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
-                </td>
-                @endif
-            </tr>
-        </table>
-    </div>
-
-    <!-- Attendee -->
-    <div class="section">
-        <div class="section-title">{{ $t('attendee') }}</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">{{ $t('name') }}:</div>
-                <div class="info-value">{{ $attendee->getFullName() }}</div>
+        <div class="header-inner">
+            @if($isAr)
+            <div class="header-right">
+                <img src="{{ $qrCode }}" alt="QR">
+                <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
             </div>
-            <div class="info-row">
-                <div class="info-label">{{ $t('email') }}:</div>
-                <div class="info-value">{{ $attendee->email }}</div>
+            <div class="header-left">
+                <div class="header-kicker">{{ $t('event_ticket') }}</div>
+                <div class="event-name">{{ $booking->event->getTranslation('title', 'ar') }}</div>
+                <span class="ticket-badge" dir="ltr">{{ $attendee->ticket_number }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">{{ $t('ticket_type') }}:</div>
-                <div class="info-value">{{ $booking->ticketType->getTranslation('name', $lang) }}</div>
+            @else
+            <div class="header-left">
+                <div class="header-kicker">{{ $t('event_ticket') }}</div>
+                <div class="event-name">{{ $booking->event->getTranslation('title', 'en') }}</div>
+                <span class="ticket-badge">{{ $attendee->ticket_number }}</span>
             </div>
+            <div class="header-right">
+                <img src="{{ $qrCode }}" alt="QR">
+                <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
+            </div>
+            @endif
         </div>
     </div>
 
-    <div class="divider"></div>
+    {{-- ── TEAR LINE ── --}}
+    <div class="tear-line">
+        <div class="tear-line-left"><div class="tear-line-notch"></div></div>
+        <div class="tear-line-dash"></div>
+        <div class="tear-line-right"><div class="tear-line-notch"></div></div>
+    </div>
 
-    <!-- Event Details -->
-    <div class="section">
-        <div class="section-title">{{ $t('event_details') }}</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">{{ $t('date') }}:</div>
-                <div class="info-value">{{ $dateFormatted }}</div>
+    {{-- ── BODY ── --}}
+    <div class="ticket-body">
+
+        {{-- Two-column: Attendee | Event Details --}}
+        <div class="two-col">
+            {{-- Attendee --}}
+            <div class="col">
+                <div class="section-label">{{ $t('attendee') }}</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-key">{{ $t('name') }}</td>
+                        <td class="info-val">{{ $attendee->getFullName() }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-key">{{ $t('email') }}</td>
+                        <td class="info-val" style="word-break:break-all;">{{ $attendee->email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-key">{{ $t('ticket_type') }}</td>
+                        <td class="info-val">{{ $booking->ticketType->getTranslation('name', $lang) }}</td>
+                    </tr>
+                </table>
             </div>
-            <div class="info-row">
-                <div class="info-label">{{ $t('time') }}:</div>
-                <div class="info-value">{{ $booking->timeSlot->getTimeRange() }}</div>
+
+            {{-- Divider --}}
+            <div class="col-divider"><div class="col-divider-inner"></div></div>
+
+            {{-- Event Details --}}
+            <div class="col" style="{{ $isAr ? 'padding-right:16px' : 'padding-left:16px' }}">
+                <div class="section-label">{{ $t('event_details') }}</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-key">{{ $t('date') }}</td>
+                        <td class="info-val">{{ $dateFormatted }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-key">{{ $t('time') }}</td>
+                        <td class="info-val">{{ $booking->timeSlot->getTimeRange() }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-key">{{ $t('location') }}</td>
+                        <td class="info-val">{{ $booking->event->getTranslation('location', $lang) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-key">{{ $t('organizer') }}</td>
+                        <td class="info-val">{{ $booking->event->organizer }}</td>
+                    </tr>
+                </table>
             </div>
-            <div class="info-row">
-                <div class="info-label">{{ $t('location') }}:</div>
-                <div class="info-value">{{ $booking->event->getTranslation('location', $lang) }}</div>
+        </div>
+
+        {{-- Extra Services (full-width, only if present) --}}
+        @if($booking->extraServices->count() > 0)
+        <div style="margin-bottom:14px;">
+            <div class="section-label">{{ $t('extra_services') }}</div>
+            <ul class="services-list">
+                @foreach($booking->extraServices as $service)
+                <li>
+                    <strong>{{ $service->getTranslation('name', $lang) }}</strong>
+                    &nbsp;<span class="svc-qty">× {{ $service->pivot->quantity }}</span>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        {{-- Entry Pass strip --}}
+        <div class="entry-strip">
+            @if($isAr)
+            <div class="entry-info-cell">
+                <div class="entry-label">{{ $t('entry_pass') }}</div>
+                <div class="entry-ticket-num" dir="ltr">{{ $attendee->ticket_number }}</div>
+                <div class="entry-note">{{ $t('present_qr') }}</div>
             </div>
-            <div class="info-row">
-                <div class="info-label">{{ $t('organizer') }}:</div>
-                <div class="info-value">{{ $booking->event->organizer }}</div>
+            <div class="entry-qr-cell">
+                <img src="{{ $qrCode }}" alt="QR">
             </div>
+            @else
+            <div class="entry-qr-cell">
+                <img src="{{ $qrCode }}" alt="QR">
+            </div>
+            <div class="entry-info-cell">
+                <div class="entry-label">{{ $t('entry_pass') }}</div>
+                <div class="entry-ticket-num">{{ $attendee->ticket_number }}</div>
+                <div class="entry-note">{{ $t('present_qr') }}</div>
+            </div>
+            @endif
+        </div>
+
+    </div>{{-- /ticket-body --}}
+
+    {{-- ── FOOTER ── --}}
+    <div class="ticket-footer">
+        <div class="footer-ref">
+            <strong>{{ $t('booking_reference') }}:</strong>
+            <span dir="ltr"> {{ $booking->booking_reference }}</span>
+            &nbsp;|&nbsp;
+            <strong>{{ $t('booked_on') }}:</strong>
+            <span dir="ltr"> {{ $booking->created_at->format('M d, Y H:i') }}</span>
+        </div>
+        <div class="footer-copy">
+            &copy; {{ date('Y') }} {{ config('app.name') }}. {{ $t('all_rights') }}
         </div>
     </div>
 
-    @if($booking->extraServices->count() > 0)
-    <div class="divider"></div>
-
-    <!-- Extra Services -->
-    <div class="section">
-        <div class="section-title">{{ $t('extra_services') }}</div>
-        <ul class="services-list">
-            @foreach($booking->extraServices as $service)
-            <li>
-                <strong>{{ $service->getTranslation('name', $lang) }}</strong><br>
-                <span class="service-amount">{{ $t('quantity') }}: {{ $service->pivot->quantity }}</span>
-            </li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-
-    <div class="divider"></div>
-
-    <!-- Entry Pass -->
-    <div class="section">
-        <div class="section-title">{{ $t('entry_pass') }}</div>
-        <div class="entry-pass">
-            <img src="{{ $qrCode }}" alt="QR code">
-            <div class="ticket-number-mono"><span dir="ltr">{{ $attendee->ticket_number }}</span></div>
-            <p>{{ $t('present_qr') }}</p>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p><strong>{{ $t('booking_reference') }}:</strong> <span dir="ltr">{{ $booking->booking_reference }}</span></p>
-        <p><strong>{{ $t('booked_on') }}:</strong> <span dir="ltr">{{ $booking->created_at->format('M d, Y H:i') }}</span></p>
-        <p style="margin-top: 12px;">{{ $t('support_note') }}</p>
-        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. {{ $t('all_rights') }}</p>
-    </div>
+</div>{{-- /ticket --}}
 </body>
 </html>

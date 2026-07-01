@@ -16,6 +16,8 @@ return [
         'sale_period'      => 'Sale Period',
         'sale_period_desc' => 'Optional: Restrict when this ticket type can be purchased',
         'status'           => 'Status & Settings',
+        'dependency'       => 'Ticket Dependency',
+        'dependency_desc'  => 'Optional: Require another ticket type to be selected before this one can be booked',
         'sales_overview'   => 'Sales Overview',
         'sales_overview_desc' => 'View current sales and availability',
     ],
@@ -41,6 +43,9 @@ return [
         'sale_end_helper'            => 'Leave empty for no restriction',
         'is_active'                  => 'Active',
         'is_active_helper'           => 'Only active ticket types are available for purchase',
+        'depends_on'                 => 'Depends On',
+        'depends_on_helper'          => 'Bookers must select this parent ticket type before they can add the current one',
+        'depends_on_placeholder'     => 'None (standalone ticket)',
     ],
 
     'placeholders' => [
@@ -86,6 +91,7 @@ return [
         'revenue'     => 'Revenue',
         'status'      => 'Status',
         'sale_period' => 'Sale Period',
+        'depends_on'  => 'Depends On',
         'bookings'    => 'Bookings',
         'created_at'  => 'Created At',
         'updated_at'  => 'Updated At',

@@ -42,11 +42,29 @@ class BookingSetting extends Model
         Cache::forget("booking_setting_{$key}");
     }
 
-    /**
-     * Clear all settings cache
-     */
     public static function clearCache(): void
     {
-        Cache::flush(); // Or use tags if available
+        foreach (self::getCacheKeys() as $key) {
+            Cache::forget("booking_setting_{$key}");
+        }
+    }
+
+    private static function getCacheKeys(): array
+    {
+        return [
+            'max_tickets_per_booking',
+            'min_tickets_per_booking',
+            'show_email',
+            'show_phone',
+            'show_date_of_birth',
+            'show_gender',
+            'show_nationality',
+            'show_identity_number',
+            'max_attendee_age_years',
+            'terms_en',
+            'terms_ar',
+            'active_gateway',
+            'pending_booking_expiry_minutes',
+        ];
     }
 }

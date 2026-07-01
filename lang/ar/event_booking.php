@@ -50,7 +50,10 @@ return [
         'subtotal'          => 'المجموع الجزئي',
         'running_total'     => 'المجموع الحالي',
         'n_tickets'         => '(:n تذكرة)',
-        'min_tickets'       => 'اختر :n تذكرة على الأقل للمتابعة',
+        'min_tickets'         => 'اختر :n تذكرة على الأقل للمتابعة',
+        'dependency_required' => ':child تتطلب :parent — يرجى إضافة تذكرة :parent أولاً.',
+        'requires_parent'     => 'تتطلب :parent',
+        'add_parent_first'    => 'أضف :parent أولاً',
     ],
 
     // ── Step 4 — Extra Services ───────────────────────────────────────────────

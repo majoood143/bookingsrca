@@ -39,7 +39,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
 
 class TicketTypeResource extends Resource
 {
@@ -247,6 +247,29 @@ class TicketTypeResource extends Resource
                     ])
                     ->collapsible(),
 
+                Section::make(__('ticket_type.sections.dependency'))
+                    ->description(__('ticket_type.sections.dependency_desc'))
+                    ->schema([
+                        Select::make('depends_on_ticket_type_id')
+                            ->label(__('ticket_type.fields.depends_on'))
+                            ->helperText(__('ticket_type.fields.depends_on_helper'))
+                            ->options(function (Get $get, $record) {
+                                $eventId = $get('event_id');
+                                if (!$eventId) return [];
+                                return TicketType::where('event_id', $eventId)
+                                    ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                                    ->get()
+                                    ->mapWithKeys(fn ($t) => [$t->id => $t->getTranslation('name', 'en')])
+                                    ->all();
+                            })
+                            ->placeholder(__('ticket_type.fields.depends_on_placeholder'))
+                            ->native(false)
+                            ->searchable()
+                            ->nullable(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(fn ($record) => !$record?->depends_on_ticket_type_id),
+
                 Section::make(__('ticket_type.sections.sales_overview'))
                     ->description(__('ticket_type.sections.sales_overview_desc'))
                     ->schema([
@@ -414,6 +437,16 @@ class TicketTypeResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger')
                     ->alignCenter(),
+
+                TextColumn::make('dependsOn.name')
+                    ->label(__('ticket_type.columns.depends_on'))
+                    ->getStateUsing(fn ($record) => $record->dependsOn
+                        ? $record->dependsOn->getTranslation('name', app()->getLocale())
+                        : null)
+                    ->badge()
+                    ->color('warning')
+                    ->placeholder('—')
+                    ->toggleable(),
 
                 TextColumn::make('sale_period')
                     ->label(__('ticket_type.columns.sale_period'))

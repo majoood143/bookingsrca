@@ -33,6 +33,7 @@ use Backstage\FilamentMails\Facades\FilamentMails;
 use Backstage\FilamentMails\FilamentMailsPlugin;
 use App\Filament\Pages\Auth\Login;
 use MarcoGermani87\FilamentCaptcha\FilamentCaptcha;
+use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -93,6 +94,13 @@ class AdminPanelProvider extends PanelProvider
                         directory: 'avatars', // image will be stored in 'storage/app/public/avatars
                         rules: 'mimes:jpeg,png|max:1024' //only accept jpeg and png files with a maximum size of 1MB
                     ),
+                FilamentJobsMonitorPlugin::make()
+                    ->navigationIcon('heroicon-o-queue-list')
+                    ->navigationGroup('System')
+                    ->navigationSort(99)
+                    ->navigationCountBadge()
+                    ->enablePruning()
+                    ->pruningRetention(7),
 
             ])
             ->authMiddleware([

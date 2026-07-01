@@ -50,7 +50,10 @@ return [
         'subtotal'         => 'subtotal',
         'running_total'    => 'Running Total',
         'n_tickets'        => '(:n ticket(s))',
-        'min_tickets'      => 'Select at least :n ticket(s) to continue',
+        'min_tickets'         => 'Select at least :n ticket(s) to continue',
+        'dependency_required' => ':child requires :parent — please add a :parent ticket first.',
+        'requires_parent'     => 'Requires :parent',
+        'add_parent_first'    => 'Add :parent first',
     ],
 
     // ── Step 4 — Extra Services ───────────────────────────────────────────────

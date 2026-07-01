@@ -239,11 +239,17 @@
                         @php
                             $qty = $ticketQuantities[$ticketType->id] ?? 0;
                             $typeAvailable = $ticketType->isAvailable();
+                            $parentId = $ticketType->depends_on_ticket_type_id;
+                            $parentQty = $parentId ? $ticketQuantities[$parentId] ?? 0 : null;
+                            $isBlocked = $parentId !== null && $parentQty <= 0;
+                            $parentName = $parentId
+                                ? $ticketTypes->find($parentId)?->getTranslation('name', app()->getLocale())
+                                : null;
                         @endphp
                         <div
                             class="p-5 border-2 rounded-2xl transition-all duration-150
                             {{ $qty > 0 ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100' : 'border-gray-200 bg-white' }}
-                            {{ !$typeAvailable ? 'opacity-50' : '' }}">
+                            {{ !$typeAvailable || $isBlocked ? 'opacity-60' : '' }}">
 
                             <div class="flex flex-wrap items-center gap-4">
 
@@ -261,7 +267,16 @@
                                         @endif
                                         @if (!$typeAvailable)
                                             <span
-                                                class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">{{ __('event_booking.step3.sold_out') }}</span>
+                                                class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
+                                                {{ __('event_booking.step3.sold_out') }}
+                                            </span>
+                                        @endif
+                                        @if ($parentName)
+                                            <span
+                                                class="text-xs px-2 py-0.5 rounded-full font-medium
+                                                {{ $isBlocked ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700' }}">
+                                                {{ __('event_booking.step3.requires_parent', ['parent' => $parentName]) }}
+                                            </span>
                                         @endif
                                     </div>
                                     @if ($ticketType->getTranslation('description', app()->getLocale()))
@@ -269,10 +284,6 @@
                                             {{ $ticketType->getTranslation('description', app()->getLocale()) }}
                                         </p>
                                     @endif
-                                    {{-- <p class="text-xs text-gray-400 mt-1">
-                                        {{ $ticketType->getRemainingQuantity() }}
-                                        {{ __('event_booking.step3.tickets_available') }}
-                                    </p> --}}
                                 </div>
 
                                 {{-- Price --}}
@@ -289,7 +300,7 @@
                                 </div>
 
                                 {{-- Quantity stepper --}}
-                                @if ($typeAvailable)
+                                @if ($typeAvailable && !$isBlocked)
                                     <div class="flex items-center gap-3 shrink-0">
                                         <button type="button" wire:click="decrementQuantity({{ $ticketType->id }})"
                                             {{ $qty <= 0 ? 'disabled' : '' }}
@@ -317,6 +328,18 @@
                                                 {{ __('event_booking.step3.subtotal') }}</div>
                                         </div>
                                     @endif
+                                @elseif ($typeAvailable && $isBlocked)
+                                    {{-- Locked: parent ticket not yet selected --}}
+                                    <div class="flex items-center gap-2 text-amber-600 shrink-0">
+                                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <span class="text-xs font-medium">
+                                            {{ __('event_booking.step3.add_parent_first', ['parent' => $parentName]) }}
+                                        </span>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -726,22 +749,21 @@
 
                         {{-- Terms and Conditions --}}
                         @if ($termsEn || $termsAr)
-                            <div class="rounded-xl border border-gray-200 overflow-hidden"
-                                x-data="{ open: false }">
+                            <div class="rounded-xl border border-gray-200 overflow-hidden" x-data="{ open: false }">
                                 <button type="button"
                                     class="w-full flex items-center justify-between bg-gray-50 px-4 py-3 text-left focus:outline-none"
-                                    @click="open = !open"
-                                    :aria-expanded="open">
+                                    @click="open = !open" :aria-expanded="open">
                                     <h4 class="font-semibold text-gray-800 text-sm">
                                         {{ __('event_booking.step5.terms_heading') }}</h4>
                                     <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
-                                        :class="{ 'rotate-180': open }"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clip-rule="evenodd" />
+                                        :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z"
+                                            clip-rule="evenodd" />
                                     </svg>
                                 </button>
-                                <div x-show="open"
-                                    x-transition:enter="transition-all duration-200 ease-out"
+                                <div x-show="open" x-transition:enter="transition-all duration-200 ease-out"
                                     x-transition:enter-start="opacity-0 max-h-0"
                                     x-transition:enter-end="opacity-100 max-h-96"
                                     x-transition:leave="transition-all duration-150 ease-in"

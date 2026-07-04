@@ -62,6 +62,7 @@ return [
         'dependency_required' => ':child تتطلب :parent — يرجى إضافة تذكرة :parent أولاً.',
         'requires_parent'     => 'تتطلب :parent',
         'add_parent_first'    => 'أضف :parent أولاً',
+        'slot_limit_reached'  => 'لا توجد سعة متبقية في هذا الموعد لإضافة تذاكر أخرى.',
     ],
 
     // ── Step 4 — Extra Services ───────────────────────────────────────────────

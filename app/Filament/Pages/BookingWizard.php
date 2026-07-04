@@ -576,16 +576,19 @@ class BookingWizard extends Page implements HasForms
 
         try {
             $booking = DB::transaction(function () use ($data, $attendeesData, $quantity) {
+                // Admin bookings can exceed remaining capacity/stock (overbooking is
+                // allowed from the admin side) — only existence is checked here, not
+                // isAvailable(), which is reserved for the customer-facing flow.
                 $timeSlot = TimeSlot::where('id', $data['time_slot_id'] ?? null)->lockForUpdate()->first();
 
-                if (!$timeSlot || !$timeSlot->isAvailable($quantity)) {
+                if (!$timeSlot) {
                     throw new Exception(__('booking.wizard.notifications.no_capacity'));
                 }
 
-                $ticketCounts = collect($attendeesData)->countBy('ticket_type_id');
-                foreach ($ticketCounts as $ticketTypeId => $count) {
+                $ticketTypeIds = collect($attendeesData)->pluck('ticket_type_id')->filter()->unique();
+                foreach ($ticketTypeIds as $ticketTypeId) {
                     $ticketType = TicketType::where('id', $ticketTypeId)->lockForUpdate()->first();
-                    if (!$ticketType || !$ticketType->isAvailable($count)) {
+                    if (!$ticketType) {
                         throw new Exception(__('booking.wizard.notifications.ticket_unavailable'));
                     }
                 }
@@ -618,7 +621,7 @@ class BookingWizard extends Page implements HasForms
                     $syncData = [];
                     foreach ($serviceCounts as $serviceId => $count) {
                         $service = $services[$serviceId] ?? null;
-                        if (!$service || !$service->isAvailable($count)) {
+                        if (!$service) {
                             throw new Exception(__('booking.wizard.notifications.service_unavailable'));
                         }
                         $syncData[$serviceId] = [

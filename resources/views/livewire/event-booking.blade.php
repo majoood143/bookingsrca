@@ -320,7 +320,10 @@
                                         <span
                                             class="text-2xl font-black text-gray-900 w-8 text-center tabular-nums">{{ $qty }}</span>
                                         @php
-                                            $atMax = $qty >= $maxTickets || array_sum($ticketQuantities) >= $maxTickets || $atTypeLimit;
+                                            $atMax = $qty >= $maxTickets
+                                                || array_sum($ticketQuantities) >= $maxTickets
+                                                || array_sum($ticketQuantities) >= $slotRemainingCapacity
+                                                || $atTypeLimit;
                                         @endphp
                                         <button type="button" wire:click="incrementQuantity({{ $ticketType->id }})"
                                             {{ $atMax ? 'disabled' : '' }}
@@ -361,6 +364,10 @@
                 @error('ticketQuantities')
                     <p class="mt-3 text-red-500 text-sm">{{ $message }}</p>
                 @enderror
+
+                @if (array_sum($ticketQuantities) >= $slotRemainingCapacity)
+                    <p class="mt-3 text-amber-600 text-sm">{{ __('event_booking.step3.slot_limit_reached') }}</p>
+                @endif
 
                 {{-- Running total --}}
                 @php $totalQty = array_sum($ticketQuantities); @endphp

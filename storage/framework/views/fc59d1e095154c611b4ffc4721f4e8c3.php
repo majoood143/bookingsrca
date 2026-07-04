@@ -1,0 +1,2 @@
+<img src="<?php echo e(asset('storage/images/horizontalLogo-02.svg')); ?>" alt="Custom Logo" class="h-20">
+<?php /**PATH /Users/majidalhajri/Downloads/booking/bookingrca/bookingsrca/resources/views/filament/admin/logo.blade.php ENDPATH**/ ?>

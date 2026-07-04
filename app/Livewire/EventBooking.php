@@ -28,6 +28,9 @@ class EventBooking extends Component
     /** @var array [ticket_type_id => remaining stock], snapshotted when the slot is selected */
     public $ticketTypeRemaining = [];
 
+    /** @var int remaining capacity of the selected time slot, snapshotted when the slot is selected */
+    public $slotRemainingCapacity = 0;
+
     /** @var array [ticket_type_id => [service_id => count_of_that_type's_tickets_with_the_service]] */
     public $ticketTypeServices = [];
 
@@ -175,6 +178,7 @@ class EventBooking extends Component
         }
 
         $this->selectedSlot = $slotId;
+        $this->slotRemainingCapacity = $slot->getRemainingCapacity();
 
         // Initialise quantities to 0 for each active ticket type, and snapshot
         // each type's remaining stock at the moment the customer starts picking
@@ -211,7 +215,11 @@ class EventBooking extends Component
         $total     = array_sum($this->ticketQuantities);
         $remaining = $this->ticketTypeRemaining[$typeId] ?? 0;
 
-        if ($current < $this->maxTickets && $total < $this->maxTickets && $current < $remaining) {
+        if ($current < $this->maxTickets
+            && $total < $this->maxTickets
+            && $current < $remaining
+            && $total < $this->slotRemainingCapacity
+        ) {
             $this->ticketQuantities[$typeId] = $current + 1;
             $this->calculateTotal();
         }

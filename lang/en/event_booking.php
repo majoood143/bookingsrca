@@ -62,6 +62,7 @@ return [
         'dependency_required' => ':child requires :parent — please add a :parent ticket first.',
         'requires_parent'     => 'Requires :parent',
         'add_parent_first'    => 'Add :parent first',
+        'slot_limit_reached'  => 'This time slot has no more remaining capacity for additional tickets.',
     ],
 
     // ── Step 4 — Extra Services ───────────────────────────────────────────────

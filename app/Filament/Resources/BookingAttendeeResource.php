@@ -8,6 +8,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
@@ -16,10 +18,12 @@ use Filament\Support\Enums\Size;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
 use App\Filament\Resources\BookingAttendeeResource\Pages\ListBookingAttendees;
+use App\Filament\Resources\BookingAttendeeResource\Pages\ListBookingAttendeeActivities;
 use App\Filament\Resources\BookingAttendeeResource\Pages\ViewBookingAttendee;
 use App\Filament\Resources\BookingAttendeeResource\Pages;
 use App\Models\BookingAttendee;
 use App\Models\Event;
+use App\Models\TimeSlot;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
@@ -256,7 +260,15 @@ class BookingAttendeeResource extends Resource
                 TextColumn::make('booking.event_date')
                     ->label(__('booking_attendee.columns.event_date'))
                     ->date('M d, Y')
+                    ->searchable()
                     ->sortable(),
+
+                TextColumn::make('booking.timeSlot.time_range')
+                    ->label(__('booking_attendee.columns.time'))
+                    ->getStateUsing(fn($record) => $record->booking->timeSlot?->getTimeRange())
+                    ->badge()
+                    ->searchable()
+                    ->color('info'),
 
                 TextColumn::make('ticketType.name')
                     ->label(__('booking_attendee.columns.ticket_type'))
@@ -319,9 +331,63 @@ class BookingAttendeeResource extends Resource
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data) {
-                        $values = (array) ($data['value'] ?? []);
+                        $values = (array) ($data['values'] ?? []);
                         if (!empty($values)) {
                             $query->whereHas('booking', fn($q) => $q->whereIn('event_id', $values));
+                        }
+                    })
+                    ->searchable()
+                    ->multiple(),
+
+                Filter::make('event_date')
+                    ->label(__('booking_attendee.filters.event_date'))
+                    ->schema([
+                        DatePicker::make('event_date_from')
+                            ->label(__('booking_attendee.filters.date_from'))
+                            ->native(false),
+                        DatePicker::make('event_date_until')
+                            ->label(__('booking_attendee.filters.date_until'))
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['event_date_from'] ?? null,
+                                fn(Builder $query, $date): Builder => $query->whereHas('booking', fn($q) => $q->whereDate('event_date', '>=', $date)),
+                            )
+                            ->when(
+                                $data['event_date_until'] ?? null,
+                                fn(Builder $query, $date): Builder => $query->whereHas('booking', fn($q) => $q->whereDate('event_date', '<=', $date)),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['event_date_from'] ?? null) {
+                            $indicators[] = __('booking_attendee.filters.date_from') . ' ' . $data['event_date_from'];
+                        }
+
+                        if ($data['event_date_until'] ?? null) {
+                            $indicators[] = __('booking_attendee.filters.date_until') . ' ' . $data['event_date_until'];
+                        }
+
+                        return $indicators;
+                    }),
+
+                SelectFilter::make('time_slot')
+                    ->label(__('booking_attendee.filters.time_slot'))
+                    ->options(
+                        fn() => TimeSlot::query()
+                            ->orderBy('date')
+                            ->orderBy('start_time')
+                            ->get()
+                            ->mapWithKeys(fn($slot) => [$slot->id => $slot->date->format('Y-m-d') . ' - ' . $slot->getTimeRange()])
+                            ->toArray()
+                    )
+                    ->query(function (Builder $query, array $data) {
+                        $values = (array) ($data['values'] ?? []);
+                        if (!empty($values)) {
+                            $query->whereHas('booking', fn($q) => $q->whereIn('time_slot_id', $values));
                         }
                     })
                     ->searchable()
@@ -336,7 +402,7 @@ class BookingAttendeeResource extends Resource
                         'checked_in' => 'Checked In',
                     ])
                     ->query(function (Builder $query, array $data) {
-                        $values = (array) ($data['value'] ?? []);
+                        $values = (array) ($data['values'] ?? []);
                         if (!empty($values)) {
                             $query->whereHas('booking', fn($q) => $q->whereIn('status', $values));
                         }
@@ -352,6 +418,7 @@ class BookingAttendeeResource extends Resource
                     ->label(__('booking_attendee.filters.email_sent'))
                     ->trueLabel('Email Sent')
                     ->falseLabel('Email Pending'),
+
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -467,8 +534,9 @@ class BookingAttendeeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListBookingAttendees::route('/'),
-            'view'  => ViewBookingAttendee::route('/{record}'),
+            'index'      => ListBookingAttendees::route('/'),
+            'view'       => ViewBookingAttendee::route('/{record}'),
+            'activities' => ListBookingAttendeeActivities::route('/{record}/activities'),
         ];
     }
 

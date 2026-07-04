@@ -2,16 +2,25 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\EventBooking;
+use App\Livewire\EventSignageDashboard;
 use App\Models\Event;
 use App\Http\Controllers\ThawaniCallbackController;
 use App\Http\Controllers\NboCallbackController;
 
 Route::get('/', function () {
-    $events = Event::published()->upcoming()->get();
+    $events = Event::published()
+        ->upcoming()
+        ->with('ticketTypes')
+        ->withSum(['bookings as booked_quantity' => fn($query) => $query->where('status', '!=', 'cancelled')], 'quantity')
+        ->orderBy('start_date')
+        ->get();
+
     return view('welcome', compact('events'));
 });
 
 Route::get('/events/{event:slug}', EventBooking::class)->name('event.booking');
+
+Route::get('/events/{event:slug}/signage', EventSignageDashboard::class)->name('event.signage');
 
 Route::get('/booking/success/{reference}', function ($reference) {
     $booking = \App\Models\Booking::where('booking_reference', $reference)->firstOrFail();
@@ -45,3 +54,10 @@ Route::get('/admin/bookings/{booking}/receipt', function (\App\Models\Booking $b
         'booking' => $booking->load(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices', 'payments']),
     ]);
 })->middleware(['auth'])->name('bookings.receipt');
+
+// Printable attendee ticket receipts, one separated ticket per attendee with a booking-reference barcode (admin only).
+Route::get('/admin/bookings/{booking}/attendee-tickets', function (\App\Models\Booking $booking) {
+    return view('bookings.attendee-tickets-receipt', [
+        'booking' => $booking->load(['event', 'timeSlot', 'attendees.ticketType']),
+    ]);
+})->middleware(['auth'])->name('bookings.attendee-tickets');

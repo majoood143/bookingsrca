@@ -5,6 +5,7 @@ namespace App\Filament\Resources\BookingAttendeeResource\Pages;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\BookingAttendeeResource;
+use App\Filament\Resources\BookingAttendeeResource\Pages\ListBookingAttendeeActivities;
 use App\Filament\Resources\BookingResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
@@ -12,6 +13,19 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewBookingAttendee extends ViewRecord
 {
     protected static string $resource = BookingAttendeeResource::class;
+
+    public function getSubNavigation(): array
+    {
+        return $this->generateNavigationItems([
+            self::class,
+            ListBookingAttendeeActivities::class,
+        ]);
+    }
+
+    public function getSubNavigationParameters(): array
+    {
+        return ['record' => $this->getRecord()];
+    }
 
     protected function getHeaderActions(): array
     {

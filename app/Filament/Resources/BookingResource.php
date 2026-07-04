@@ -45,6 +45,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\BookingSetting;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 class BookingResource extends Resource
 {
@@ -476,12 +477,16 @@ class BookingResource extends Resource
                     ->counts('attendees')
                     ->label(__('booking.columns.attendees'))
                     ->badge()
-                    ->color('primary'),
+                    ->color('primary')
+                    ->summarize(Sum::make()),
 
                 TextColumn::make('firstAttendee.phone')
                     ->label(__('booking.columns.attendee_phone'))
                     ->placeholder('—')
                     ->searchable()
+                    ->copyable()
+                    ->badge()
+                    ->color('primary')
                     ->toggleable(),
 
                 TextColumn::make('firstAttendee.identity_number')
@@ -514,15 +519,16 @@ class BookingResource extends Resource
                     ->badge()
                     ->color('info'),
 
-                TextColumn::make('quantity')
-                    ->label(__('booking.columns.quantity'))
-                    ->alignCenter(),
+                // TextColumn::make('quantity')
+                //     ->label(__('booking.columns.quantity'))
+                //     ->alignCenter(),
 
                 TextColumn::make('total_price')
                     ->label(__('booking.columns.total'))
                     ->money('OMR')
                     ->weight('bold')
-                    ->color('success'),
+                    ->color('success')
+                    ->summarize(Sum::make()),
 
                 BadgeColumn::make('status')
                     ->label(__('booking.columns.status'))
@@ -574,8 +580,14 @@ class BookingResource extends Resource
 
                 SelectFilter::make('time_slot_id')
                     ->label(__('booking.fields.time_slot'))
-                    ->relationship('timeSlot', 'id')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->date->format('Y-m-d') . ' - ' . $record->getTimeRange())
+                    ->options(fn() => TimeSlot::query()
+                        ->orderBy('date')
+                        ->orderBy('start_time')
+                        ->get()
+                        ->mapWithKeys(fn($slot) => [
+                            $slot->id => $slot->date->format('Y-m-d') . ' - ' . $slot->getTimeRange(),
+                        ])
+                        ->toArray())
                     ->searchable()
                     ->multiple(),
 
@@ -614,6 +626,41 @@ class BookingResource extends Resource
                         return $indicators;
                     }),
 
+                Filter::make('booked_at')
+                    ->label(__('booking.filters.booked_at'))
+                    ->schema([
+                        DatePicker::make('booked_at_from')
+                            ->label(__('booking.filters.date_from'))
+                            ->native(false),
+                        DatePicker::make('booked_at_until')
+                            ->label(__('booking.filters.date_until'))
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['booked_at_from'] ?? null,
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['booked_at_until'] ?? null,
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['booked_at_from'] ?? null) {
+                            $indicators[] = __('booking.filters.booked_at') . ' ' . __('booking.filters.date_from') . ' ' . $data['booked_at_from'];
+                        }
+
+                        if ($data['booked_at_until'] ?? null) {
+                            $indicators[] = __('booking.filters.booked_at') . ' ' . __('booking.filters.date_until') . ' ' . $data['booked_at_until'];
+                        }
+
+                        return $indicators;
+                    }),
+
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -625,28 +672,17 @@ class BookingResource extends Resource
                         ->icon('heroicon-o-paper-airplane')
                         ->color('success')
                         ->action(function (Booking $record) {
-                            $sentCount = 0;
-                            $failedCount = 0;
-
-                            foreach ($record->attendees as $attendee) {
-                                if ($attendee->sendTicketEmail()) {
-                                    $sentCount++;
-                                } else {
-                                    $failedCount++;
-                                }
-                            }
-
-                            if ($failedCount === 0) {
+                            if ($record->sendAllTickets()) {
                                 Notification::make()
                                     ->success()
                                     ->title(__('booking.notifications.tickets_sent'))
-                                    ->body(__('booking.notifications.tickets_sent_body', ['count' => $sentCount]))
+                                    ->body(__('booking.notifications.tickets_sent_body', ['count' => $record->attendees->count()]))
                                     ->send();
                             } else {
                                 Notification::make()
-                                    ->warning()
+                                    ->danger()
                                     ->title(__('booking.notifications.tickets_partial'))
-                                    ->body(__('booking.notifications.tickets_partial_body', ['sent' => $sentCount, 'failed' => $failedCount]))
+                                    ->body(__('booking.notifications.tickets_partial_body'))
                                     ->send();
                             }
                         })
@@ -681,6 +717,14 @@ class BookingResource extends Resource
                         ->openUrlInNewTab()
                         ->tooltip(__('booking.tooltips.print_receipt')),
 
+                    Action::make('print_tickets')
+                        ->label(__('booking.actions.print_tickets'))
+                        ->icon('heroicon-o-ticket')
+                        ->color('gray')
+                        ->url(fn(Booking $record) => route('bookings.attendee-tickets', $record))
+                        ->openUrlInNewTab()
+                        ->tooltip(__('booking.tooltips.print_tickets')),
+
                     Action::make('view_attendees')
                         ->label(__('booking.actions.view_attendees'))
                         ->icon('heroicon-o-users')
@@ -692,6 +736,21 @@ class BookingResource extends Resource
                             ]);
                         })
                         ->modalWidth('5xl')
+                        ->slideOver(),
+
+                    Action::make('view_agent_details')
+                        ->label(__('booking.actions.view_agent_details'))
+                        ->icon('heroicon-o-device-phone-mobile')
+                        ->color('gray')
+                        ->modalHeading(fn($record) => __('booking.actions.view_agent_details') . ' - ' . $record->booking_reference)
+                        ->modalContent(fn($record) => view('filament.modals.booking-agent-details', [
+                            'booking' => $record,
+                            'device'  => $record->getDeviceInfo(),
+                        ]))
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel(__('booking.actions.close'))
+                        ->modalWidth('lg')
+                        ->tooltip(__('booking.tooltips.view_agent_details'))
                         ->slideOver(),
 
                     Action::make('view_gateway_logs')

@@ -50,11 +50,18 @@ class AppServiceProvider extends ServiceProvider
 
         // Direct Livewire to send its network polling/submits through the alias
         Livewire::setUpdateRoute(function ($handle) {
-            return Route::post('/events/livewire/update', $handle);
+            // return Route::post('/events/livewire/update', $handle);
+            return Route::post('/events/livewire/update', $handle)->middleware('web');
         });
 
+        // Livewire::setScriptRoute(function ($handle) {
+        //     return Route::get('/events/livewire/livewire.js', $handle);
+        // });
+
         Livewire::setScriptRoute(function ($handle) {
-            return Route::get('/events/livewire/livewire.js', $handle);
+            $filename = config('app.debug') ? 'livewire.js' : 'livewire.min.js';
+
+            return Route::get("/events/livewire/{$filename}", $handle);
         });
 
         //
@@ -78,7 +85,8 @@ class AppServiceProvider extends ServiceProvider
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
             $switch
-                ->locales(['ar', 'en']); // also accepts a closure
+                ->locales(['ar', 'en']) // also accepts a closure
+                ->visible(insidePanels: true, outsidePanels: true);
         });
     }
 }

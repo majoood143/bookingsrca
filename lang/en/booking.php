@@ -75,6 +75,7 @@ return [
     'filters' => [
         'date_from'  => 'Date From',
         'date_until' => 'Date Until',
+        'booked_at'  => 'Booked At',
     ],
 
     'options' => [
@@ -251,7 +252,9 @@ return [
         'resend_tickets'   => 'Resend Tickets',
         'download_pdf'     => 'Download PDF',
         'print_receipt'    => 'Print Receipt',
+        'print_tickets'    => 'Print Attendee Tickets',
         'view_attendees'   => 'Attendees',
+        'view_agent_details' => 'Agent Details',
         'view_gateway_logs' => 'Payment Gateway Logs',
         'confirm'          => 'Confirm',
         'cancel'           => 'Cancel',
@@ -267,10 +270,12 @@ return [
     ],
 
     'tooltips' => [
-        'resend_tickets'     => 'Resend individual tickets to all attendees',
+        'resend_tickets'     => 'Resend all tickets in a single email to the first attendee',
         'download_pdf'       => 'Download booking summary as PDF',
         'print_receipt'      => 'Open a printable POS receipt for this booking',
+        'print_tickets'      => 'Open printable ticket receipts for every attendee, one per page with a barcode',
         'view_gateway_logs'  => 'View raw payment gateway request/response transactions (Super Admin only)',
+        'view_agent_details' => 'View the device, browser, and operating system used to make this booking',
     ],
 
     'gateway_logs' => [
@@ -279,9 +284,34 @@ return [
         'empty'    => 'No payment gateway transactions recorded for this booking.',
     ],
 
+    'agent_details' => [
+        'ip_address'         => 'IP Address',
+        'no_data'            => 'No agent data recorded for this booking.',
+        'bot_detected'       => 'Automated Bot Detected',
+        'bot_name'           => 'Bot Name',
+        'bot_category'       => 'Category',
+        'bot_producer'       => 'Producer',
+        'device'             => 'Device',
+        'mobile'             => 'Mobile',
+        'desktop'            => 'Desktop',
+        'device_type'        => 'Type',
+        'brand'              => 'Brand',
+        'model'              => 'Model',
+        'operating_system'   => 'Operating System',
+        'os_name'            => 'Name',
+        'os_version'         => 'Version',
+        'os_platform'        => 'Platform',
+        'browser'            => 'Browser / Client',
+        'client_type'        => 'Type',
+        'client_name'        => 'Name',
+        'client_version'     => 'Version',
+        'client_engine'      => 'Engine',
+        'raw_user_agent'     => 'Raw User Agent',
+    ],
+
     'modals' => [
         'resend_tickets_heading'     => 'Resend All Tickets',
-        'resend_tickets_description' => 'This will send individual tickets to all :count attendee(s). Each will receive their own ticket via email.',
+        'resend_tickets_description' => 'This will send all :count ticket(s) as attachments in a single email to the first attendee.',
         'resend_tickets_submit'      => 'Send Tickets',
         'delete_heading'             => 'Delete booking',
         'delete_description'         => 'Are you sure? This will free up capacity.',
@@ -289,19 +319,20 @@ return [
 
     'notifications' => [
         'tickets_sent'        => 'Tickets sent successfully',
-        'tickets_sent_body'   => 'All :count ticket(s) have been sent to attendees.',
-        'tickets_partial'     => 'Partially sent',
-        'tickets_partial_body'=> ':sent sent successfully, :failed failed.',
+        'tickets_sent_body'   => 'All :count ticket(s) have been sent to the first attendee in a single email.',
+        'tickets_partial'     => 'Sending failed',
+        'tickets_partial_body'=> 'The tickets email could not be sent. Please try again.',
         'booking_confirmed'   => 'Booking confirmed',
-        'booking_confirmed_body' => 'All attendees have been sent their tickets.',
+        'booking_confirmed_body' => 'All tickets have been sent to the first attendee in a single email.',
         'booking_cancelled'   => 'Booking cancelled',
         'booking_created'     => 'Booking created',
-        'booking_created_body'=> 'All attendees have been sent their individual tickets.',
+        'booking_created_body'=> 'All tickets have been sent to the first attendee in a single email.',
         'booking_updated'     => 'Booking updated successfully',
         'bookings_confirmed'  => 'Bookings confirmed',
         'checked_in'          => 'Checked in successfully',
         'email_sent'          => 'Email sent',
         'email_resent_body'   => 'Confirmation email has been resent.',
+        'no_attendee_email'   => 'This booking has no attendee with an email address.',
     ],
 
     'tabs' => [
@@ -362,6 +393,7 @@ return [
         'amount_received'   => 'Amount Received',
         'confirm_button'    => 'Confirm & Create Booking',
         'print_receipt'     => 'Print Receipt',
+        'print_tickets'     => 'Print Attendee Tickets',
         'view_booking'      => 'View Booking',
         'new_booking'       => 'Start New Booking',
         'success_heading'   => 'Booking Confirmed!',
@@ -399,6 +431,21 @@ return [
         'balance_due'    => 'Balance Due',
         'thank_you'      => 'Thank you!',
         'present_note'   => 'Present this receipt or your ticket QR code at the entrance.',
+    ],
+
+    'attendees_modal' => [
+        'summary'          => ':checked_in of :total checked in · :emailed of :total emailed',
+        'empty'            => 'No attendees found for this booking.',
+        'email_sent'       => 'Email Sent',
+        'email_not_sent'   => 'Email Not Sent',
+        'checked_in'       => 'Checked In',
+        'view_qr'          => 'View QR Code',
+        'download_ticket'  => 'Download Ticket',
+        'send_ticket'      => 'Send Ticket',
+        'resend_ticket'    => 'Resend Ticket',
+        'check_in'         => 'Check In',
+        'scan_note'        => 'Scan at entrance to check in',
+        'no_email'         => 'No email on file',
     ],
 
 ];

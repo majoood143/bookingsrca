@@ -33,6 +33,7 @@ class TicketStockWidget extends BaseWidget
             ->query(
                 TicketType::query()
                     ->with('event')
+                    ->where('is_active', 1)
                     ->orderByRaw('(quantity_available - quantity_sold) ASC')
             )
             ->columns([

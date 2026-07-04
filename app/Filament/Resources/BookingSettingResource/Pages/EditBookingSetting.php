@@ -7,11 +7,25 @@ use Filament\Notifications\Notification;
 use App\Filament\Resources\BookingSettingResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\BookingSettingResource\Pages\ListBookingSettingActivities;
 use App\Models\BookingSetting;
 
 class EditBookingSetting extends EditRecord
 {
     protected static string $resource = BookingSettingResource::class;
+
+    public function getSubNavigation(): array
+    {
+        return $this->generateNavigationItems([
+            self::class,
+            ListBookingSettingActivities::class,
+        ]);
+    }
+
+    public function getSubNavigationParameters(): array
+    {
+        return ['record' => $this->getRecord()];
+    }
 
     protected function getHeaderActions(): array
     {

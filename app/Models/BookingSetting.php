@@ -4,10 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BookingSetting extends Model
 {
+    use LogsActivity;
+
     protected $fillable = ['key', 'value', 'type', 'description'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['key', 'value', 'type', 'description'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * Get a setting value by key with caching
@@ -65,6 +77,11 @@ class BookingSetting extends Model
             'terms_ar',
             'active_gateway',
             'pending_booking_expiry_minutes',
+            'site_name_en',
+            'site_name_ar',
+            'site_logo',
+            'primary_color',
+            'secondary_color',
         ];
     }
 }

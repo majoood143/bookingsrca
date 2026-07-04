@@ -50,6 +50,7 @@ return [
         'ticket_number'     => 'Ticket #',
         'event'             => 'Event',
         'event_date'        => 'Date',
+        'time'              => 'Time',
         'ticket_type'       => 'Ticket Type',
         'email_sent'        => 'Email',
         'checked_in'        => 'Checked In',
@@ -81,6 +82,10 @@ return [
         'booking_status' => 'Booking Status',
         'checked_in'     => 'Check-In Status',
         'email_sent'     => 'Email Status',
+        'event_date'     => 'Event Date',
+        'time_slot'      => 'Time Slot',
+        'date_from'      => 'Date From',
+        'date_until'     => 'Date Until',
     ],
 
     'notifications' => [

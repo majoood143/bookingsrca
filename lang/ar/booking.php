@@ -75,6 +75,7 @@ return [
     'filters' => [
         'date_from'  => 'من تاريخ',
         'date_until' => 'إلى تاريخ',
+        'booked_at'  => 'تاريخ الحجز',
     ],
 
     'options' => [
@@ -251,7 +252,9 @@ return [
         'resend_tickets'   => 'إعادة إرسال التذاكر',
         'download_pdf'     => 'تحميل PDF',
         'print_receipt'    => 'طباعة الإيصال',
+        'print_tickets'    => 'طباعة تذاكر الحضور',
         'view_attendees'   => 'الزوار',
+        'view_agent_details' => 'تفاصيل الجهاز',
         'view_gateway_logs' => 'سجلات بوابة الدفع',
         'confirm'          => 'تأكيد',
         'cancel'           => 'إلغاء',
@@ -267,10 +270,12 @@ return [
     ],
 
     'tooltips' => [
-        'resend_tickets'    => 'إعادة إرسال التذاكر الفردية لجميع الزوار',
+        'resend_tickets'    => 'إعادة إرسال جميع التذاكر في بريد إلكتروني واحد إلى الحاضر الأول',
         'download_pdf'      => 'تحميل ملخص الحجز بصيغة PDF',
         'print_receipt'     => 'فتح إيصال قابل للطباعة لهذا الحجز',
+        'print_tickets'     => 'فتح تذاكر قابلة للطباعة لكل حاضر، تذكرة منفصلة لكل صفحة مع باركود',
         'view_gateway_logs' => 'عرض طلبات واستجابات بوابة الدفع الخام (للمشرف العام فقط)',
+        'view_agent_details' => 'عرض الجهاز والمتصفح ونظام التشغيل المستخدم لإجراء هذا الحجز',
     ],
 
     'gateway_logs' => [
@@ -279,9 +284,34 @@ return [
         'empty'    => 'لا توجد معاملات بوابة دفع مسجلة لهذا الحجز.',
     ],
 
+    'agent_details' => [
+        'ip_address'         => 'عنوان IP',
+        'no_data'            => 'لا توجد بيانات جهاز مسجلة لهذا الحجز.',
+        'bot_detected'       => 'تم اكتشاف روبوت آلي',
+        'bot_name'           => 'اسم الروبوت',
+        'bot_category'       => 'الفئة',
+        'bot_producer'       => 'الجهة المنتجة',
+        'device'             => 'الجهاز',
+        'mobile'             => 'جوال',
+        'desktop'            => 'حاسوب',
+        'device_type'        => 'النوع',
+        'brand'              => 'الماركة',
+        'model'              => 'الطراز',
+        'operating_system'   => 'نظام التشغيل',
+        'os_name'            => 'الاسم',
+        'os_version'         => 'الإصدار',
+        'os_platform'        => 'المنصة',
+        'browser'            => 'المتصفح / العميل',
+        'client_type'        => 'النوع',
+        'client_name'        => 'الاسم',
+        'client_version'     => 'الإصدار',
+        'client_engine'      => 'المحرك',
+        'raw_user_agent'     => 'بيانات المتصفح الخام (User Agent)',
+    ],
+
     'modals' => [
         'resend_tickets_heading'      => 'إعادة إرسال جميع التذاكر',
-        'resend_tickets_description'  => 'سيتم إرسال تذاكر فردية لجميع الـ :count حاضر/حضور. سيتلقى كل منهم تذكرته الخاصة عبر البريد الإلكتروني.',
+        'resend_tickets_description'  => 'سيتم إرسال جميع الـ :count تذكرة/تذاكر كمرفقات في بريد إلكتروني واحد إلى الحاضر الأول.',
         'resend_tickets_submit'       => 'إرسال التذاكر',
         'delete_heading'              => 'حذف الحجز',
         'delete_description'          => 'هل أنت متأكد؟ سيتم تحرير الطاقة الاستيعابية.',
@@ -289,19 +319,20 @@ return [
 
     'notifications' => [
         'tickets_sent'         => 'تم إرسال التذاكر بنجاح',
-        'tickets_sent_body'    => 'تم إرسال جميع :count تذكرة/تذاكر إلى الزوار.',
-        'tickets_partial'      => 'تم الإرسال جزئيًا',
-        'tickets_partial_body' => 'تم إرسال :sent بنجاح، فشل إرسال :failed.',
+        'tickets_sent_body'    => 'تم إرسال جميع الـ :count تذكرة/تذاكر إلى الحاضر الأول في بريد إلكتروني واحد.',
+        'tickets_partial'      => 'فشل الإرسال',
+        'tickets_partial_body' => 'تعذر إرسال بريد التذاكر. يرجى المحاولة مرة أخرى.',
         'booking_confirmed'    => 'تم تأكيد الحجز',
-        'booking_confirmed_body' => 'تم إرسال التذاكر لجميع الزوار.',
+        'booking_confirmed_body' => 'تم إرسال جميع التذاكر إلى الحاضر الأول في بريد إلكتروني واحد.',
         'booking_cancelled'    => 'تم إلغاء الحجز',
         'booking_created'      => 'تم إنشاء الحجز',
-        'booking_created_body' => 'تم إرسال التذاكر الفردية لجميع الزوار.',
+        'booking_created_body' => 'تم إرسال جميع التذاكر إلى الحاضر الأول في بريد إلكتروني واحد.',
         'booking_updated'      => 'تم تحديث الحجز بنجاح',
         'bookings_confirmed'   => 'تم تأكيد الحجوزات',
         'checked_in'           => 'تم تسجيل الدخول بنجاح',
         'email_sent'           => 'تم إرسال البريد',
         'email_resent_body'    => 'تمت إعادة إرسال بريد التأكيد.',
+        'no_attendee_email'    => 'لا يوجد لدى هذا الحجز زائر لديه بريد إلكتروني.',
     ],
 
     'tabs' => [
@@ -362,6 +393,7 @@ return [
         'amount_received'   => 'المبلغ المستلم',
         'confirm_button'    => 'تأكيد وإنشاء الحجز',
         'print_receipt'     => 'طباعة الإيصال',
+        'print_tickets'     => 'طباعة تذاكر الحضور',
         'view_booking'      => 'عرض الحجز',
         'new_booking'       => 'حجز جديد',
         'success_heading'   => 'تم تأكيد الحجز!',
@@ -399,6 +431,21 @@ return [
         'balance_due'    => 'المبلغ المتبقي',
         'thank_you'      => 'شكرًا لك!',
         'present_note'   => 'يرجى إبراز هذا الإيصال أو رمز QR للتذكرة عند الدخول.',
+    ],
+
+    'attendees_modal' => [
+        'summary'          => ':checked_in من :total تم تسجيل حضورهم · :emailed من :total تم إرسال التذكرة لهم',
+        'empty'            => 'لا يوجد حاضرون لهذا الحجز.',
+        'email_sent'       => 'تم إرسال البريد',
+        'email_not_sent'   => 'لم يُرسل البريد',
+        'checked_in'       => 'تم تسجيل الحضور',
+        'view_qr'          => 'عرض رمز QR',
+        'download_ticket'  => 'تحميل التذكرة',
+        'send_ticket'      => 'إرسال التذكرة',
+        'resend_ticket'    => 'إعادة إرسال التذكرة',
+        'check_in'         => 'تسجيل الحضور',
+        'scan_note'        => 'امسح الرمز عند المدخل لتسجيل الحضور',
+        'no_email'         => 'لا يوجد بريد إلكتروني مسجل',
     ],
 
 ];

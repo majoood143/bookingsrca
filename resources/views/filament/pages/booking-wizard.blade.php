@@ -47,11 +47,19 @@
                     </x-filament::button>
                 </a>
 
+                <a href="{{ route('bookings.attendee-tickets', $createdBooking) }}" target="_blank" rel="noopener">
+                    <x-filament::button size="xl" icon="heroicon-o-ticket" color="warning" tag="span">
+                        {{ __('booking.wizard.print_tickets') }}
+                    </x-filament::button>
+                </a>
+
                 <a href="{{ $this->getViewBookingUrl() }}">
                     <x-filament::button size="xl" icon="heroicon-o-eye" color="gray" outlined tag="span">
                         {{ __('booking.wizard.view_booking') }}
                     </x-filament::button>
                 </a>
+
+                
 
                 <x-filament::button size="xl" icon="heroicon-o-plus-circle" color="success" wire:click="startNewBooking">
                     {{ __('booking.wizard.new_booking') }}

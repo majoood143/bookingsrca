@@ -5,22 +5,25 @@ namespace App\Filament\Pages;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Grid;
 use App\Exports\ReportsExport;
+use App\Filament\Pages\Concerns\HasReportPeriodFilter;
 use App\Models\Booking;
 use App\Models\Event;
-use App\Models\TimeSlot;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Response;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\LaravelPdf\Enums\Format;
+use Spatie\LaravelPdf\Facades\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class Reports extends Page implements HasForms
 {
     use InteractsWithForms;
+    use HasReportPeriodFilter;
     use HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
@@ -96,7 +99,7 @@ class Reports extends Page implements HasForms
 
                         Select::make('event_date')
                             ->label(__('reports.filters.event_date'))
-                            ->options(fn(callable $get) => self::getEventDateOptions($get('event_id')))
+                            ->options(fn(callable $get) => $this->getEventDateOptions($get('event_id')))
                             ->placeholder(__('reports.filters.all_dates'))
                             ->disabled(fn(callable $get) => !$get('event_id'))
                             ->live()
@@ -104,7 +107,7 @@ class Reports extends Page implements HasForms
 
                         Select::make('time_slot_id')
                             ->label(__('reports.filters.time_slot'))
-                            ->options(fn(callable $get) => self::getTimeSlotOptions($get('event_id'), $get('event_date')))
+                            ->options(fn(callable $get) => $this->getTimeSlotOptions($get('event_id'), $get('event_date')))
                             ->placeholder(__('reports.filters.all_slots'))
                             ->disabled(fn(callable $get) => !$get('event_id') || !$get('event_date'))
                             ->live(),
@@ -121,58 +124,6 @@ class Reports extends Page implements HasForms
                     ]),
             ])
             ->statePath('data');
-    }
-
-    protected static function getEventDateOptions(?int $eventId): array
-    {
-        if (!$eventId) {
-            return [];
-        }
-
-        return TimeSlot::where('event_id', $eventId)
-            ->orderBy('date')
-            ->distinct()
-            ->pluck('date')
-            ->mapWithKeys(fn($date) => [$date->format('Y-m-d') => $date->format('Y-m-d')])
-            ->all();
-    }
-
-    protected static function getTimeSlotOptions(?int $eventId, ?string $eventDate): array
-    {
-        if (!$eventId || !$eventDate) {
-            return [];
-        }
-
-        return TimeSlot::where('event_id', $eventId)
-            ->where('date', $eventDate)
-            ->get()
-            ->mapWithKeys(fn($slot) => [$slot->id => $slot->getTimeRange()])
-            ->all();
-    }
-
-    protected function getDateRange(): array
-    {
-        $period = $this->data['period'] ?? 'this_month';
-
-        return match ($period) {
-            'today'      => [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()],
-            'this_week'  => [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            'this_month' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-            'last_month' => [
-                Carbon::now()->subMonth()->startOfMonth(),
-                Carbon::now()->subMonth()->endOfMonth(),
-            ],
-            'this_year'  => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
-            'custom'     => [
-                isset($this->data['date_from']) && $this->data['date_from']
-                    ? Carbon::parse($this->data['date_from'])->startOfDay()
-                    : Carbon::now()->startOfMonth(),
-                isset($this->data['date_to']) && $this->data['date_to']
-                    ? Carbon::parse($this->data['date_to'])->endOfDay()
-                    : Carbon::now()->endOfDay(),
-            ],
-            default => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-        };
     }
 
     public function getReportData(): array
@@ -236,6 +187,43 @@ class Reports extends Page implements HasForms
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadPdf')
+                ->label(__('reports.actions.download_pdf'))
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('danger')
+                ->action(function () {
+                    $report = $this->getReportData();
+                    $locale = app()->getLocale();
+                    $period = $this->data['period'] ?? 'this_month';
+                    $filename = __('reports.export.filename') . '-' . $period . '-' . now()->format('Y-m-d') . '.pdf';
+
+                    $pdf = Pdf::view('reports.reports-pdf', [
+                        ...$report,
+                        'locale' => $locale,
+                    ])
+                        ->headerView('reports.partials.pdf-header', [
+                            'title' => __('reports.document_title'),
+                            'periodLabel' => __('reports.document.period', [
+                                'from' => $report['from']->format('Y-m-d'),
+                                'to' => $report['to']->format('Y-m-d'),
+                            ], $locale),
+                            'locale' => $locale,
+                            'logoBase64' => $this->getLogoBase64(),
+                        ])
+                        ->footerView('reports.partials.pdf-footer', [
+                            'locale' => $locale,
+                        ])
+                        ->format(Format::A4)
+                        ->margins(38, 12, 18, 12, 'mm')
+                        ->withBrowsershot(fn($browsershot) => $browsershot->waitForFunction('window.pdfReady === true', null, 15000));
+
+                    return Response::streamDownload(
+                        fn() => print($pdf->generatePdfContent()),
+                        $filename,
+                        ['Content-Type' => 'application/pdf'],
+                    );
+                }),
+
             Action::make('export')
                 ->label(__('reports.actions.export'))
                 ->icon('heroicon-o-arrow-down-tray')

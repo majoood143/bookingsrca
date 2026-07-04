@@ -186,5 +186,7 @@ return [
 
 
     #'asset_url' => 'https://razatfarm.gov.om/events/',
-    'asset_url' => rtrim(config('app.url'), '/') . '/livewire/livewire.js',
+    // 'asset_url' => rtrim(config('app.url'), '/') . '/livewire/livewire.js',
+    'asset_url' => rtrim(config('app.url'), '/') . '/livewire/' . (config('app.debug') ? 'livewire.js' : 'livewire.min.js'),
+
 ];

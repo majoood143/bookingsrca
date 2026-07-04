@@ -18,10 +18,12 @@ use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BookingAttendee extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'booking_id',
@@ -52,6 +54,14 @@ class BookingAttendee extends Model
         'checked_in' => 'boolean',
         'checked_in_at' => 'datetime',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['booking_id', 'ticket_type_id', 'first_name', 'last_name', 'email', 'phone', 'checked_in'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected static function boot()
     {
@@ -257,6 +267,16 @@ class BookingAttendee extends Model
         $this->update([
             'checked_in' => true,
             'checked_in_at' => now(),
+        ]);
+    }
+
+    // Bidirectional check-in state, used by the scan-based check-in page's toggle
+    // switches. checkIn() above stays one-way for the existing attendee-list modal.
+    public function setCheckedIn(bool $state): void
+    {
+        $this->update([
+            'checked_in' => $state,
+            'checked_in_at' => $state ? now() : null,
         ]);
     }
 }

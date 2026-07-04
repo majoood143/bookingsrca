@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Exception;
+use App\Mail\AllTickets;
 use App\Mail\BookingConfirmation;
 use App\Support\MpdfAlmarai;
+use DeviceDetector\DeviceDetector;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -17,6 +19,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use Picqer\Barcode\BarcodeGenerator;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -46,6 +50,8 @@ class Booking extends Model
         'payment_session_id',
         'payment_reference',
         'locale',
+        'ip_address',
+        'user_agent',
     ];
 
     protected $casts = [
@@ -166,15 +172,44 @@ class Booking extends Model
             $service->increment('quantity_used', $service->pivot->quantity);
         }
 
-        // Send individual ticket email to every attendee
-        foreach ($this->attendees as $attendee) {
-            $attendee->sendTicketEmail();
-        }
+        $this->sendAllTickets();
 
         // Send booking confirmation to the primary attendee
         $primary = $this->attendees->first();
         if ($primary && !empty($primary->email)) {
             Mail::to($primary->email)->send(new BookingConfirmation($this));
+        }
+    }
+
+    // Send every attendee's PDF ticket and QR code in a single email to the
+    // first attendee, instead of one email per attendee, to stay well under
+    // the mail provider's message submission rate limit.
+    public function sendAllTickets(): bool
+    {
+        $primary = $this->attendees->first();
+
+        if (! $primary || empty($primary->email)) {
+            return false;
+        }
+
+        try {
+            Mail::to($primary->email)->send(new AllTickets($this));
+
+            foreach ($this->attendees as $attendee) {
+                $attendee->update([
+                    'email_sent' => true,
+                    'email_sent_at' => now(),
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Ticket Email Send Failed', [
+                'booking_id' => $this->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 
@@ -195,6 +230,51 @@ class Booking extends Model
         ]);
     }
 
+    // Parses the stored user agent with matomo/device-detector into a display-ready
+    // breakdown of device, OS, and client info, or a bot flag if the UA is a known bot.
+    public function getDeviceInfo(): array
+    {
+        if (empty($this->user_agent)) {
+            return ['available' => false];
+        }
+
+        $dd = new DeviceDetector($this->user_agent);
+        $dd->parse();
+
+        if ($dd->isBot()) {
+            $bot = $dd->getBot() ?: [];
+
+            return [
+                'available' => true,
+                'is_bot' => true,
+                'bot_name' => $bot['name'] ?? null,
+                'bot_category' => $bot['category'] ?? null,
+                'bot_producer' => $bot['producer']['name'] ?? null,
+            ];
+        }
+
+        $client = $dd->getClient() ?: [];
+        $os = $dd->getOs() ?: [];
+
+        return [
+            'available' => true,
+            'is_bot' => false,
+            'device_type' => $dd->getDeviceName() ?: null,
+            'brand' => $dd->getBrandName() ?: null,
+            'model' => $dd->getModel() ?: null,
+            'is_mobile' => $dd->isMobile(),
+            'is_desktop' => $dd->isDesktop(),
+            'client_type' => $client['type'] ?? null,
+            'client_name' => $client['name'] ?? null,
+            'client_version' => $client['version'] ?? null,
+            'client_engine' => $client['engine'] ?? null,
+            'client_engine_version' => $client['engine_version'] ?? null,
+            'os_name' => $os['name'] ?? null,
+            'os_version' => $os['version'] ?? null,
+            'os_platform' => $os['platform'] ?? null,
+        ];
+    }
+
     // Base64-encoded PNG QR code that links to the public booking verification page.
     public function getSummaryQrCodeBase64(): string
     {
@@ -209,6 +289,19 @@ class Booking extends Model
         ))->build();
 
         return 'data:image/png;base64,' . base64_encode($result->getString());
+    }
+
+    // Base64-encoded Code128 barcode of the booking reference, printed on each attendee ticket receipt.
+    public function getBookingReferenceBarcodeBase64(): string
+    {
+        $barcode = (new BarcodeGeneratorPNG())->getBarcode(
+            $this->booking_reference,
+            BarcodeGenerator::TYPE_CODE_128,
+            2,
+            60
+        );
+
+        return 'data:image/png;base64,' . base64_encode($barcode);
     }
 
     // Base64-encoded ticket header artwork used as the summary PDF banner background.

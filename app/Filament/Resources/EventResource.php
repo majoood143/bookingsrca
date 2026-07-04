@@ -212,6 +212,7 @@ class EventResource extends Resource
                         FileUpload::make('image')
                             ->label(__('event.fields.image'))
                             ->image()
+                            ->disk('public')
                             ->directory('events')
                             ->visibility('public')
                             ->imageEditor()
@@ -234,6 +235,116 @@ class EventResource extends Resource
                     ])
                     ->columns(1)
                     ->collapsible(),
+
+                Section::make(__('event.sections.signage'))
+                    ->description(__('event.sections.signage_desc'))
+                    ->relationship('signageSetting')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                FileUpload::make('logo_path')
+                                    ->label(__('event.fields.signage_logo'))
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('signage/logos')
+                                    ->visibility('public')
+                                    ->helperText(__('event.fields.signage_logo_helper')),
+
+                                FileUpload::make('background_image_path')
+                                    ->label(__('event.fields.signage_background'))
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('signage/backgrounds')
+                                    ->visibility('public')
+                                    ->helperText(__('event.fields.signage_background_helper')),
+
+                                FileUpload::make('qr_code_image_path')
+                                    ->label(__('event.fields.signage_qr'))
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('signage/qrcodes')
+                                    ->visibility('public')
+                                    ->helperText(__('event.fields.signage_qr_helper')),
+                            ]),
+
+                        TextInput::make('contact_phone')
+                            ->label(__('event.fields.signage_phone'))
+                            ->tel()
+                            ->maxLength(50)
+                            ->placeholder('+968 1234 5678'),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('meeting_point.en')
+                                    ->label(__('event.fields.signage_meeting_point_en'))
+                                    ->maxLength(255),
+
+                                TextInput::make('meeting_point.ar')
+                                    ->label(__('event.fields.signage_meeting_point_ar'))
+                                    ->maxLength(255),
+                            ]),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('welcome_message.en')
+                                    ->label(__('event.fields.signage_welcome_en'))
+                                    ->maxLength(255),
+
+                                TextInput::make('welcome_message.ar')
+                                    ->label(__('event.fields.signage_welcome_ar'))
+                                    ->maxLength(255),
+                            ]),
+
+                        TextInput::make('language_switch_seconds')
+                            ->label(__('event.fields.signage_language_switch'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->default(10)
+                            ->suffix(__('event.suffix.seconds'))
+                            ->helperText(__('event.fields.signage_language_switch_helper')),
+
+                        Grid::make(5)
+                            ->schema([
+                                TextInput::make('early_arrival_minutes')
+                                    ->label(__('event.fields.signage_early_arrival'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(5),
+
+                                TextInput::make('gathering_alert_minutes')
+                                    ->label(__('event.fields.signage_gathering_alert'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(5),
+
+                                TextInput::make('ready_threshold_minutes')
+                                    ->label(__('event.fields.signage_ready_threshold'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(15),
+
+                                TextInput::make('soon_threshold_minutes')
+                                    ->label(__('event.fields.signage_soon_threshold'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(60),
+
+                                TextInput::make('upcoming_trips_count')
+                                    ->label(__('event.fields.signage_upcoming_count'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(20)
+                                    ->default(4),
+                            ]),
+
+                        Toggle::make('is_enabled')
+                            ->label(__('event.fields.signage_enabled'))
+                            ->helperText(__('event.fields.signage_enabled_helper'))
+                            ->default(true),
+                    ])
+                    ->columns(1)
+                    ->collapsible()
+                    ->collapsed(),
             ])
             ->columns(1);
     }

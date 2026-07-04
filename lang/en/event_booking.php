@@ -20,6 +20,14 @@ return [
     'back'     => 'Back',
     'continue' => 'Continue',
 
+    // ── Unavailable / maintenance mode ────────────────────────────────────────
+    'unavailable' => [
+        'heading'           => 'Under Maintenance',
+        'draft_message'     => 'This event is being prepared and is not open for booking yet. Please check back soon.',
+        'cancelled_message' => 'This event has been cancelled and is no longer available for booking.',
+        'back_home'         => 'Back to Home',
+    ],
+
     // ── Step 1 — Select Date ──────────────────────────────────────────────────
     'step1' => [
         'heading'       => 'Select a Date',
@@ -199,6 +207,12 @@ return [
         'ticket_automated'     => 'This is an automated email. Please do not reply to this message.',
         'ticket_support'       => 'If you have any questions, please contact event support.',
         'ticket_all_rights'    => 'All rights reserved.',
+
+        // Combined tickets email (all attendees, sent to the first attendee)
+        'tickets_subject'      => 'Your Event Tickets - :reference',
+        'tickets_heading'      => 'Your Event Tickets',
+        'tickets_intro'        => 'Thank you for your booking! All :count ticket(s) for your booking are ready. Please find the details and attachments below:',
+        'tickets_list_heading' => 'Tickets',
     ],
 
     // ── Individual ticket PDF ─────────────────────────────────────────────────
@@ -208,6 +222,8 @@ return [
         'attendee'          => 'Attendee',
         'name'              => 'Name',
         'email'             => 'Email',
+        'phone'             => 'Phone',
+        'ticket_number'     => 'Ticket Number',
         'ticket_type'       => 'Ticket Type',
         'event_details'     => 'Event Details',
         'date'              => 'Date',
@@ -218,6 +234,7 @@ return [
         'quantity'          => 'Quantity',
         'entry_pass'        => 'Entry Pass',
         'present_qr'        => 'Present this QR code at the event entrance for check-in.',
+        'present_barcode'   => 'Present this barcode at the event entrance for check-in.',
         'booking_reference' => 'Booking Reference',
         'booked_on'         => 'Booked on',
         'support_note'      => 'For questions, please contact event support.',

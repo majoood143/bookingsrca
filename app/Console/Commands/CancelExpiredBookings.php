@@ -19,7 +19,6 @@ class CancelExpiredBookings extends Command
         $cutoff = now()->subMinutes($expiryMinutes);
 
         $staleBookingIds = Booking::where('status', 'pending')
-            ->where('payment_status', '!=', 'failed')
             ->where('created_at', '<', $cutoff)
             ->pluck('id');
 
@@ -30,7 +29,7 @@ class CancelExpiredBookings extends Command
                 // Re-check under lock: a webhook may confirm this booking concurrently.
                 $booking = Booking::where('id', $id)->lockForUpdate()->first();
 
-                if (!$booking || $booking->status !== 'pending' || $booking->payment_status === 'failed' || $booking->created_at >= $cutoff) {
+                if (!$booking || $booking->status !== 'pending' || $booking->created_at >= $cutoff) {
                     return;
                 }
 

@@ -45,8 +45,11 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(Login::class)
             ->profile()
+            ->passwordReset()
             ->font('Almarai', url: asset('fonts/almarai/almarai.css'), provider: LocalFontProvider::class)
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->brandLogo(fn() => view('filament.admin.logo'))
+            ->brandLogoHeight('4rem')
             //->routes(fn() => FilamentMails::routes())
             ->colors([
                 'primary' => Color::Green,

@@ -31,6 +31,7 @@ use Filament\Actions\CreateAction;
 use App\Filament\Resources\TimeSlotResource\Pages\ListTimeSlots;
 use App\Filament\Resources\TimeSlotResource\Pages\CreateTimeSlot;
 use App\Filament\Resources\TimeSlotResource\Pages\EditTimeSlot;
+use App\Filament\Resources\TimeSlotResource\Pages\ListTimeSlotActivities;
 use App\Filament\Resources\TimeSlotResource\Pages;
 use App\Models\TimeSlot;
 use App\Models\Event;
@@ -159,6 +160,12 @@ class TimeSlotResource extends Resource
                                     ->helperText(__('time_slot.fields.end_time_helper')),
                             ]),
 
+                        TextInput::make('label')
+                            ->label(__('time_slot.fields.label'))
+                            ->maxLength(255)
+                            ->placeholder(__('time_slot.fields.label_placeholder'))
+                            ->helperText(__('time_slot.fields.label_helper')),
+
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('max_attendees')
@@ -272,6 +279,11 @@ class TimeSlotResource extends Resource
                     ->color('primary')
                     ->icon('heroicon-o-clock')
                     ->toggleable(isToggledHiddenByDefault: false),
+
+                TextColumn::make('label')
+                    ->label(__('time_slot.columns.label'))
+                    ->placeholder('—')
+                    ->toggleable(),
 
                 TextColumn::make('max_attendees')
                     ->label(__('time_slot.columns.capacity'))
@@ -609,9 +621,10 @@ class TimeSlotResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListTimeSlots::route('/'),
-            'create' => CreateTimeSlot::route('/create'),
-            'edit'   => EditTimeSlot::route('/{record}/edit'),
+            'index'      => ListTimeSlots::route('/'),
+            'create'     => CreateTimeSlot::route('/create'),
+            'edit'       => EditTimeSlot::route('/{record}/edit'),
+            'activities' => ListTimeSlotActivities::route('/{record}/activities'),
         ];
     }
 

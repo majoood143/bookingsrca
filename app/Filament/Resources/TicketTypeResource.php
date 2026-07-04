@@ -31,6 +31,7 @@ use Filament\Actions\CreateAction;
 use App\Filament\Resources\TicketTypeResource\Pages\ListTicketTypes;
 use App\Filament\Resources\TicketTypeResource\Pages\CreateTicketType;
 use App\Filament\Resources\TicketTypeResource\Pages\EditTicketType;
+use App\Filament\Resources\TicketTypeResource\Pages\ListTicketTypeActivities;
 use App\Filament\Resources\TicketTypeResource\Pages;
 use App\Models\TicketType;
 use App\Models\Event;
@@ -701,9 +702,10 @@ class TicketTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListTicketTypes::route('/'),
-            'create' => CreateTicketType::route('/create'),
-            'edit'   => EditTicketType::route('/{record}/edit'),
+            'index'      => ListTicketTypes::route('/'),
+            'create'     => CreateTicketType::route('/create'),
+            'edit'       => EditTicketType::route('/{record}/edit'),
+            'activities' => ListTicketTypeActivities::route('/{record}/activities'),
         ];
     }
 

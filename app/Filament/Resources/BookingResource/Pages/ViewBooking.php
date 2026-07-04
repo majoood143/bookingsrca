@@ -86,12 +86,32 @@ class ViewBooking extends ViewRecord
                 ->openUrlInNewTab()
                 ->visible(fn() => $this->record->qr_code),
 
+            Action::make('print_tickets')
+                ->label(__('booking.actions.print_tickets'))
+                ->icon('heroicon-o-ticket')
+                ->color('gray')
+                ->url(fn() => route('bookings.attendee-tickets', $this->record))
+                ->openUrlInNewTab()
+                ->tooltip(__('booking.tooltips.print_tickets')),
+
             Action::make('resend_email')
                 ->label(__('booking.actions.resend_email'))
                 ->icon('heroicon-o-envelope')
                 ->color('secondary')
                 ->action(function () {
-                    Mail::to($this->record->attendee->email)->send(new BookingConfirmation($this->record));
+                    $primary = $this->record->attendees->first();
+
+                    if (! $primary || empty($primary->email)) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('booking.notifications.email_sent'))
+                            ->body(__('booking.notifications.no_attendee_email'))
+                            ->send();
+
+                        return;
+                    }
+
+                    Mail::to($primary->email)->send(new BookingConfirmation($this->record));
                     Notification::make()
                         ->success()
                         ->title(__('booking.notifications.email_sent'))

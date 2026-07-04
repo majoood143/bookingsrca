@@ -35,6 +35,7 @@ return [
         'booking_reference' => 'رقم مرجع الحجز',
         'event'             => 'الفعالية',
         'event_date'        => 'تاريخ الفعالية',
+        'time'              => 'الوقت',
         'time_slot'         => 'الوقت',
         'booking_status'    => 'حالة الحجز',
         'service_name'      => 'الخدمة',
@@ -81,6 +82,10 @@ return [
         'booking_status' => 'حالة الحجز',
         'checked_in'     => 'حالة تسجيل الدخول',
         'email_sent'     => 'حالة البريد الإلكتروني',
+        'event_date'     => 'تاريخ الفعالية',
+        'time_slot'      => 'الفترة الزمنية',
+        'date_from'      => 'من تاريخ',
+        'date_until'     => 'إلى تاريخ',
     ],
 
     'notifications' => [

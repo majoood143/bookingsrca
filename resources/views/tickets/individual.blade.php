@@ -13,8 +13,11 @@
     <meta charset="UTF-8">
     <title>{{ $t('event_ticket') }} - {{ $attendee->ticket_number }}</title>
     <style>
+        /* "size" is intentionally omitted: this mPDF version mis-handles a
+           named @page size (e.g. "A4 portrait"), causing runaway pagination
+           (hundreds of extra pages) even for trivial content. Page format is
+           already set via the Mpdf 'format' constructor option in PHP. */
         @page {
-            size: A4 portrait;
             margin: 14mm 12mm;
         }
 
@@ -42,10 +45,15 @@
         }
 
         /* ── HEADER BANNER ── */
+        /* mPDF's background-size:cover resize math divides by zero on this
+           wide-aspect image, so the "cover" crop is emulated manually with a
+           fixed height + overflow:hidden instead. */
         .header {
-            background-size: cover;
+            background-size: 100% auto;
             background-position: center;
             background-repeat: no-repeat;
+            height: 52mm;
+            overflow: hidden;
             padding: 0;
         }
 
@@ -184,28 +192,20 @@
 
         /* ── TWO-COLUMN GRID ── */
         .two-col {
-            display: table;
             width: 100%;
             table-layout: fixed;
+            border-collapse: collapse;
             margin-bottom: 14px;
         }
 
         .col {
-            display: table-cell;
+            width: 49.5%;
             vertical-align: top;
         }
 
         .col-divider {
-            display: table-cell;
             width: 1px;
             background: #e5e7eb;
-            padding: 0 10px;
-        }
-
-        .col-divider-inner {
-            width: 1px;
-            background: #e5e7eb;
-            height: 100%;
         }
 
         /* ── SECTION ── */
@@ -406,52 +406,53 @@
     <div class="ticket-body">
 
         {{-- Two-column: Attendee | Event Details --}}
-        <div class="two-col">
-            {{-- Attendee --}}
-            <div class="col">
-                <div class="section-label">{{ $t('attendee') }}</div>
-                <table class="info-table">
-                    <tr>
-                        <td class="info-key">{{ $t('name') }}</td>
-                        <td class="info-val">{{ $attendee->getFullName() }}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-key">{{ $t('email') }}</td>
-                        <td class="info-val" style="word-break:break-all;">{{ $attendee->email }}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-key">{{ $t('ticket_type') }}</td>
-                        <td class="info-val">{{ $booking->ticketType->getTranslation('name', $lang) }}</td>
-                    </tr>
-                </table>
-            </div>
-
-            {{-- Divider --}}
-            <div class="col-divider"><div class="col-divider-inner"></div></div>
-
-            {{-- Event Details --}}
-            <div class="col" style="{{ $isAr ? 'padding-right:16px' : 'padding-left:16px' }}">
-                <div class="section-label">{{ $t('event_details') }}</div>
-                <table class="info-table">
-                    <tr>
-                        <td class="info-key">{{ $t('date') }}</td>
-                        <td class="info-val">{{ $dateFormatted }}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-key">{{ $t('time') }}</td>
-                        <td class="info-val">{{ $booking->timeSlot->getTimeRange() }}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-key">{{ $t('location') }}</td>
-                        <td class="info-val">{{ $booking->event->getTranslation('location', $lang) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-key">{{ $t('organizer') }}</td>
-                        <td class="info-val">{{ $booking->event->organizer }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+        {{-- A real <table> is used here (rather than CSS display:table/table-cell
+             divs) because this mPDF version doesn't lay out table-cell divs
+             side by side - it renders each as a full-width block and forces a
+             page break between them. --}}
+        <table class="two-col">
+            <tr>
+                <td class="col">
+                    <div class="section-label">{{ $t('attendee') }}</div>
+                    <table class="info-table">
+                        <tr>
+                            <td class="info-key">{{ $t('name') }}</td>
+                            <td class="info-val">{{ $attendee->getFullName() }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-key">{{ $t('email') }}</td>
+                            <td class="info-val" style="word-break:break-all;">{{ $attendee->email }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-key">{{ $t('ticket_type') }}</td>
+                            <td class="info-val">{{ $booking->ticketType->getTranslation('name', $lang) }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="col-divider"></td>
+                <td class="col" style="{{ $isAr ? 'padding-right:16px' : 'padding-left:16px' }}">
+                    <div class="section-label">{{ $t('event_details') }}</div>
+                    <table class="info-table">
+                        <tr>
+                            <td class="info-key">{{ $t('date') }}</td>
+                            <td class="info-val">{{ $dateFormatted }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-key">{{ $t('time') }}</td>
+                            <td class="info-val">{{ $booking->timeSlot->getTimeRange() }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-key">{{ $t('location') }}</td>
+                            <td class="info-val">{{ $booking->event->getTranslation('location', $lang) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-key">{{ $t('organizer') }}</td>
+                            <td class="info-val">{{ $booking->event->organizer }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
 
         {{-- Extra Services (full-width, only if present) --}}
         @if($booking->extraServices->count() > 0)

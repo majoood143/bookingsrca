@@ -8,6 +8,7 @@ return [
     ],
 
     'title' => 'التقارير',
+    'document_title' => 'تقرير الحجوزات الرسمي',
 
     'sections' => [
         'filters'   => 'الفلاتر',
@@ -61,8 +62,9 @@ return [
     ],
 
     'actions' => [
-        'export' => 'تصدير Excel',
-        'apply'  => 'تطبيق الفلاتر',
+        'export'       => 'تصدير Excel',
+        'apply'        => 'تطبيق الفلاتر',
+        'download_pdf' => 'تحميل PDF',
     ],
 
     'export' => [
@@ -90,5 +92,10 @@ return [
 
     'no_data'      => 'لا توجد بيانات متاحة للفترة المحددة.',
     'period_label' => 'الفترة: :from — :to',
+
+    'document' => [
+        'generated_on' => 'تاريخ الإنشاء',
+        'period'       => ':from — :to',
+    ],
 
 ];

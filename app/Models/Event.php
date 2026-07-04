@@ -81,6 +81,28 @@ class Event extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function signageSetting()
+    {
+        return $this->hasOne(EventSignageSetting::class);
+    }
+
+    // Returns the configured signage settings for this event, or an
+    // unsaved instance carrying the column defaults so the signage
+    // dashboard always has values to render even before an admin
+    // configures anything.
+    public function signageSettingOrDefault(): EventSignageSetting
+    {
+        return $this->signageSetting ?? new EventSignageSetting([
+            'early_arrival_minutes' => 5,
+            'gathering_alert_minutes' => 5,
+            'ready_threshold_minutes' => 15,
+            'soon_threshold_minutes' => 60,
+            'upcoming_trips_count' => 4,
+            'language_switch_seconds' => 10,
+            'is_enabled' => true,
+        ]);
+    }
+
     // Scopes
     public function scopePublished($query)
     {

@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Booking;
-use App\Models\BookingAttendee;
 use Filament\Notifications\Notification;
 
 class BookingAttendeesModal extends Component
@@ -13,12 +12,12 @@ class BookingAttendeesModal extends Component
 
     public function mount(Booking $booking)
     {
-        $this->booking = $booking->load('attendees');
+        $this->booking = $booking->load('attendees.ticketType');
     }
 
     public function sendTicketEmail($attendeeId)
     {
-        $attendee = BookingAttendee::find($attendeeId);
+        $attendee = $this->booking->attendees->firstWhere('id', $attendeeId);
 
         if ($attendee && $attendee->sendTicketEmail()) {
             Notification::make()
@@ -27,7 +26,7 @@ class BookingAttendeesModal extends Component
                 ->body('Ticket has been sent to ' . $attendee->email)
                 ->send();
 
-            $this->booking->refresh();
+            $this->booking->load('attendees.ticketType');
         } else {
             Notification::make()
                 ->danger()
@@ -44,7 +43,7 @@ class BookingAttendeesModal extends Component
 
     public function checkInAttendee($attendeeId)
     {
-        $attendee = BookingAttendee::find($attendeeId);
+        $attendee = $this->booking->attendees->firstWhere('id', $attendeeId);
 
         if ($attendee) {
             $attendee->checkIn();
@@ -55,7 +54,7 @@ class BookingAttendeesModal extends Component
                 ->body($attendee->getFullName() . ' has been checked in')
                 ->send();
 
-            $this->booking->refresh();
+            $this->booking->load('attendees.ticketType');
         }
     }
 

@@ -25,6 +25,9 @@ class EventBooking extends Component
     /** @var array [ticket_type_id => qty] */
     public $ticketQuantities = [];
 
+    /** @var array [ticket_type_id => remaining stock], snapshotted when the slot is selected */
+    public $ticketTypeRemaining = [];
+
     /** @var array [ticket_type_id => [service_id => count_of_that_type's_tickets_with_the_service]] */
     public $ticketTypeServices = [];
 
@@ -173,11 +176,14 @@ class EventBooking extends Component
 
         $this->selectedSlot = $slotId;
 
-        // Initialise quantities to 0 for each active ticket type
+        // Initialise quantities to 0 for each active ticket type, and snapshot
+        // each type's remaining stock at the moment the customer starts picking
+        // tickets, so the stepper can be capped without re-querying on every click.
         foreach ($this->loadedTicketTypes() as $type) {
             if (!array_key_exists($type->id, $this->ticketQuantities)) {
                 $this->ticketQuantities[$type->id] = 0;
             }
+            $this->ticketTypeRemaining[$type->id] = $type->getRemainingQuantity();
         }
 
         $this->step = 3;
@@ -201,10 +207,11 @@ class EventBooking extends Component
 
     public function incrementQuantity($typeId)
     {
-        $current = $this->ticketQuantities[$typeId] ?? 0;
-        $total   = array_sum($this->ticketQuantities);
+        $current   = $this->ticketQuantities[$typeId] ?? 0;
+        $total     = array_sum($this->ticketQuantities);
+        $remaining = $this->ticketTypeRemaining[$typeId] ?? 0;
 
-        if ($current < $this->maxTickets && $total < $this->maxTickets) {
+        if ($current < $this->maxTickets && $total < $this->maxTickets && $current < $remaining) {
             $this->ticketQuantities[$typeId] = $current + 1;
             $this->calculateTotal();
         }
@@ -540,6 +547,8 @@ class EventBooking extends Component
                 'status'          => 'pending',
                 'payment_method'  => $isFree ? 'free' : $this->activeGateway,
                 'payment_status'  => 'pending',
+                'ip_address'      => request()->ip(),
+                'user_agent'      => request()->userAgent(),
             ]);
 
             // Create one BookingAttendee per ticket

@@ -17,6 +17,8 @@ return [
         'recurring_desc'    => 'تكوين ما إذا كانت الفعالية تتكرر في أيام محددة',
         'media_status'      => 'الوسائط والحالة',
         'media_desc'        => 'رفع صورة الفعالية وتحديد الحالة',
+        'signage'           => 'الشاشة الرقمية',
+        'signage_desc'      => 'الهوية والمحتوى المعروض على شاشة عرض الرحلات العامة لهذه الفعالية',
     ],
 
     'fields' => [
@@ -42,6 +44,26 @@ return [
         'image_helper'         => 'ارفع صورة (الحد الأقصى 2 ميغابايت). الحجم الموصى به: 1200×675 بكسل',
         'status'               => 'حالة الفعالية',
         'status_helper'        => 'الفعاليات المنشورة فقط هي التي تظهر للمستخدمين',
+        'signage_logo'              => 'شعار الشاشة',
+        'signage_logo_helper'       => 'يستبدل الشعار الافتراضي في شاشة العرض',
+        'signage_background'       => 'خلفية الشاشة',
+        'signage_background_helper' => 'صورة خلفية بملء الشاشة لشاشة العرض',
+        'signage_qr'                => 'صورة رمز QR',
+        'signage_qr_helper'         => 'ارفع صورة رمز QR لعرضها (مثلاً رابط لخريطة أو صفحة معلومات)',
+        'signage_phone'             => 'رقم التواصل',
+        'signage_meeting_point_en'  => 'نقطة التجمع (إنجليزي)',
+        'signage_meeting_point_ar'  => 'نقطة التجمع (عربي)',
+        'signage_welcome_en'        => 'رسالة الترحيب (إنجليزي)',
+        'signage_welcome_ar'        => 'رسالة الترحيب (عربي)',
+        'signage_early_arrival'     => 'التواجد المبكر (بالدقائق)',
+        'signage_gathering_alert'   => 'تنبيه التجمع (دقائق قبل الانطلاق)',
+        'signage_ready_threshold'   => 'حد "يرجى الاستعداد" (بالدقائق)',
+        'signage_soon_threshold'    => 'حد "قريبًا" (بالدقائق)',
+        'signage_upcoming_count'    => 'عدد الرحلات القادمة المعروضة',
+        'signage_language_switch'        => 'تبديل اللغة تلقائيًا كل',
+        'signage_language_switch_helper' => 'يبدّل الشاشة تلقائيًا بين الإنجليزية والعربية كل N ثانية. ضع 0 للتعطيل.',
+        'signage_enabled'           => 'تفعيل شاشة العرض',
+        'signage_enabled_helper'    => 'أوقف هذا الخيار لتعطيل صفحة العرض العامة لهذه الفعالية',
     ],
 
     'placeholders' => [
@@ -121,6 +143,7 @@ return [
 
     'suffix' => [
         'people' => 'شخص',
+        'seconds' => 'ثانية',
     ],
 
 ];

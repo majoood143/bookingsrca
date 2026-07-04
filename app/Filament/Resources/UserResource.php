@@ -16,6 +16,7 @@ use App\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Filament\Resources\UserResource\Pages\CreateUser;
 use App\Filament\Resources\UserResource\Pages\ViewUser;
 use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Resources\UserResource\Pages\ListUserActivities;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
@@ -145,10 +146,11 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
-            'view'   => ViewUser::route('/{record}'),
-            'edit'   => EditUser::route('/{record}/edit'),
+            'index'      => ListUsers::route('/'),
+            'create'     => CreateUser::route('/create'),
+            'view'       => ViewUser::route('/{record}'),
+            'edit'       => EditUser::route('/{record}/edit'),
+            'activities' => ListUserActivities::route('/{record}/activities'),
         ];
     }
 }

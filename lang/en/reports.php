@@ -8,6 +8,7 @@ return [
     ],
 
     'title' => 'Reports',
+    'document_title' => 'Official Booking Report',
 
     'sections' => [
         'filters'       => 'Filters',
@@ -61,8 +62,9 @@ return [
     ],
 
     'actions' => [
-        'export'    => 'Export Excel',
-        'apply'     => 'Apply Filters',
+        'export'       => 'Export Excel',
+        'apply'        => 'Apply Filters',
+        'download_pdf' => 'Download PDF',
     ],
 
     'export' => [
@@ -91,5 +93,10 @@ return [
     'no_data' => 'No data available for the selected period.',
 
     'period_label' => 'Period: :from — :to',
+
+    'document' => [
+        'generated_on' => 'Generated on',
+        'period'       => ':from — :to',
+    ],
 
 ];

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\RoleResource\Pages;
 
 use Filament\Actions\DeleteAction;
 use App\Filament\Resources\RoleResource;
+use App\Filament\Resources\RoleResource\Pages\ViewRole;
+use App\Filament\Resources\RoleResource\Pages\ListRoleActivities;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,6 +17,20 @@ class EditRole extends EditRecord
     protected static string $resource = RoleResource::class;
 
     public Collection $permissions;
+
+    public function getSubNavigation(): array
+    {
+        return $this->generateNavigationItems([
+            ViewRole::class,
+            self::class,
+            ListRoleActivities::class,
+        ]);
+    }
+
+    public function getSubNavigationParameters(): array
+    {
+        return ['record' => $this->getRecord()];
+    }
 
     protected function getActions(): array
     {

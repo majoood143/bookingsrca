@@ -20,7 +20,7 @@ class BookingsExport implements FromCollection, WithHeadings, WithMapping, WithS
 
     public function collection()
     {
-        $query = Booking::with(['event', 'attendee', 'timeSlot', 'ticketType', 'extraServices']);
+        $query = Booking::with(['event', 'attendees', 'timeSlot', 'ticketType', 'extraServices']);
         
         if ($this->bookingIds) {
             $query->whereIn('id', $this->bookingIds);
@@ -57,12 +57,14 @@ class BookingsExport implements FromCollection, WithHeadings, WithMapping, WithS
             ->map(fn($service) => $service->getTranslation('name', 'en'))
             ->join(', ');
 
+        $attendee = $booking->attendees->first();
+
         return [
             $booking->booking_reference,
             ucfirst($booking->status),
-            $booking->attendee->getFullName(),
-            $booking->attendee->email,
-            $booking->attendee->phone,
+            $attendee?->getFullName(),
+            $attendee?->email,
+            $attendee?->phone,
             $booking->event->getTranslation('title', 'en'),
             $booking->event_date->format('Y-m-d'),
             $booking->timeSlot->getTimeRange(),

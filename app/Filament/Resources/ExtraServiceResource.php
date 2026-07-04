@@ -32,6 +32,7 @@ use Filament\Actions\CreateAction;
 use App\Filament\Resources\ExtraServiceResource\Pages\ListExtraServices;
 use App\Filament\Resources\ExtraServiceResource\Pages\CreateExtraService;
 use App\Filament\Resources\ExtraServiceResource\Pages\EditExtraService;
+use App\Filament\Resources\ExtraServiceResource\Pages\ListExtraServiceActivities;
 use App\Filament\Resources\ExtraServiceResource\Pages;
 use App\Models\ExtraService;
 use App\Models\Event;
@@ -661,9 +662,10 @@ class ExtraServiceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListExtraServices::route('/'),
-            'create' => CreateExtraService::route('/create'),
-            'edit'   => EditExtraService::route('/{record}/edit'),
+            'index'      => ListExtraServices::route('/'),
+            'create'     => CreateExtraService::route('/create'),
+            'edit'       => EditExtraService::route('/{record}/edit'),
+            'activities' => ListExtraServiceActivities::route('/{record}/activities'),
         ];
     }
 

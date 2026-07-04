@@ -8,12 +8,15 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Support\Enums\Size;
 use App\Filament\Resources\BookingSettingResource\Pages\ListBookingSettings;
 use App\Filament\Resources\BookingSettingResource\Pages\EditBookingSetting;
+use App\Filament\Resources\BookingSettingResource\Pages\ListBookingSettingActivities;
 use App\Filament\Resources\BookingSettingResource\Pages;
 use App\Models\BookingSetting;
 use Filament\Forms;
@@ -78,6 +81,20 @@ class BookingSettingResource extends Resource
                             ->fileAttachmentsDisk('public')
                             ->visible(fn($record) => $record && $record->type === 'richtext'),
 
+                        FileUpload::make('value')
+                            ->label(__('booking_setting.fields.value'))
+                            ->image()
+                            ->disk('public')
+                            ->directory('branding')
+                            ->visibility('public')
+                            ->helperText(fn($record) => $record?->description)
+                            ->visible(fn($record) => $record && $record->type === 'file'),
+
+                        ColorPicker::make('value')
+                            ->label(__('booking_setting.fields.value'))
+                            ->helperText(fn($record) => $record?->description)
+                            ->visible(fn($record) => $record && $record->type === 'color'),
+
                         TextInput::make('value')
                             ->label(__('booking_setting.fields.value'))
                             ->required()
@@ -85,7 +102,7 @@ class BookingSettingResource extends Resource
                             ->minValue(fn($record) => $record && $record->key === 'min_tickets_per_booking' ? 1 : ($record && $record->key === 'max_attendee_age_years' ? 1 : 0))
                             ->maxValue(fn($record) => $record && $record->key === 'max_tickets_per_booking' ? 1000 : ($record && $record->key === 'max_attendee_age_years' ? 120 : null))
                             ->helperText(fn($record) => $record?->description)
-                            ->visible(fn($record) => !$record || !in_array($record->type, ['boolean', 'richtext'])),
+                            ->visible(fn($record) => !$record || !in_array($record->type, ['boolean', 'richtext', 'file', 'color'])),
 
                         Textarea::make('description')
                             ->label(__('booking_setting.fields.description'))
@@ -108,11 +125,12 @@ class BookingSettingResource extends Resource
 
                 TextColumn::make('value')
                     ->label(__('booking_setting.columns.current_value'))
-                    ->badge()
+                    ->badge(fn($record) => !in_array($record->type, ['file', 'color']))
                     ->color(fn($state, $record) => $record->type === 'boolean'
                         ? (filter_var($state, FILTER_VALIDATE_BOOLEAN) ? 'success' : 'danger')
                         : 'success'
                     )
+                    ->html()
                     ->formatStateUsing(fn($state, $record) => match($record->type) {
                         'boolean' => filter_var($state, FILTER_VALIDATE_BOOLEAN)
                             ? __('booking_setting.fields.enabled')
@@ -120,7 +138,13 @@ class BookingSettingResource extends Resource
                         'richtext' => strlen(strip_tags($state)) > 0
                             ? __('booking_setting.fields.content_set')
                             : __('booking_setting.fields.not_set'),
-                        default => $state,
+                        'file' => filled($state)
+                            ? '<img src="' . e(\Illuminate\Support\Facades\Storage::disk('public')->url($state)) . '" class="h-8 w-auto rounded" alt="">'
+                            : __('booking_setting.fields.not_set'),
+                        'color' => filled($state)
+                            ? '<span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded-full border border-gray-300" style="background-color:' . e($state) . '"></span>' . e($state) . '</span>'
+                            : __('booking_setting.fields.not_set'),
+                        default => e($state),
                     }),
 
                 TextColumn::make('description')
@@ -150,8 +174,9 @@ class BookingSettingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListBookingSettings::route('/'),
-            'edit'  => EditBookingSetting::route('/{record}/edit'),
+            'index'      => ListBookingSettings::route('/'),
+            'edit'       => EditBookingSetting::route('/{record}/edit'),
+            'activities' => ListBookingSettingActivities::route('/{record}/activities'),
         ];
     }
 }

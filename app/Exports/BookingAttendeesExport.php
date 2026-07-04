@@ -9,6 +9,8 @@ class BookingAttendeesExport extends ExcelExport
 {
     public function setUp(): void
     {
+        $this->useTableQuery();
+
         $this->withColumns([
             Column::make('first_name')
                 ->heading(__('booking_attendee.fields.first_name')),

@@ -17,6 +17,7 @@ class TimeSlot extends Model
         'date',
         'start_time',
         'end_time',
+        'label',
         'max_attendees',
         'current_bookings',
         'is_active',
@@ -78,5 +79,14 @@ class TimeSlot extends Model
     public function getTimeRange()
     {
         return $this->start_time->format('H:i') . ' - ' . $this->end_time->format('H:i');
+    }
+
+    // Admin-facing label for this slot (e.g. "Bus 2"), falling back to an
+    // auto-numbered "Slot N" using the given position when none was set.
+    // The custom label (free text) is shown as-is regardless of locale;
+    // only the auto-numbered fallback is translated.
+    public function displayLabel(int $ordinal, ?string $locale = null): string
+    {
+        return $this->label ?: __('signage.slot_fallback_label', ['number' => $ordinal], $locale);
     }
 }

@@ -239,6 +239,8 @@
                         @php
                             $qty = $ticketQuantities[$ticketType->id] ?? 0;
                             $typeAvailable = $ticketType->isAvailable();
+                            $typeRemaining = $ticketTypeRemaining[$ticketType->id] ?? 0;
+                            $atTypeLimit = $qty >= $typeRemaining;
                             $dependencyIds = $ticketType->dependsOnMany->pluck('id')->all();
                             $isBlocked = !empty($dependencyIds)
                                 && collect($dependencyIds)->every(fn ($id) => ($ticketQuantities[$id] ?? 0) <= 0);
@@ -271,6 +273,11 @@
                                             <span
                                                 class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
                                                 {{ __('event_booking.step3.sold_out') }}
+                                            </span>
+                                        @elseif ($typeRemaining <= 5)
+                                            <span
+                                                class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                                                {{ $typeRemaining }} {{ __('event_booking.step3.tickets_available') }}
                                             </span>
                                         @endif
                                         @if ($parentName)
@@ -312,10 +319,13 @@
                                         </button>
                                         <span
                                             class="text-2xl font-black text-gray-900 w-8 text-center tabular-nums">{{ $qty }}</span>
+                                        @php
+                                            $atMax = $qty >= $maxTickets || array_sum($ticketQuantities) >= $maxTickets || $atTypeLimit;
+                                        @endphp
                                         <button type="button" wire:click="incrementQuantity({{ $ticketType->id }})"
-                                            {{ ($ticketQuantities[$ticketType->id] ?? 0) >= $maxTickets || array_sum($ticketQuantities) >= $maxTickets ? 'disabled' : '' }}
+                                            {{ $atMax ? 'disabled' : '' }}
                                             class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
-                                                {{ ($ticketQuantities[$ticketType->id] ?? 0) >= $maxTickets || array_sum($ticketQuantities) >= $maxTickets ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600' }}">
+                                                {{ $atMax ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600' }}">
                                             +
                                         </button>
                                     </div>

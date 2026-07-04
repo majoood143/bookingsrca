@@ -254,18 +254,21 @@ class BookingWizard extends Page implements HasForms
                                                 ->label(__('booking.fields.date_of_birth'))
                                                 ->maxDate(now())
                                                 ->minDate(fn() => now()->subYears((int) BookingSetting::get('max_attendee_age_years', 75)))
-                                                ->placeholder(__('booking.placeholders.date')),
+                                                ->placeholder(__('booking.placeholders.date'))
+                                                ->visible(fn() => (bool) BookingSetting::get('show_date_of_birth', true)),
 
                                             Select::make('gender')
                                                 ->label(__('booking.fields.gender'))
                                                 ->options(__('booking.options.gender'))
-                                                ->placeholder(__('booking.placeholders.gender')),
+                                                ->placeholder(__('booking.placeholders.gender'))
+                                                ->visible(fn() => (bool) BookingSetting::get('show_gender', true)),
 
                                             Select::make('nationality')
                                                 ->label(__('booking.fields.nationality'))
                                                 ->required()
                                                 ->options(__('booking.options.nationality'))
-                                                ->placeholder(__('booking.placeholders.nationality')),
+                                                ->placeholder(__('booking.placeholders.nationality'))
+                                                ->visible(fn() => (bool) BookingSetting::get('show_nationality', true)),
                                         ]),
 
                                     Grid::make(1)
@@ -599,6 +602,8 @@ class BookingWizard extends Page implements HasForms
                     'source' => 'admin',
                     'created_by' => auth()->id(),
                     'status' => 'pending',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
                 ]);
 
                 foreach ($attendeesData as $attendee) {

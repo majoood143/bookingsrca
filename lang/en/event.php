@@ -17,6 +17,8 @@ return [
         'recurring_desc'    => 'Configure if this event repeats on specific days',
         'media_status'      => 'Media & Status',
         'media_desc'        => 'Upload event image and set status',
+        'signage'           => 'Digital Signage',
+        'signage_desc'      => 'Branding and content shown on the public trip display screen for this event',
     ],
 
     'fields' => [
@@ -42,6 +44,26 @@ return [
         'image_helper'     => 'Upload an image (max 2MB). Recommended size: 1200x675px',
         'status'           => 'Event Status',
         'status_helper'    => 'Only published events are visible to users',
+        'signage_logo'              => 'Screen Logo',
+        'signage_logo_helper'       => 'Overrides the default logo on the signage screen',
+        'signage_background'       => 'Screen Background',
+        'signage_background_helper' => 'Full-screen background image for the signage screen',
+        'signage_qr'                => 'QR Code Image',
+        'signage_qr_helper'         => 'Upload a QR code image to display (e.g. linking to a map or info page)',
+        'signage_phone'             => 'Contact Phone',
+        'signage_meeting_point_en'  => 'Meeting Point (English)',
+        'signage_meeting_point_ar'  => 'Meeting Point (Arabic)',
+        'signage_welcome_en'        => 'Welcome Message (English)',
+        'signage_welcome_ar'        => 'Welcome Message (Arabic)',
+        'signage_early_arrival'     => 'Early Arrival (minutes)',
+        'signage_gathering_alert'   => 'Gathering Alert (minutes before)',
+        'signage_ready_threshold'   => '"Get Ready" Threshold (minutes)',
+        'signage_soon_threshold'    => '"Coming Soon" Threshold (minutes)',
+        'signage_upcoming_count'    => 'Upcoming Trips to Show',
+        'signage_language_switch'        => 'Auto Language Switch Every',
+        'signage_language_switch_helper' => 'Automatically alternates the screen between English and Arabic every N seconds. Set 0 to disable.',
+        'signage_enabled'           => 'Signage Screen Enabled',
+        'signage_enabled_helper'    => 'Turn off to disable the public signage page for this event',
     ],
 
     'placeholders' => [
@@ -121,6 +143,7 @@ return [
 
     'suffix' => [
         'people' => 'people',
+        'seconds' => 'seconds',
     ],
 
 ];

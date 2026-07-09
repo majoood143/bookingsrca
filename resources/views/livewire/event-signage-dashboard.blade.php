@@ -29,16 +29,27 @@
             countdownText: '--:--',
             _tickTimer: null,
             _switchTimer: null,
+            _advancing: false,
             tick() {
                 const now = new Date();
                 this.clockTime = now.toLocaleTimeString(this.lang === 'ar' ? 'ar-OM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 this.clockDate = now.toLocaleDateString(this.lang === 'ar' ? 'ar-OM-u-ca-gregory' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                 const startsAt = this.$el.dataset.nextTripStartsAt;
                 if (startsAt) {
-                    const diff = Math.max(0, Math.floor((new Date(startsAt) - now) / 1000));
-                    const m = String(Math.floor(diff / 60)).padStart(2, '0');
-                    const s = String(diff % 60).padStart(2, '0');
-                    this.countdownText = m + ' : ' + s;
+                    const diff = Math.floor((new Date(startsAt) - now) / 1000);
+                    if (diff <= 0) {
+                        this.countdownText = '00 : 00';
+                        // Slot has started: jump to the next slot right away instead of
+                        // waiting for the next wire:poll tick.
+                        if (!this._advancing) {
+                            this._advancing = true;
+                            this.$wire.refreshData().catch(() => {}).finally(() => { this._advancing = false; });
+                        }
+                    } else {
+                        const m = String(Math.floor(diff / 60)).padStart(2, '0');
+                        const s = String(diff % 60).padStart(2, '0');
+                        this.countdownText = m + ' : ' + s;
+                    }
                 } else {
                     this.countdownText = '--:--';
                 }
@@ -53,6 +64,12 @@
                         this.lang = this.lang === 'ar' ? 'en' : 'ar';
                     }, this.switchSeconds * 1000);
                 }
+                // This screen runs unattended for hours with no one around to
+                // retry manually, so a failed request (e.g. an expired
+                // session) must not leave it frozen forever: reload to recover.
+                Livewire.hook('request', ({ fail }) => {
+                    fail(() => setTimeout(() => window.location.reload(), 3000));
+                });
             }
         }"
         x-init="init()"

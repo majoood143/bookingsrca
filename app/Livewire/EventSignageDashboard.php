@@ -32,7 +32,7 @@ class EventSignageDashboard extends Component
             ->orderBy('date')
             ->orderBy('start_time')
             ->get()
-            ->filter(fn (TimeSlot $slot) => $this->slotEndsAt($slot)->gt($now))
+            ->filter(fn (TimeSlot $slot) => $this->slotStartsAt($slot)->gt($now))
             ->values();
 
         $next = $slots->first();
@@ -52,11 +52,6 @@ class EventSignageDashboard extends Component
     private function slotStartsAt(TimeSlot $slot): Carbon
     {
         return Carbon::parse($slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s'));
-    }
-
-    private function slotEndsAt(TimeSlot $slot): Carbon
-    {
-        return Carbon::parse($slot->date->format('Y-m-d') . ' ' . $slot->end_time->format('H:i:s'));
     }
 
     private function presentTrip(TimeSlot $slot, int $ordinal, EventSignageSetting $signage, Carbon $now): array

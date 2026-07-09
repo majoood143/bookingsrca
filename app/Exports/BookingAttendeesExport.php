@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\BookingSetting;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use pxlrbt\FilamentExcel\Columns\Column;
 
@@ -11,7 +12,7 @@ class BookingAttendeesExport extends ExcelExport
     {
         $this->useTableQuery();
 
-        $this->withColumns([
+        $columns = [
             Column::make('first_name')
                 ->heading(__('booking_attendee.fields.first_name')),
 
@@ -23,18 +24,31 @@ class BookingAttendeesExport extends ExcelExport
 
             Column::make('phone')
                 ->heading(__('booking_attendee.fields.phone')),
+        ];
 
-            Column::make('date_of_birth')
+        if (BookingSetting::get('show_date_of_birth', true)) {
+            $columns[] = Column::make('date_of_birth')
                 ->heading(__('booking_attendee.fields.date_of_birth'))
-                ->formatStateUsing(fn($state) => $state?->format('Y-m-d')),
+                ->formatStateUsing(fn($state) => $state?->format('Y-m-d'));
+        }
 
-            Column::make('gender')
+        if (BookingSetting::get('show_gender', true)) {
+            $columns[] = Column::make('gender')
                 ->heading(__('booking_attendee.fields.gender'))
-                ->formatStateUsing(fn($state) => $state ? ucfirst($state) : ''),
+                ->formatStateUsing(fn($state) => $state ? ucfirst($state) : '');
+        }
 
-            Column::make('nationality')
-                ->heading(__('booking_attendee.fields.nationality')),
+        if (BookingSetting::get('show_nationality', true)) {
+            $columns[] = Column::make('nationality')
+                ->heading(__('booking_attendee.fields.nationality'));
+        }
 
+        if (BookingSetting::get('show_identity_number', true)) {
+            $columns[] = Column::make('identity_number')
+                ->heading(__('booking_attendee.fields.identity_number'));
+        }
+
+        $columns = array_merge($columns, [
             Column::make('ticket_number')
                 ->heading(__('booking_attendee.fields.ticket_number')),
 
@@ -83,5 +97,7 @@ class BookingAttendeesExport extends ExcelExport
                 ->heading(__('booking_attendee.columns.created_at'))
                 ->formatStateUsing(fn($state) => $state?->format('Y-m-d H:i')),
         ]);
+
+        $this->withColumns($columns);
     }
 }

@@ -86,6 +86,11 @@ class Event extends Model
         return $this->hasOne(EventSignageSetting::class);
     }
 
+    public function kiosks()
+    {
+        return $this->hasMany(Kiosk::class);
+    }
+
     // Returns the configured signage settings for this event, or an
     // unsaved instance carrying the column defaults so the signage
     // dashboard always has values to render even before an admin
@@ -159,6 +164,28 @@ class Event extends Model
             ->unique();
 
         return array_values(array_intersect($this->getAvailableDates(), $slotDates->all()));
+    }
+
+    // Dates whose active, future time slots exist but are all fully booked
+    // (zero remaining capacity) — the date still shows on the calendar, but
+    // there is nothing left to sell for it.
+    public function getSoldOutDates(): array
+    {
+        $now = now();
+
+        return $this->timeSlots()
+            ->where('is_active', true)
+            ->get()
+            ->filter(function ($slot) use ($now) {
+                $slotStart = \Carbon\Carbon::parse(
+                    $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
+                );
+                return $slotStart->gt($now);
+            })
+            ->groupBy(fn ($slot) => $slot->date->format('Y-m-d'))
+            ->filter(fn ($slots) => $slots->every(fn ($slot) => !$slot->isAvailable()))
+            ->keys()
+            ->all();
     }
 
     public function getTotalBookings()

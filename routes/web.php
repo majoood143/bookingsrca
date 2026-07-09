@@ -3,9 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\EventBooking;
 use App\Livewire\EventSignageDashboard;
+use App\Livewire\Kiosk\KioskBooking;
 use App\Models\Event;
 use App\Http\Controllers\ThawaniCallbackController;
 use App\Http\Controllers\NboCallbackController;
+use App\Http\Controllers\KioskHeartbeatController;
 
 Route::get('/', function () {
     $events = Event::published()
@@ -21,6 +23,12 @@ Route::get('/', function () {
 Route::get('/events/{event:slug}', EventBooking::class)->name('event.booking');
 
 Route::get('/events/{event:slug}/signage', EventSignageDashboard::class)->name('event.signage');
+
+// ── Kiosk routes ─────────────────────────────────────────────────────────────
+Route::get('/kiosk/{kiosk:code}', KioskBooking::class)->name('kiosk.booking');
+
+// Called by the kiosk's native app — no browser session, so CSRF is excluded (see bootstrap/app.php).
+Route::post('/kiosk/{kiosk:code}/heartbeat', [KioskHeartbeatController::class, 'store'])->name('kiosk.heartbeat');
 
 Route::get('/booking/success/{reference}', function ($reference) {
     $booking = \App\Models\Booking::where('booking_reference', $reference)->firstOrFail();

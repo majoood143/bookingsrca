@@ -40,6 +40,7 @@ class Booking extends Model
         'total_price',
         'source',
         'created_by',
+        'kiosk_id',
         'status',
         'confirmed_at',
         'cancelled_at',
@@ -127,6 +128,11 @@ class Booking extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function kiosk()
+    {
+        return $this->belongsTo(Kiosk::class);
     }
 
     public function gatewayLogs()

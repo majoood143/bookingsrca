@@ -235,7 +235,7 @@ class BookingWizard extends Page implements HasForms
                                             TextInput::make('email')
                                                 ->label(__('booking.fields.email'))
                                                 ->email()
-                                                ->required()
+                                                //->required()
                                                 ->maxLength(255)
                                                 ->extraInputAttributes(['class' => 'text-lg'])
                                                 ->placeholder(__('booking.placeholders.email')),

@@ -83,11 +83,11 @@ class AdminPanelProvider extends PanelProvider
                 FilamentCaptcha::make(),
                 FilamentShieldPlugin::make(),
                 FilamentSpatieLaravelHealthPlugin::make()
-                    ->authorize(fn () => auth()->user()?->can('View:HealthCheckResults') ?? false),
+                    ->authorize(fn() => auth()->user()?->can('View:HealthCheckResults') ?? false),
                 //FilamentMailsPlugin::make(),
                 \RickDBCN\FilamentEmail\FilamentEmail::make(),
-                FilamentSpatieLaravelBackupPlugin::make()
-                    ->authorize(fn () => auth()->user()?->can('View:Backups') ?? false),
+                FilamentSpatieLaravelBackupPlugin::make(),
+                // ->authorize(fn () => auth()->user()?->can('View:Backups') ?? false),
                 FilamentBackgroundsPlugin::make()
                     ->showAttribution(false),
                 FilamentEditProfilePlugin::make()

@@ -98,6 +98,7 @@ return [
         'create_first'        => 'Create first time slot',
         'generate_slots'      => 'Generate Slots',
         'edit_time_range'     => 'Edit Time Range',
+        'export'              => 'Export',
     ],
 
     'modals' => [

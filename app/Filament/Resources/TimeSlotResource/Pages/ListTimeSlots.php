@@ -14,6 +14,8 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use pxlrbt\FilamentExcel\Actions\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ListTimeSlots extends ListRecords
 {
@@ -23,7 +25,16 @@ class ListTimeSlots extends ListRecords
     {
         return [
 
-            
+            ExportAction::make()
+                ->label(__('time_slot.actions.export'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->exports([
+                    ExcelExport::make()
+                        ->fromTable()
+                        ->withFilename(fn () => 'time-slots-' . now()->format('Y-m-d-His')),
+                ]),
+
             Action::make('generate_slots')
                 ->label(__('time_slot.actions.generate_slots'))
                 ->icon('heroicon-o-bolt')
@@ -103,6 +114,7 @@ class ListTimeSlots extends ListRecords
             CreateAction::make()
                 ->label(__('time_slot.actions.new'))
                 ->icon('heroicon-o-plus'),
+            
         ];
     }
 }

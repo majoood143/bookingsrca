@@ -30,10 +30,12 @@ return [
 
     // ── Step 1 — Select Date ──────────────────────────────────────────────────
     'step1' => [
-        'heading'       => 'Select a Date',
-        'subheading'    => 'Choose your preferred event date',
-        'no_dates'      => 'No available dates',
-        'no_dates_body' => 'There are no upcoming dates for this event.',
+        'heading'         => 'Select a Date',
+        'subheading'      => 'Choose your preferred event date',
+        'no_dates'        => 'No available dates',
+        'no_dates_body'   => 'There are no upcoming dates for this event.',
+        'sold_out'        => 'Tickets Sold Out',
+        'sold_out_error'  => 'All tickets for that date are sold out. Please choose another date.',
     ],
 
     // ── Step 2 — Choose Time Slot ─────────────────────────────────────────────

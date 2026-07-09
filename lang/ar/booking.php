@@ -73,15 +73,18 @@ return [
     ],
 
     'filters' => [
-        'date_from'  => 'من تاريخ',
-        'date_until' => 'إلى تاريخ',
-        'booked_at'  => 'تاريخ الحجز',
+        'event_date_from'   => 'تاريخ الفعالية من',
+        'event_date_until'  => 'تاريخ الفعالية إلى',
+        'booked_date_from'  => 'تاريخ الحجز من',
+        'booked_date_until' => 'تاريخ الحجز إلى',
+        'booked_at'         => 'تاريخ الحجز',
     ],
 
     'options' => [
         'source' => [
             'online' => 'عبر الإنترنت',
             'admin'  => 'الإدارة',
+            'kiosk'  => 'كشك',
         ],
         'gender' => [
             'male'   => 'ذكر',

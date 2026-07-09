@@ -44,6 +44,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\BookingSetting;
 use Filament\Tables\Columns\Summarizers\Sum;
 
@@ -493,7 +494,8 @@ class BookingResource extends Resource
                     ->label(__('booking.columns.attendee_identity'))
                     ->placeholder('—')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->visible(fn () => (bool) BookingSetting::get('show_identity_number', true)),
 
                 TextColumn::make('firstAttendee.email')
                     ->label(__('booking.columns.attendee_email'))
@@ -545,6 +547,7 @@ class BookingResource extends Resource
                     ->colors([
                         'info'    => 'online',
                         'gray'    => 'admin',
+                        'success' => 'kiosk',
                     ]),
 
                 TextColumn::make('createdBy.name')
@@ -578,27 +581,14 @@ class BookingResource extends Resource
                     ->preload()
                     ->multiple(),
 
-                SelectFilter::make('time_slot_id')
-                    ->label(__('booking.fields.time_slot'))
-                    ->options(fn() => TimeSlot::query()
-                        ->orderBy('date')
-                        ->orderBy('start_time')
-                        ->get()
-                        ->mapWithKeys(fn($slot) => [
-                            $slot->id => $slot->date->format('Y-m-d') . ' - ' . $slot->getTimeRange(),
-                        ])
-                        ->toArray())
-                    ->searchable()
-                    ->multiple(),
-
                 Filter::make('event_date')
                     ->label(__('booking.fields.event_date'))
                     ->schema([
                         DatePicker::make('event_date_from')
-                            ->label(__('booking.filters.date_from'))
+                            ->label(__('booking.filters.event_date_from'))
                             ->native(false),
                         DatePicker::make('event_date_until')
-                            ->label(__('booking.filters.date_until'))
+                            ->label(__('booking.filters.event_date_until'))
                             ->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -616,24 +606,45 @@ class BookingResource extends Resource
                         $indicators = [];
 
                         if ($data['event_date_from'] ?? null) {
-                            $indicators[] = __('booking.filters.date_from') . ' ' . $data['event_date_from'];
+                            $indicators[] = __('booking.filters.event_date_from') . ' ' . $data['event_date_from'];
                         }
 
                         if ($data['event_date_until'] ?? null) {
-                            $indicators[] = __('booking.filters.date_until') . ' ' . $data['event_date_until'];
+                            $indicators[] = __('booking.filters.event_date_until') . ' ' . $data['event_date_until'];
                         }
 
                         return $indicators;
                     }),
 
+                SelectFilter::make('time_slot_id')
+                    ->label(__('booking.fields.time_slot'))
+                    ->options(function ($livewire) {
+                        $eventDateFilter = $livewire->getTableFilterState('event_date') ?? [];
+                        $from = $eventDateFilter['event_date_from'] ?? null;
+                        $until = $eventDateFilter['event_date_until'] ?? null;
+
+                        return TimeSlot::query()
+                            ->when($from, fn($query, $date) => $query->whereDate('date', '>=', $date))
+                            ->when($until, fn($query, $date) => $query->whereDate('date', '<=', $date))
+                            ->orderBy('date')
+                            ->orderBy('start_time')
+                            ->get()
+                            ->mapWithKeys(fn($slot) => [
+                                $slot->id => $slot->date->format('Y-m-d') . ' - ' . $slot->getTimeRange(),
+                            ])
+                            ->toArray();
+                    })
+                    ->searchable()
+                    ->multiple(),
+
                 Filter::make('booked_at')
                     ->label(__('booking.filters.booked_at'))
                     ->schema([
                         DatePicker::make('booked_at_from')
-                            ->label(__('booking.filters.date_from'))
+                            ->label(__('booking.filters.booked_date_from'))
                             ->native(false),
                         DatePicker::make('booked_at_until')
-                            ->label(__('booking.filters.date_until'))
+                            ->label(__('booking.filters.booked_date_until'))
                             ->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -651,11 +662,11 @@ class BookingResource extends Resource
                         $indicators = [];
 
                         if ($data['booked_at_from'] ?? null) {
-                            $indicators[] = __('booking.filters.booked_at') . ' ' . __('booking.filters.date_from') . ' ' . $data['booked_at_from'];
+                            $indicators[] = __('booking.filters.booked_date_from') . ' ' . $data['booked_at_from'];
                         }
 
                         if ($data['booked_at_until'] ?? null) {
-                            $indicators[] = __('booking.filters.booked_at') . ' ' . __('booking.filters.date_until') . ' ' . $data['booked_at_until'];
+                            $indicators[] = __('booking.filters.booked_date_until') . ' ' . $data['booked_at_until'];
                         }
 
                         return $indicators;
@@ -707,6 +718,7 @@ class BookingResource extends Resource
                                 'booking-' . $record->booking_reference . '.pdf'
                             );
                         })
+                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
                         ->tooltip(__('booking.tooltips.download_pdf')),
 
                     Action::make('print_receipt')
@@ -715,6 +727,7 @@ class BookingResource extends Resource
                         ->color('gray')
                         ->url(fn(Booking $record) => route('bookings.receipt', $record))
                         ->openUrlInNewTab()
+                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
                         ->tooltip(__('booking.tooltips.print_receipt')),
 
                     Action::make('print_tickets')
@@ -723,6 +736,7 @@ class BookingResource extends Resource
                         ->color('gray')
                         ->url(fn(Booking $record) => route('bookings.attendee-tickets', $record))
                         ->openUrlInNewTab()
+                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
                         ->tooltip(__('booking.tooltips.print_tickets')),
 
                     Action::make('view_attendees')
@@ -857,5 +871,37 @@ class BookingResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'success';
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'booking_reference',
+            'attendees.phone',
+            'attendees.email',
+            'attendees.identity_number',
+        ];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return $record->booking_reference;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        $attendee = $record->firstAttendee;
+
+        return [
+            __('booking.fields.event') => $record->event?->getTranslation('title', app()->getLocale()),
+            __('booking.fields.phone') => $attendee?->phone,
+            __('booking.fields.email') => $attendee?->email,
+            __('booking.fields.identity_number') => $attendee?->identity_number,
+        ];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['event', 'firstAttendee']);
     }
 }

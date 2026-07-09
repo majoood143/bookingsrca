@@ -250,6 +250,14 @@ class BookingAttendeeResource extends Resource
                     ->badge()
                     ->color('primary'),
 
+                TextColumn::make('booking.booking_reference')
+                    ->label(__('booking_attendee.columns.booking_reference'))
+                    ->searchable()
+                    ->copyable()
+                    ->fontFamily('mono')
+                    ->badge()
+                    ->color('gray'),
+
                 TextColumn::make('booking.event.title')
                     ->label(__('booking_attendee.columns.event'))
                     ->getStateUsing(fn($record) => $record->booking->event->getTranslation('title', app()->getLocale()))
@@ -267,7 +275,7 @@ class BookingAttendeeResource extends Resource
                     ->label(__('booking_attendee.columns.time'))
                     ->getStateUsing(fn($record) => $record->booking->timeSlot?->getTimeRange())
                     ->badge()
-                    ->searchable()
+                    //->searchable()
                     ->color('info'),
 
                 TextColumn::make('ticketType.name')
@@ -376,14 +384,24 @@ class BookingAttendeeResource extends Resource
 
                 SelectFilter::make('time_slot')
                     ->label(__('booking_attendee.filters.time_slot'))
-                    ->options(
-                        fn() => TimeSlot::query()
+                    ->options(function ($livewire) {
+                        $eventDateFilter = $livewire->getTableFilterState('event_date') ?? [];
+
+                        return TimeSlot::query()
+                            ->when(
+                                $eventDateFilter['event_date_from'] ?? null,
+                                fn($query, $date) => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $eventDateFilter['event_date_until'] ?? null,
+                                fn($query, $date) => $query->whereDate('date', '<=', $date),
+                            )
                             ->orderBy('date')
                             ->orderBy('start_time')
                             ->get()
                             ->mapWithKeys(fn($slot) => [$slot->id => $slot->date->format('Y-m-d') . ' - ' . $slot->getTimeRange()])
-                            ->toArray()
-                    )
+                            ->toArray();
+                    })
                     ->query(function (Builder $query, array $data) {
                         $values = (array) ($data['values'] ?? []);
                         if (!empty($values)) {

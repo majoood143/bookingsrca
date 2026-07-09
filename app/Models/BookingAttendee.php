@@ -101,14 +101,16 @@ class BookingAttendee extends Model
     public function generateQrCode()
     {
         try {
-            $qrData = json_encode([
-                'ticket_number' => $this->ticket_number,
-                'booking_ref' => $this->booking->booking_reference,
-                'attendee' => $this->getFullName(),
-                'event' => $this->booking->event->getTranslation('title', 'en'),
-                'date' => $this->booking->event_date->format('Y-m-d'),
-                'time' => $this->booking->timeSlot->getTimeRange(),
-            ]);
+            // $qrData = json_encode([
+            //     'ticket_number' => $this->ticket_number,
+            //     'booking_ref' => $this->booking->booking_reference,
+            //     'attendee' => $this->getFullName(),
+            //     'event' => $this->booking->event->getTranslation('title', 'en'),
+            //     'date' => $this->booking->event_date->format('Y-m-d'),
+            //     'time' => $this->booking->timeSlot->getTimeRange(),
+            // ]);
+
+            $qrData = $this->booking->booking_reference;
 
             // $result = Builder::create()
             //     ->writer(new PngWriter())

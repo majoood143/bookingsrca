@@ -20,11 +20,11 @@
                     <span class="text-2xl font-extrabold">{{ mb_substr($eventTitle, 0, 1) }}</span>
                 @endif
             </div>
-            <h1 class="text-xl sm:text-3xl font-extrabold leading-tight">{{ $eventTitle }}</h1>
+            <h1 class="text-white/80 text-xl sm:text-3xl font-extrabold leading-tight">{{ $eventTitle }}</h1>
         </div>
 
         <div class="text-end shrink-0">
-            <div class="text-3xl sm:text-4xl font-extrabold tabular-nums" x-text="clockTime"></div>
+            <div class="text-white/80 text-3xl sm:text-4xl font-extrabold tabular-nums" x-text="clockTime"></div>
             <div class="text-white/80 text-xs sm:text-sm mt-1" x-text="clockDate"></div>
         </div>
     </header>
@@ -40,7 +40,7 @@
 
             @if($nextTrip)
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-xl sm:text-2xl font-extrabold">{{ $eventTitle }}</h2>
+                    <h2 class=" text-white/80 text-xl sm:text-2xl font-extrabold">{{ $eventTitle }}</h2>
                     <div class="flex items-center gap-2 text-sm sm:text-base font-semibold">
                         <span class="bg-white/15 px-3 py-1.5 rounded-lg">🕐 {{ $nextTrip['time_range'] }}</span>
                         <span class="bg-white/15 px-3 py-1.5 rounded-lg">🚌 {{ $nextTrip['label'][$lang] }}</span>
@@ -53,12 +53,12 @@
 
                 <div class="flex-1 flex items-center justify-center gap-6 sm:gap-12 py-2">
                     <div class="flex flex-col items-center justify-center h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white/10 border border-white/25 text-center px-2">
-                        <span class="text-2xl sm:text-4xl font-extrabold">{{ $nextTrip['booked_count'] }}</span>
+                        <span class="text-white/80 text-2xl sm:text-4xl font-extrabold">{{ $nextTrip['booked_count'] }}</span>
                         <span class="text-[10px] sm:text-xs text-white/70 mt-1 leading-tight">{{ $t('bookings_count') }}</span>
                     </div>
 
                     <div class="text-center">
-                        <div class="text-5xl sm:text-8xl font-black tabular-nums tracking-wider" x-text="countdownText">--:--</div>
+                        <div class="text-white/80 text-5xl sm:text-8xl tabular-nums tracking-wider" x-text="countdownText">--:--</div>
                         <div class="flex justify-center gap-8 sm:gap-14 text-xs sm:text-sm text-white/70 mt-2">
                             <span>{{ $t('minutes_label') }}</span>
                             <span>{{ $t('seconds_label') }}</span>
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="flex flex-col items-center justify-center h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white/10 border border-white/25 text-center px-2">
-                        <span class="text-2xl sm:text-4xl font-extrabold">{{ $nextTrip['remaining_seats'] }}</span>
+                        <span class=" text-white/80 text-2xl sm:text-4xl font-extrabold">{{ $nextTrip['remaining_seats'] }}</span>
                         <span class="text-[10px] sm:text-xs text-white/70 mt-1 leading-tight">{{ $t('remaining_seats') }}</span>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <span class="text-xl shrink-0">📍</span>
                 <div class="min-w-0">
-                    <p class="font-bold">{{ $t('meeting_point') }}</p>
+                    <p class="text-white/80 font-bold">{{ $t('meeting_point') }}</p>
                     <p class="text-white/70 truncate">{{ $meetingPoint ?: '—' }}</p>
                 </div>
             </div>
@@ -128,14 +128,14 @@
             <div class="flex items-center gap-2 min-w-0">
                 <span class="text-xl shrink-0">⏱️</span>
                 <div class="min-w-0">
-                    <p class="font-bold">{{ $t('early_arrival', ['minutes' => $signage->early_arrival_minutes]) }}</p>
+                    <p class="text-white/80 font-bold">{{ $t('early_arrival', ['minutes' => $signage->early_arrival_minutes]) }}</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 min-w-0">
                 <span class="text-xl shrink-0">📞</span>
                 <div class="min-w-0">
-                    <p class="font-bold">{{ $t('contact_help') }}</p>
+                    <p class="text-white/80 font-bold">{{ $t('contact_help') }}</p>
                     <p class="text-white/70" dir="ltr">{{ $signage->contact_phone ?: '—' }}</p>
                 </div>
             </div>
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <div class="bg-brand rounded-2xl px-6 py-3 text-center font-bold text-sm sm:text-base">
+        <div class="bg-brand rounded-2xl px-6 py-3 text-center text-white/80 font-bold text-sm sm:text-base">
             {{ $welcomeMessage }}
         </div>
     </footer>

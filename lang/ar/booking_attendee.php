@@ -70,6 +70,8 @@ return [
     ],
 
     'tabs' => [
+        'confirmed'      => 'مؤكد',
+        'cancelled'      => 'ملغى',
         'all'            => 'جميع الزوار',
         'checked_in'     => 'تم تسجيل دخولهم',
         'not_checked_in' => 'لم يسجلوا دخولهم',

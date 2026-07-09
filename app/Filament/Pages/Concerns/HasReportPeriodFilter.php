@@ -46,6 +46,39 @@ trait HasReportPeriodFilter
             ->all();
     }
 
+    protected function getEventDateBounds(?int $eventId): array
+    {
+        $available = array_keys($this->getEventDateOptions($eventId));
+
+        if (empty($available)) {
+            return [null, null];
+        }
+
+        return [min($available), max($available)];
+    }
+
+    protected function getDisabledEventDates(?int $eventId): array
+    {
+        [$start, $end] = $this->getEventDateBounds($eventId);
+
+        if (!$start || !$end) {
+            return [];
+        }
+
+        $available = array_keys($this->getEventDateOptions($eventId));
+        $disabled  = [];
+
+        for ($date = Carbon::parse($start); $date->lte($end); $date->addDay()) {
+            $formatted = $date->format('Y-m-d');
+
+            if (!in_array($formatted, $available, true)) {
+                $disabled[] = $formatted;
+            }
+        }
+
+        return $disabled;
+    }
+
     protected function getTimeSlotOptions(?int $eventId, ?string $eventDate): array
     {
         if (!$eventId || !$eventDate) {

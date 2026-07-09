@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'booking/payment/webhook/thawani',
             'booking/payment/callback/nbo',
+            'kiosk/*/heartbeat',
         ]);
 
         // Apply locale from session on every web request

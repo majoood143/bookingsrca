@@ -98,11 +98,14 @@ class VisitorReport extends Page implements HasForms
                                 $set('time_slot_id', null);
                             }),
 
-                        Select::make('event_date')
+                        DatePicker::make('event_date')
                             ->label(__('visitor_report.filters.event_date'))
-                            ->options(fn(callable $get) => $this->getEventDateOptions($get('event_id')))
+                            ->native(false)
                             ->placeholder(__('visitor_report.filters.all_dates'))
                             ->disabled(fn(callable $get) => !$get('event_id'))
+                            ->minDate(fn(callable $get) => $this->getEventDateBounds($get('event_id'))[0])
+                            ->maxDate(fn(callable $get) => $this->getEventDateBounds($get('event_id'))[1])
+                            ->disabledDates(fn(callable $get) => $this->getDisabledEventDates($get('event_id')))
                             ->live()
                             ->afterStateUpdated(fn(callable $set) => $set('time_slot_id', null)),
 

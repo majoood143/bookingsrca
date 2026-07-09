@@ -27,6 +27,16 @@ class ListBookingAttendees extends ListRecords
     public function getTabs(): array
     {
         return [
+            'confirmed' => Tab::make(__('booking_attendee.tabs.confirmed'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('booking', fn(Builder $query) => $query->where('status', 'confirmed')))
+                ->badge(fn() => BookingAttendee::whereHas('booking', fn(Builder $query) => $query->where('status', 'confirmed'))->count())
+                ->badgeColor('success'),
+
+            'cancelled' => Tab::make(__('booking_attendee.tabs.cancelled'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('booking', fn(Builder $query) => $query->where('status', 'cancelled')))
+                ->badge(fn() => BookingAttendee::whereHas('booking', fn(Builder $query) => $query->where('status', 'cancelled'))->count())
+                ->badgeColor('danger'),
+
             'all' => Tab::make(__('booking_attendee.tabs.all'))
                 ->badge(fn() => BookingAttendee::count()),
 

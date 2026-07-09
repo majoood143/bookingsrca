@@ -73,15 +73,18 @@ return [
     ],
 
     'filters' => [
-        'date_from'  => 'Date From',
-        'date_until' => 'Date Until',
-        'booked_at'  => 'Booked At',
+        'event_date_from'   => 'Event Date From',
+        'event_date_until'  => 'Event Date Until',
+        'booked_date_from'  => 'Booking Date From',
+        'booked_date_until' => 'Booking Date Until',
+        'booked_at'         => 'Booked At',
     ],
 
     'options' => [
         'source' => [
             'online' => 'Online',
             'admin'  => 'Admin',
+            'kiosk'  => 'Kiosk',
         ],
         'gender' => [
             'male'   => 'Male',

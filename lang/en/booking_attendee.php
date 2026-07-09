@@ -70,6 +70,8 @@ return [
     ],
 
     'tabs' => [
+        'confirmed'     => 'Confirmed',
+        'cancelled'     => 'Cancelled',
         'all'           => 'All Attendees',
         'checked_in'    => 'Checked In',
         'not_checked_in' => 'Not Checked In',

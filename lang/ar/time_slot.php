@@ -98,6 +98,7 @@ return [
         'create_first'        => 'أنشئ أول فترة زمنية',
         'generate_slots'      => 'إنشاء فترات زمنية',
         'edit_time_range'     => 'تعديل النطاق الزمني',
+        'export'              => 'تصدير',
     ],
 
     'modals' => [

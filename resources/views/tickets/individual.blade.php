@@ -45,39 +45,40 @@
         }
 
         /* ── HEADER BANNER ── */
-        /* mPDF's background-size:cover resize math divides by zero on this
-           wide-aspect image, so the "cover" crop is emulated manually with a
-           fixed height + overflow:hidden instead. */
+        /* The artwork is a full card graphic (green band / white pass area /
+           green band) with a blank bleed margin below it. Cropping to 70mm
+           (background-position:top + overflow:hidden) keeps both green bands
+           intact at the container's aspect ratio and trims only that trailing
+           blank margin. Content sits in a REAL <table> (see the two-col
+           section below for the same fix) — CSS display:table/table-cell on
+           divs renders each "cell" as a stacked full-width block in this mPDF
+           version instead of laying them out side by side, and its
+           vertical-align:middle is unreliable outside real table cells. */
         .header {
             background-size: 100% auto;
-            background-position: center;
+            background-position: top center;
             background-repeat: no-repeat;
-            height: 52mm;
+            height: 70mm;
             overflow: hidden;
             padding: 0;
         }
 
-        .header-inner {
-            display: table;
+        .header-table {
             width: 100%;
-            min-height: 52mm;
-            background: linear-gradient(
-                {{ $isAr ? '270deg' : '90deg' }},
-                rgba(0,0,0,.55) 0%,
-                rgba(0,0,0,.15) 60%,
-                transparent 100%
-            );
+            border-collapse: collapse;
         }
 
+        /* Content is top-offset with padding-top (not vertical-align:middle —
+           mPDF sizes the table row to its content, not to the .header's fixed
+           height, so "centering" would run off a row far shorter than 70mm)
+           to land just below the artwork's top green band, inside the white
+           pass area. */
         .header-left {
-            display: table-cell;
-            vertical-align: middle;
+            text-align: {{ $isAr ? 'right' : 'left' }};
             @if($isAr)
-            padding: 12mm 20px 12mm 12px;
-            text-align: right;
+            padding: 25mm 16px 0 12px;
             @else
-            padding: 12mm 12px 12mm 20px;
-            text-align: left;
+            padding: 25mm 12px 0 16px;
             @endif
         }
 
@@ -86,22 +87,33 @@
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: rgba(255,255,255,.75);
-            margin-bottom: 5px;
+            color: #6b8f7a;
+            margin-bottom: 4px;
         }
 
-        .event-name {
-            font-size: 18px;
+        .attendee-name {
+            font-size: 19px;
             font-weight: bold;
-            color: #fff;
-            margin-bottom: 8px;
-            line-height: 1.3;
+            color: #14532d;
+            margin-bottom: 4px;
+            line-height: 1.25;
+        }
+
+        .event-line {
+            font-size: 10px;
+            color: #4b5563;
+            margin-bottom: 3px;
+        }
+
+        .event-meta {
+            font-size: 9px;
+            color: #6b7280;
+            margin-bottom: 9px;
         }
 
         .ticket-badge {
             display: inline-block;
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.5);
+            background: #14532d;
             color: #fff;
             padding: 4px 14px;
             border-radius: 20px;
@@ -111,22 +123,20 @@
         }
 
         .header-right {
-            display: table-cell;
-            vertical-align: middle;
-            width: 90px;
+            width: 76px;
             text-align: center;
             @if($isAr)
-            padding: 12mm 20px 12mm 12px;
+            padding: 25mm 12px 0 16px;
             @else
-            padding: 12mm 20px 12mm 12px;
+            padding: 25mm 16px 0 12px;
             @endif
         }
 
         .header-right img {
-            width: 68px;
-            height: 68px;
+            width: 62px;
+            height: 62px;
             border-radius: 8px;
-            border: 3px solid rgba(255,255,255,.85);
+            border: 2px solid #e5e7eb;
             padding: 3px;
             background: #fff;
             display: block;
@@ -135,7 +145,7 @@
 
         .qr-caption {
             font-size: 7px;
-            color: rgba(255,255,255,.8);
+            color: #9ca3af;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -369,30 +379,39 @@
 <div class="ticket">
 
     {{-- ── HEADER ── --}}
+    {{-- A real <table> (not CSS display:table/table-cell divs, see the .header
+         comment above) lays the attendee pass content over the artwork's
+         white mid-band, side by side with the QR code. --}}
     <div class="header" style="background-image: url('{{ $headerBg }}');">
-        <div class="header-inner">
-            @if($isAr)
-            <div class="header-right">
-                <img src="{{ $qrCode }}" alt="QR">
-                <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
-            </div>
-            <div class="header-left">
-                <div class="header-kicker">{{ $t('event_ticket') }}</div>
-                <div class="event-name">{{ $booking->event->getTranslation('title', 'ar') }}</div>
-                <span class="ticket-badge" dir="ltr">{{ $attendee->ticket_number }}</span>
-            </div>
-            @else
-            <div class="header-left">
-                <div class="header-kicker">{{ $t('event_ticket') }}</div>
-                <div class="event-name">{{ $booking->event->getTranslation('title', 'en') }}</div>
-                <span class="ticket-badge">{{ $attendee->ticket_number }}</span>
-            </div>
-            <div class="header-right">
-                <img src="{{ $qrCode }}" alt="QR">
-                <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
-            </div>
-            @endif
-        </div>
+        <table class="header-table">
+            <tr>
+                @if($isAr)
+                <td class="header-right" width="76">
+                    <img src="{{ $qrCode }}" width="120" height="120" alt="QR">
+                    <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
+                </td>
+                <td class="header-left">
+                    <div class="header-kicker">{{ $t('attendee') }}</div>
+                    <div class="attendee-name">{{ $attendee->getFullName() }}</div>
+                    <div class="event-line">{{ $booking->event->getTranslation('title', 'ar') }} &nbsp;·&nbsp; {{ $dateFormatted }}</div>
+                    <div class="event-meta">{{ $t('time') }} <span dir="ltr">{{ $booking->timeSlot->getTimeRange() }}</span> &nbsp;·&nbsp; {{ $t('location') }} {{ $booking->event->getTranslation('location', 'ar') }}</div>
+                    <span class="ticket-badge" dir="ltr">{{ $attendee->ticket_number }}</span>
+                </td>
+                @else
+                <td class="header-left">
+                    <div class="header-kicker">{{ $t('attendee') }}</div>
+                    <div class="attendee-name">{{ $attendee->getFullName() }}</div>
+                    <div class="event-line">{{ $booking->event->getTranslation('title', 'en') }} &nbsp;·&nbsp; {{ $dateFormatted }}</div>
+                    <div class="event-meta">{{ $t('time') }} {{ $booking->timeSlot->getTimeRange() }} &nbsp;·&nbsp; {{ $t('location') }} {{ $booking->event->getTranslation('location', 'en') }}</div>
+                    <span class="ticket-badge">{{ $attendee->ticket_number }}</span>
+                </td>
+                <td class="header-right" width="76">
+                    <img src="{{ $qrCode }}" width="120" height="120" alt="QR">
+                    <div class="qr-caption">{{ $t('scan_to_verify') }}</div>
+                </td>
+                @endif
+            </tr>
+        </table>
     </div>
 
     {{-- ── TEAR LINE ── --}}
@@ -415,10 +434,6 @@
                 <td class="col">
                     <div class="section-label">{{ $t('attendee') }}</div>
                     <table class="info-table">
-                        <tr>
-                            <td class="info-key">{{ $t('name') }}</td>
-                            <td class="info-val">{{ $attendee->getFullName() }}</td>
-                        </tr>
                         <tr>
                             <td class="info-key">{{ $t('email') }}</td>
                             <td class="info-val" style="word-break:break-all;">{{ $attendee->email }}</td>

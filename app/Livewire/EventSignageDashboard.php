@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GuardsPrivateEvents;
 use App\Models\Event;
 use App\Models\EventSignageSetting;
 use App\Models\TimeSlot;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class EventSignageDashboard extends Component
 {
+    use GuardsPrivateEvents;
+
     public Event $event;
 
     public ?array $nextTrip = null;
@@ -18,6 +21,15 @@ class EventSignageDashboard extends Component
     public array $upcomingTrips = [];
 
     public function mount(): void
+    {
+        $this->guardEventAccess($this->event);
+
+        if (! $this->passwordRequired) {
+            $this->refreshData();
+        }
+    }
+
+    protected function afterEventUnlocked(): void
     {
         $this->refreshData();
     }
@@ -81,6 +93,10 @@ class EventSignageDashboard extends Component
 
     public function render()
     {
+        if ($this->passwordRequired) {
+            return view('livewire.event-password-prompt');
+        }
+
         return view('livewire.event-signage-dashboard', [
             'signage' => $this->signage(),
         ]);

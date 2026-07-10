@@ -231,7 +231,17 @@ class EventResource extends Resource
                             ->default('draft')
                             ->required()
                             ->native(false)
+                            ->live()
                             ->helperText(__('event.fields.status_helper')),
+
+                        TextInput::make('password')
+                            ->label(__('event.fields.password'))
+                            ->maxLength(255)
+                            ->password()
+                            ->revealable()
+                            ->visible(fn (Get $get): bool => $get('status') === 'private')
+                            ->required(fn (Get $get): bool => $get('status') === 'private')
+                            ->helperText(__('event.fields.password_helper')),
                     ])
                     ->columns(1)
                     ->collapsible(),
@@ -404,11 +414,13 @@ class EventResource extends Resource
                         'secondary' => 'draft',
                         'success'   => 'published',
                         'danger'    => 'cancelled',
+                        'warning'   => 'private',
                     ])
                     ->icons([
                         'heroicon-o-pencil'       => 'draft',
                         'heroicon-o-check-circle' => 'published',
                         'heroicon-o-x-circle'     => 'cancelled',
+                        'heroicon-o-lock-closed'  => 'private',
                     ]),
 
                 TextColumn::make('bookings_count')

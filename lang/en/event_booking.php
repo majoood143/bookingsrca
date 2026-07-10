@@ -28,6 +28,16 @@ return [
         'back_home'         => 'Back to Home',
     ],
 
+    // ── Private / password-protected event ──────────────────────────────────
+    'private' => [
+        'heading'          => 'This Event is Private',
+        'message'          => 'Enter the access password to view this event.',
+        'password_label'   => 'Password',
+        'password_placeholder' => 'Enter password',
+        'submit'           => 'View Event',
+        'incorrect'        => 'Incorrect password. Please try again.',
+    ],
+
     // ── Step 1 — Select Date ──────────────────────────────────────────────────
     'step1' => [
         'heading'         => 'Select a Date',

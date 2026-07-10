@@ -23,6 +23,7 @@ use App\Filament\Resources\BookingAttendeeResource\Pages\ViewBookingAttendee;
 use App\Filament\Resources\BookingAttendeeResource\Pages;
 use App\Models\BookingAttendee;
 use App\Models\Event;
+use App\Models\TicketType;
 use App\Models\TimeSlot;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\IconEntry;
@@ -382,6 +383,8 @@ class BookingAttendeeResource extends Resource
                         return $indicators;
                     }),
 
+                    
+
                 SelectFilter::make('time_slot')
                     ->label(__('booking_attendee.filters.time_slot'))
                     ->options(function ($livewire) {
@@ -406,6 +409,23 @@ class BookingAttendeeResource extends Resource
                         $values = (array) ($data['values'] ?? []);
                         if (!empty($values)) {
                             $query->whereHas('booking', fn($q) => $q->whereIn('time_slot_id', $values));
+                        }
+                    })
+                    ->searchable()
+                    ->multiple(),
+
+                SelectFilter::make('ticket_type')
+                    ->label(__('booking_attendee.filters.ticket_type'))
+                    ->options(
+                        fn() => TicketType::query()
+                            ->get()
+                            ->mapWithKeys(fn($ticketType) => [$ticketType->id => $ticketType->getTranslation('name', 'en')])
+                            ->toArray()
+                    )
+                    ->query(function (Builder $query, array $data) {
+                        $values = (array) ($data['values'] ?? []);
+                        if (!empty($values)) {
+                            $query->whereIn('ticket_type_id', $values);
                         }
                     })
                     ->searchable()

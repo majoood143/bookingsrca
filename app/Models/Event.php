@@ -25,8 +25,11 @@ class Event extends Model
         'recurring_days',
         'image',
         'status',
+        'password',
         'max_attendees',
     ];
+
+    protected $hidden = ['password'];
 
     protected $translatable = ['title', 'description', 'location', 'organizer'];
 
@@ -117,6 +120,25 @@ class Event extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('end_date', '>=', now()->format('Y-m-d'));
+    }
+
+    // Access control helpers
+    public function isPrivate(): bool
+    {
+        return $this->status === 'private';
+    }
+
+    public function isGuestVisible(): bool
+    {
+        return in_array($this->status, ['published', 'private'], true);
+    }
+
+    public function checkPassword(?string $value): bool
+    {
+        return $this->isPrivate()
+            && filled($this->password)
+            && filled($value)
+            && hash_equals($this->password, $value);
     }
 
     // Helper methods

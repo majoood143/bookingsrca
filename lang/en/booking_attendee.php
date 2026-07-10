@@ -86,6 +86,7 @@ return [
         'email_sent'     => 'Email Status',
         'event_date'     => 'Event Date',
         'time_slot'      => 'Time Slot',
+        'ticket_type'    => 'Ticket Type',
         'date_from'      => 'Date From',
         'date_until'     => 'Date Until',
     ],

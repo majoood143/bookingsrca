@@ -41,6 +41,83 @@
             </a>
         </div>
     </div>
+<?php elseif($passwordRequired): ?>
+    <?php $__env->startPush('meta'); ?>
+        <meta name="robots" content="noindex, nofollow">
+    <?php $__env->stopPush(); ?>
+    
+    <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div class="max-w-md w-full text-center py-12">
+            <div class="flex justify-end mb-6">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(app()->getLocale() === 'ar'): ?>
+                    <a href="<?php echo e(route('lang.switch', 'en')); ?>"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors">
+                        🌐 <?php echo e(__('event_booking.switch_to_english')); ?>
+
+                    </a>
+                <?php else: ?>
+                    <a href="<?php echo e(route('lang.switch', 'ar')); ?>"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors">
+                        🌐 <?php echo e(__('event_booking.switch_to_arabic')); ?>
+
+                    </a>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <img src="<?php echo e(asset('storage/images/horizontalLogo-03.svg')); ?>" alt="Logo"
+                class="h-20 w-auto mx-auto mb-8">
+
+            <div class="text-6xl mb-4">🔒</div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                <?php echo e(__('event_booking.private.heading')); ?>
+
+            </h1>
+            <p class="text-gray-500 text-base leading-relaxed mb-6">
+                <?php echo e(__('event_booking.private.message')); ?>
+
+            </p>
+
+            <form wire:submit.prevent="submitEventPassword" class="text-start">
+                <label for="eventPasswordInput" class="sr-only">
+                    <?php echo e(__('event_booking.private.password_label')); ?>
+
+                </label>
+                <input
+                    type="password"
+                    id="eventPasswordInput"
+                    wire:model="eventPasswordInput"
+                    placeholder="<?php echo e(__('event_booking.private.password_placeholder')); ?>"
+                    autofocus
+                    class="w-full rounded-xl border-gray-300 focus:border-brand focus:ring-brand shadow-sm px-4 py-3"
+                >
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['eventPasswordInput'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo e($message); ?></p>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($eventPasswordError): ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo e($eventPasswordError); ?></p>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                <button type="submit"
+                    class="mt-4 w-full inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                    <?php echo e(__('event_booking.private.submit')); ?>
+
+                </button>
+            </form>
+
+            <a href="<?php echo e(url('/')); ?>"
+                class="mt-6 inline-block text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                <?php echo e(__('event_booking.unavailable.back_home')); ?>
+
+            </a>
+        </div>
+    </div>
 <?php else: ?>
     <div class="min-h-screen bg-gray-50">
 
@@ -78,8 +155,7 @@
             </p>
             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-blue-200">
                 <span>📍 <?php echo e($event->getTranslation('location', app()->getLocale())); ?></span>
-                <span>📅 <?php echo e($event->start_date->locale(app()->getLocale())->translatedFormat('M d')); ?> –
-                    <?php echo e($event->end_date->locale(app()->getLocale())->translatedFormat('M d, Y')); ?></span>
+                
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($event->organizer): ?>
                     <span>👤 <?php echo e($event->organizer); ?></span>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

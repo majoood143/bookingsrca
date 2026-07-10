@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Exception;
 use Livewire\Component;
+use App\Livewire\Concerns\GuardsPrivateEvents;
 use App\Livewire\Concerns\HandlesEventBookingFlow;
 use App\Models\Booking;
 use App\Models\BookingSetting;
@@ -12,13 +13,22 @@ use App\Services\NboService;
 
 class EventBooking extends Component
 {
-    use HandlesEventBookingFlow;
+    use HandlesEventBookingFlow, GuardsPrivateEvents;
 
     // Payment
     public string $selectedPaymentMethod = '';
     public string $activeGateway         = 'free';
 
     public function mount()
+    {
+        $this->guardEventAccess($this->event);
+
+        if (! $this->passwordRequired) {
+            $this->afterEventUnlocked();
+        }
+    }
+
+    protected function afterEventUnlocked(): void
     {
         $this->loadBookingFieldSettings();
 
@@ -154,6 +164,10 @@ class EventBooking extends Component
 
     public function render()
     {
+        if ($this->passwordRequired) {
+            return view('livewire.event-booking');
+        }
+
         $availableDates = collect($this->event->getBookableDates());
         $soldOutDates   = collect($this->event->getSoldOutDates());
         $timeSlots      = $this->selectedDate

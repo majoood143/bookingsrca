@@ -43,7 +43,9 @@ return [
         'image'            => 'Event Image',
         'image_helper'     => 'Upload an image (max 2MB). Recommended size: 1200x675px',
         'status'           => 'Event Status',
-        'status_helper'    => 'Only published events are visible to users',
+        'status_helper'    => 'Only published events are visible to users. Private events are hidden from search engines and only visible to Administrators or visitors with the password.',
+        'password'         => 'Access Password',
+        'password_helper'  => 'Visitors must enter this password to view the event. Administrators always bypass it.',
         'signage_logo'              => 'Screen Logo',
         'signage_logo_helper'       => 'Overrides the default logo on the signage screen',
         'signage_background'       => 'Screen Background',
@@ -78,6 +80,7 @@ return [
             'draft'     => 'Draft',
             'published' => 'Published',
             'cancelled' => 'Cancelled',
+            'private'   => 'Private (Password Protected)',
         ],
         'days' => [
             'monday'    => 'Monday',

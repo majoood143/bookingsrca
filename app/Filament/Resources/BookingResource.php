@@ -38,6 +38,7 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\TimeSlot;
 use App\Models\TicketType;
+use App\Services\Printing\AttendeeTicketPrintService;
 use App\Models\ExtraService;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -734,8 +735,22 @@ class BookingResource extends Resource
                         ->label(__('booking.actions.print_tickets'))
                         ->icon('heroicon-o-ticket')
                         ->color('gray')
-                        ->url(fn(Booking $record) => route('bookings.attendee-tickets', $record))
-                        ->openUrlInNewTab()
+                        ->action(function (Booking $record) {
+                            try {
+                                app(AttendeeTicketPrintService::class)->printAttendeeTickets($record);
+
+                                Notification::make()
+                                    ->success()
+                                    ->title(__('booking.notifications.tickets_printed'))
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title(__('booking.notifications.tickets_print_failed'))
+                                    ->body($e->getMessage())
+                                    ->send();
+                            }
+                        })
                         ->disabled(fn(Booking $record) => $record->status === 'cancelled')
                         ->tooltip(__('booking.tooltips.print_tickets')),
 

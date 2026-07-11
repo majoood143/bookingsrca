@@ -141,11 +141,17 @@ return [
         'nbo_redirect_note'      => 'You will be redirected to the NBO secure payment page to complete your purchase.',
         'pay_nbo_btn'            => 'Pay Now',
         'redirecting_nbo'        => 'Redirecting to NBO...',
+        'ccavenue_title'         => 'CCAvenue (Bank Muscat)',
+        'ccavenue_subtitle'      => 'Secure online payment powered by Bank Muscat / CCAvenue',
+        'ccavenue_redirect_note' => 'You will be redirected to the CCAvenue secure payment page to complete your purchase.',
+        'pay_ccavenue_btn'       => 'Pay Now',
+        'redirecting_ccavenue'   => 'Redirecting to CCAvenue...',
         'confirm_booking'        => 'Confirm Booking',
         'processing'             => 'Processing...',
         'order_summary'          => 'Order Summary',
         'secured_by_thawani'     => 'Secured by Thawani',
         'secured_by_nbo'         => 'Secured by NBO',
+        'secured_by_ccavenue'    => 'Secured by CCAvenue',
     ],
 
     // ── Shared summary sidebar ────────────────────────────────────────────────

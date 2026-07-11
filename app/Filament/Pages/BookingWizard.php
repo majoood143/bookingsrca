@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\ExtraService;
 use App\Models\TicketType;
 use App\Models\TimeSlot;
+use App\Services\Printing\AttendeeTicketPrintService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
@@ -667,6 +668,28 @@ class BookingWizard extends Page implements HasForms
     public function startNewBooking(): void
     {
         $this->resetWizardForm();
+    }
+
+    public function printAttendeeTickets(): void
+    {
+        if (!$this->createdBooking) {
+            return;
+        }
+
+        try {
+            app(AttendeeTicketPrintService::class)->printAttendeeTickets($this->createdBooking);
+
+            Notification::make()
+                ->success()
+                ->title(__('booking.notifications.tickets_printed'))
+                ->send();
+        } catch (Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title(__('booking.notifications.tickets_print_failed'))
+                ->body($e->getMessage())
+                ->send();
+        }
     }
 
     public function getViewBookingUrl(): ?string

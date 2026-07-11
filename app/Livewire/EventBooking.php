@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Services\ThawaniService;
 use App\Services\NboService;
+use App\Services\CCAvenueService;
 
 class EventBooking extends Component
 {
@@ -63,6 +64,10 @@ class EventBooking extends Component
 
         if (!$isFree && $this->activeGateway === 'nbo') {
             return $this->redirectToNbo($booking);
+        }
+
+        if (!$isFree && $this->activeGateway === 'ccavenue') {
+            return $this->redirectToCcavenue($booking);
         }
 
         // Cash / Free — confirm immediately (confirm() handles all emails)
@@ -155,6 +160,25 @@ class EventBooking extends Component
             $paymentUrl = $nbo->initiatePayment($booking);
 
             return redirect()->away($paymentUrl);
+
+        } catch (Exception $e) {
+            $booking->cancel();
+            session()->flash('error', $e->getMessage());
+        }
+    }
+
+    // ── CCAvenue redirect ────────────────────────────────────────────────────
+
+    protected function redirectToCcavenue(Booking $booking)
+    {
+        try {
+            $ccavenue = app(CCAvenueService::class);
+
+            if (!$ccavenue->isConfigured()) {
+                throw new Exception(__('Payment gateway is not configured. Please contact support.'));
+            }
+
+            return redirect()->route('payment.redirect.ccavenue', $booking->booking_reference);
 
         } catch (Exception $e) {
             $booking->cancel();

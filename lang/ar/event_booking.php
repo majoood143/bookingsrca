@@ -141,11 +141,17 @@ return [
         'nbo_redirect_note'     => 'سيتم تحويلك إلى صفحة الدفع الآمنة لإتمام عملية الشراء.',
         'pay_nbo_btn'           => 'الدفع الآن',
         'redirecting_nbo'       => 'جارٍ التحويل إلى NBO...',
+        'ccavenue_title'         => 'سي سي أفينيو (بنك مسقط)',
+        'ccavenue_subtitle'      => 'دفع آمن عبر الإنترنت مدعوم من بنك مسقط / CCAvenue',
+        'ccavenue_redirect_note' => 'سيتم تحويلك إلى صفحة الدفع الآمنة لإتمام عملية الشراء.',
+        'pay_ccavenue_btn'       => 'الدفع الآن',
+        'redirecting_ccavenue'   => 'جارٍ التحويل إلى CCAvenue...',
         'confirm_booking'       => 'تأكيد الحجز',
         'processing'            => 'جارٍ المعالجة...',
         'order_summary'         => 'ملخص الطلب',
         'secured_by_thawani'    => 'مؤمَّن بواسطة ثواني',
         'secured_by_nbo'        => 'مؤمَّن بواسطة NBO',
+        'secured_by_ccavenue'    => 'مؤمَّن بواسطة CCAvenue',
     ],
 
     // ── Shared summary sidebar ────────────────────────────────────────────────

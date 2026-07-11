@@ -58,6 +58,13 @@ class PaymentGateways extends Page implements HasForms
                 'endpoint_url'        => BookingSetting::get('nbo.endpoint_url', ''),
                 'test_mode'           => (bool) BookingSetting::get('nbo.test_mode', true),
             ],
+            'ccavenue'       => [
+                'merchant_id'  => BookingSetting::get('ccavenue.merchant_id', ''),
+                'access_code'  => BookingSetting::get('ccavenue.access_code', ''),
+                'working_key'  => BookingSetting::get('ccavenue.working_key', ''),
+                'endpoint_url' => BookingSetting::get('ccavenue.endpoint_url', ''),
+                'test_mode'    => (bool) BookingSetting::get('ccavenue.test_mode', true),
+            ],
         ]);
     }
 
@@ -73,8 +80,9 @@ class PaymentGateways extends Page implements HasForms
                             ->options([
                                 'free'    => __('Free (no payment required)'),
                                 'cash'    => __('Cash / Pay at Door'),
-                                'thawani' => __('Thawani'),
-                                'nbo'     => __('NBO Unified Checkout'),
+                                'thawani'  => __('Thawani'),
+                                'nbo'      => __('NBO Unified Checkout'),
+                                'ccavenue' => __('CCAvenue (Bank Muscat)'),
                             ])
                             ->required()
                             ->live()
@@ -163,15 +171,58 @@ class PaymentGateways extends Page implements HasForms
                                 : 'https://unifiedpg.nbo.om/OLTP/payment/hosted.htm')
                             ->maxLength(255),
                     ]),
+
+                Section::make(__('CCAvenue Settings'))
+                    ->description(__('Credentials for the CCAvenue (Bank Muscat MCPG) payment gateway.'))
+                    ->visible(fn ($get) => $get('active_gateway') === 'ccavenue')
+                    ->schema([
+                        Toggle::make('ccavenue.test_mode')
+                            ->label(__('Test Mode'))
+                            ->helperText(__('When enabled, requests go to the CCAvenue sandbox endpoint instead of the live endpoint.'))
+                            ->default(true)
+                            ->live(),
+
+                        Group::make([
+                            TextInput::make('ccavenue.merchant_id')
+                                ->label(__('Merchant ID'))
+                                ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                                ->maxLength(255),
+
+                            TextInput::make('ccavenue.access_code')
+                                ->label(__('Access Code'))
+                                ->password()
+                                ->revealable()
+                                ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                                ->maxLength(255),
+                        ])->columns(2),
+
+                        TextInput::make('ccavenue.working_key')
+                            ->label(__('Working Key'))
+                            ->helperText(__('AES-256 encryption key provided by Bank Muscat/CCAvenue.'))
+                            ->password()
+                            ->revealable()
+                            ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                            ->maxLength(255),
+
+                        TextInput::make('ccavenue.endpoint_url')
+                            ->label(__('Endpoint URL Override'))
+                            ->helperText(__('Leave blank to use the placeholder default; must be overridden with the real Bank Muscat/CCAvenue transaction URL before going live.'))
+                            ->url()
+                            ->placeholder(fn ($get) => $get('ccavenue.test_mode')
+                                ? 'https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction'
+                                : 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction')
+                            ->maxLength(255),
+                    ]),
             ])
             ->statePath('data');
     }
 
     public function save(): void
     {
-        $state   = $this->form->getState();
-        $thawani = $state['thawani'] ?? [];
-        $nbo     = $state['nbo']     ?? [];
+        $state    = $this->form->getState();
+        $thawani  = $state['thawani']  ?? [];
+        $nbo      = $state['nbo']      ?? [];
+        $ccavenue = $state['ccavenue'] ?? [];
 
         BookingSetting::set('active_gateway', $state['active_gateway']);
 
@@ -186,6 +237,12 @@ class PaymentGateways extends Page implements HasForms
         BookingSetting::set('nbo.resource_key',        $nbo['resource_key']        ?? '');
         BookingSetting::set('nbo.endpoint_url',        $nbo['endpoint_url']        ?? '');
         BookingSetting::set('nbo.test_mode',           !empty($nbo['test_mode'])   ? '1' : '0');
+
+        BookingSetting::set('ccavenue.merchant_id',  $ccavenue['merchant_id']  ?? '');
+        BookingSetting::set('ccavenue.access_code',  $ccavenue['access_code']  ?? '');
+        BookingSetting::set('ccavenue.working_key',  $ccavenue['working_key']  ?? '');
+        BookingSetting::set('ccavenue.endpoint_url', $ccavenue['endpoint_url'] ?? '');
+        BookingSetting::set('ccavenue.test_mode',    !empty($ccavenue['test_mode']) ? '1' : '0');
 
         Notification::make()
             ->title(__('Payment gateway settings saved.'))

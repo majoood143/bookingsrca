@@ -6,6 +6,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use App\Mail\BookingConfirmation;
+use App\Services\Printing\AttendeeTicketPrintService;
 use App\Filament\Resources\BookingResource;
 use App\Filament\Resources\BookingResource\Pages\EditBooking;
 use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
@@ -90,8 +91,22 @@ class ViewBooking extends ViewRecord
                 ->label(__('booking.actions.print_tickets'))
                 ->icon('heroicon-o-ticket')
                 ->color('gray')
-                ->url(fn() => route('bookings.attendee-tickets', $this->record))
-                ->openUrlInNewTab()
+                ->action(function () {
+                    try {
+                        app(AttendeeTicketPrintService::class)->printAttendeeTickets($this->record);
+
+                        Notification::make()
+                            ->success()
+                            ->title(__('booking.notifications.tickets_printed'))
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('booking.notifications.tickets_print_failed'))
+                            ->body($e->getMessage())
+                            ->send();
+                    }
+                })
                 ->tooltip(__('booking.tooltips.print_tickets')),
 
             Action::make('resend_email')

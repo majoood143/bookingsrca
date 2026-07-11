@@ -290,6 +290,35 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                             </p>
                         </div>
+                    <?php elseif($activeGateway === 'ccavenue'): ?>
+                        <div
+                            class="p-6 border-2 border-teal-500 bg-teal-50 rounded-2xl shadow-md shadow-teal-100 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-teal-100 shrink-0">
+                                    <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 text-lg">
+                                        <?php echo e(__('event_booking.step6.ccavenue_title')); ?></p>
+                                    <p class="text-sm text-gray-500"><?php echo e(__('event_booking.step6.ccavenue_subtitle')); ?>
+
+                                    </p>
+                                </div>
+                                <div class="ml-auto">
+                                    <span
+                                        class="inline-block w-3 h-3 rounded-full bg-teal-500 ring-4 ring-teal-200"></span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-sm text-teal-700 bg-teal-100 rounded-lg px-3 py-2">
+                                <?php echo e(__('event_booking.step6.ccavenue_redirect_note')); ?>
+
+                            </p>
+                        </div>
                     <?php elseif($activeGateway === 'cash'): ?>
                         <div class="p-6 border-2 border-amber-400 bg-amber-50 rounded-2xl mb-6">
                             <div class="flex items-center gap-4">
@@ -396,6 +425,25 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                     </svg>
                                     <?php echo e(__('event_booking.step6.redirecting_nbo')); ?>
+
+                                </span>
+                            </button>
+                        <?php elseif($activeGateway === 'ccavenue'): ?>
+                            <button type="button" wire:click="submitBooking"
+                                class="flex-1 sm:flex-none px-8 py-3 bg-teal-600 text-white font-bold text-base rounded-xl hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                wire:loading.attr="disabled" wire:target="submitBooking">
+                                <span wire:loading.remove wire:target="submitBooking">
+                                    🔒 <?php echo e(__('event_booking.step6.pay_ccavenue_btn')); ?>
+
+                                </span>
+                                <span wire:loading wire:target="submitBooking" class="inline-flex items-center gap-2">
+                                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                    <?php echo e(__('event_booking.step6.redirecting_ccavenue')); ?>
 
                                 </span>
                             </button>
@@ -551,6 +599,17 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             clip-rule="evenodd" />
                                     </svg>
                                     <?php echo e(__('event_booking.step6.secured_by_nbo')); ?>
+
+                                </div>
+                            <?php elseif($activeGateway === 'ccavenue'): ?>
+                                <div class="pt-2 text-center text-xs text-gray-400">
+                                    <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
+                                        viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <?php echo e(__('event_booking.step6.secured_by_ccavenue')); ?>
 
                                 </div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

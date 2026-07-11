@@ -22,6 +22,7 @@
         "marcelorodrigo/filament-barcode-scanner-field": "^1.1",
         "marcogermani87/filament-captcha": "^2.3",
         "matomo/device-detector": "^6.5",
+        "mike42/escpos-php": "^5.0",
         "mpdf/mpdf": "^8.3",
         "picqer/php-barcode-generator": "^3.2",
         "pxlrbt/filament-activity-log": "^2.2",

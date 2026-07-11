@@ -7,6 +7,8 @@ use App\Livewire\Kiosk\KioskBooking;
 use App\Models\Event;
 use App\Http\Controllers\ThawaniCallbackController;
 use App\Http\Controllers\NboCallbackController;
+use App\Http\Controllers\CCAvenueRedirectController;
+use App\Http\Controllers\CCAvenueCallbackController;
 use App\Http\Controllers\KioskHeartbeatController;
 
 Route::get('/', function () {
@@ -48,6 +50,14 @@ Route::post('/booking/payment/webhook/thawani', [ThawaniCallbackController::clas
 Route::post('/booking/payment/callback/nbo', [NboCallbackController::class, 'callback'])
     ->name('payment.callback.nbo');
 
+// CCAvenue: full-page GET that renders the auto-submit POST form to the gateway.
+Route::get('/booking/payment/ccavenue/{reference}', [CCAvenueRedirectController::class, 'show'])
+    ->name('payment.redirect.ccavenue');
+
+// CCAvenue browser-redirect callback (CSRF excluded via bootstrap/app.php).
+Route::post('/booking/payment/callback/ccavenue', [CCAvenueCallbackController::class, 'callback'])
+    ->name('payment.callback.ccavenue');
+
 // Language switching
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'ar'])) {
@@ -62,10 +72,3 @@ Route::get('/admin/bookings/{booking}/receipt', function (\App\Models\Booking $b
         'booking' => $booking->load(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices', 'payments']),
     ]);
 })->middleware(['auth'])->name('bookings.receipt');
-
-// Printable attendee ticket receipts, one separated ticket per attendee with a booking-reference barcode (admin only).
-Route::get('/admin/bookings/{booking}/attendee-tickets', function (\App\Models\Booking $booking) {
-    return view('bookings.attendee-tickets-receipt', [
-        'booking' => $booking->load(['event', 'timeSlot', 'attendees.ticketType']),
-    ]);
-})->middleware(['auth'])->name('bookings.attendee-tickets');

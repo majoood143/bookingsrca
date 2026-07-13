@@ -33,6 +33,11 @@ class KioskCardResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-credit-card';
     protected static ?int $navigationSort = 31;
 
+    public static function canAccess(): bool
+    {
+        return parent::canAccess() && (bool) \App\Models\BookingSetting::get('module_kiosk_enabled', true);
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __('kiosk_card.navigation.group');

@@ -23,9 +23,10 @@ class CCAvenueCallbackController extends Controller
     // aborted/invalid/initiated/unsuccessful), amount, tracking_id,
     // bank_ref_no, payment_type, failure_message, status_message.
     //
-    // order_id is the booking_reference we sent as CCAvenue's order_id, so
-    // the booking is looked up directly by that column (no session-id
-    // indirection needed, unlike NBO's opaque paymentId).
+    // order_id is booking_reference with its hyphen stripped (CCAvenue/Bank
+    // Muscat rejects non-alphanumeric order_ids), stored on payment_session_id
+    // at initiate time — so the booking is looked up by that column rather
+    // than booking_reference directly.
     //
     // CSRF is disabled for this route via bootstrap/app.php.
     // ──────────────────────────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ class CCAvenueCallbackController extends Controller
         $status  = strtolower((string) ($data['order_status'] ?? ''));
         $amount  = $data['amount'] ?? null;
 
-        $booking = $orderId ? Booking::where('booking_reference', $orderId)->first() : null;
+        $booking = $orderId ? Booking::where('payment_session_id', $orderId)->first() : null;
 
         if (!$booking) {
             Log::warning('CCAvenue callback: no booking found for order_id', ['order_id' => $orderId]);
@@ -71,10 +72,21 @@ class CCAvenueCallbackController extends Controller
             && round((float) $amount, 2) === round((float) $booking->total_price, 2);
 
         if ($status === 'success' && $amountMatches) {
+            $reference = $data['tracking_id'] ?? $data['bank_ref_no'] ?? null;
+
             $booking->update([
                 'payment_status'    => 'paid',
-                'payment_reference' => $data['tracking_id'] ?? $data['bank_ref_no'] ?? null,
+                'payment_reference' => $reference,
             ]);
+
+            $booking->payments()->firstOrCreate(
+                ['payment_method' => 'ccavenue'],
+                [
+                    'amount'    => $booking->total_price,
+                    'reference' => $reference,
+                    'notes'     => 'Online payment via CCAvenue (Bank Muscat).',
+                ]
+            );
 
             $booking->confirm();
 

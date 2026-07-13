@@ -6,7 +6,9 @@ use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use App\Models\BookingSetting;
+use App\Models\PrintJob;
 use App\Services\Printing\AttendeeTicketPrintService;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -15,6 +17,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Illuminate\Support\Str;
 use Throwable;
 
 class PrinterSettings extends Page implements HasForms
@@ -44,25 +47,20 @@ class PrinterSettings extends Page implements HasForms
 
     public function mount(): void
     {
+        if (empty(BookingSetting::get('printer.agent_token'))) {
+            BookingSetting::set('printer.agent_token', Str::random(40));
+        }
+
+        $this->fillForm();
+    }
+
+    private function fillForm(): void
+    {
         $this->form->fill([
-            'enabled'        => (bool) BookingSetting::get('printer.enabled', false),
-            'driver'         => BookingSetting::get('printer.driver', 'network'),
+            'enabled'          => (bool) BookingSetting::get('printer.enabled', false),
+            'agent_token'      => BookingSetting::get('printer.agent_token', ''),
             'paper_width_dots' => (string) BookingSetting::get('printer.paper_width_dots', 576),
-            'timeout_seconds' => BookingSetting::get('printer.timeout_seconds', 5),
-            'graphics_mode'  => (bool) BookingSetting::get('printer.graphics_mode', false),
-            'network'        => [
-                'host' => BookingSetting::get('printer.network.host', ''),
-                'port' => BookingSetting::get('printer.network.port', 9100),
-            ],
-            'cups'           => [
-                'printer_name' => BookingSetting::get('printer.cups.printer_name', ''),
-            ],
-            'windows'        => [
-                'printer_name' => BookingSetting::get('printer.windows.printer_name', ''),
-            ],
-            'file'           => [
-                'path' => BookingSetting::get('printer.file.path', storage_path('app/printing/last-print.bin')),
-            ],
+            'graphics_mode'    => (bool) BookingSetting::get('printer.graphics_mode', false),
         ]);
     }
 
@@ -71,24 +69,12 @@ class PrinterSettings extends Page implements HasForms
         return $schema
             ->components([
                 Section::make(__('Thermal Printer'))
-                    ->description(__('Configure the ESC/POS thermal printer used to print attendee tickets.'))
+                    ->description(__('The app is hosted online and cannot reach a printer on your on-site network directly. Attendee tickets are rendered here and queued; an on-site print agent (see print-agent/README.md) polls this app and delivers them to the printer over your local network.'))
                     ->schema([
                         Toggle::make('enabled')
                             ->label(__('Enable Thermal Printing'))
-                            ->helperText(__('When disabled, printing attendee tickets will show an error instead of attempting to print.'))
+                            ->helperText(__('When disabled, printing attendee tickets will show an error instead of queuing a job.'))
                             ->live(),
-
-                        Select::make('driver')
-                            ->label(__('Connector'))
-                            ->options([
-                                'network' => __('Network (IP:Port)'),
-                                'cups'    => __('CUPS (USB/Shared Linux Printer)'),
-                                'windows' => __('Windows Shared Printer'),
-                                'file'    => __('File (Diagnostic Only)'),
-                            ])
-                            ->required()
-                            ->live()
-                            ->native(false),
 
                         Select::make('paper_width_dots')
                             ->label(__('Paper Width'))
@@ -99,68 +85,71 @@ class PrinterSettings extends Page implements HasForms
                             ->required()
                             ->native(false),
 
-                        TextInput::make('timeout_seconds')
-                            ->label(__('Connection Timeout (seconds)'))
-                            ->numeric()
-                            ->default(5)
-                            ->required(),
-
                         Toggle::make('graphics_mode')
                             ->label(__('Use Raster Graphics Mode'))
                             ->helperText(__('Enable if your printer supports GS ( L raster graphics for higher quality output. Leave off to use the more widely compatible bit-image method.')),
                     ]),
 
-                Section::make(__('Network Printer'))
-                    ->visible(fn ($get) => $get('driver') === 'network')
+                Section::make(__('On-Site Print Agent'))
+                    ->description(__('This token authenticates the on-site agent script when it polls this app for print jobs. Copy it into the agent\'s config.ini.'))
                     ->schema([
-                        TextInput::make('network.host')
-                            ->label(__('Host / IP Address'))
-                            ->required(fn ($get) => $get('driver') === 'network')
+                        TextInput::make('agent_token')
+                            ->label(__('Agent Token'))
+                            ->password()
+                            ->revealable()
+                            ->readOnly()
                             ->maxLength(255),
 
-                        TextInput::make('network.port')
-                            ->label(__('Port'))
-                            ->numeric()
-                            ->default(9100)
-                            ->required(fn ($get) => $get('driver') === 'network'),
-                    ]),
+                        Placeholder::make('agent_last_seen_at')
+                            ->label(__('Agent Last Seen'))
+                            ->content(fn () => $this->formatLastSeen()),
 
-                Section::make(__('CUPS Printer'))
-                    ->visible(fn ($get) => $get('driver') === 'cups')
-                    ->schema([
-                        TextInput::make('cups.printer_name')
-                            ->label(__('CUPS Printer Name'))
-                            ->helperText(__('Requires the "cups" PHP extension to be installed on this server.'))
-                            ->required(fn ($get) => $get('driver') === 'cups')
-                            ->maxLength(255),
-                    ]),
-
-                Section::make(__('Windows Shared Printer'))
-                    ->visible(fn ($get) => $get('driver') === 'windows')
-                    ->schema([
-                        TextInput::make('windows.printer_name')
-                            ->label(__('Windows Printer Name'))
-                            ->helperText(__('Only works when this application server itself runs on Windows. Use the Network or CUPS driver otherwise.'))
-                            ->required(fn ($get) => $get('driver') === 'windows')
-                            ->maxLength(255),
-                    ]),
-
-                Section::make(__('Diagnostic File Output'))
-                    ->visible(fn ($get) => $get('driver') === 'file')
-                    ->schema([
-                        TextInput::make('file.path')
-                            ->label(__('Output File Path'))
-                            ->helperText(__('Raw ESC/POS bytes are written to this file instead of being sent to a real printer — useful for testing without hardware.'))
-                            ->required(fn ($get) => $get('driver') === 'file')
-                            ->maxLength(255),
+                        Placeholder::make('pending_jobs')
+                            ->label(__('Pending / Failed Jobs'))
+                            ->content(fn () => $this->formatJobCounts()),
                     ]),
             ])
             ->statePath('data');
     }
 
+    private function formatLastSeen(): string
+    {
+        $lastSeen = BookingSetting::get('printer.agent_last_seen_at');
+
+        if (!$lastSeen) {
+            return __('Never — the on-site agent has not polled this app yet.');
+        }
+
+        return \Illuminate\Support\Carbon::parse($lastSeen)->diffForHumans();
+    }
+
+    private function formatJobCounts(): string
+    {
+        $pending = PrintJob::whereIn('status', ['pending', 'claimed'])->count();
+        $failed  = PrintJob::where('status', 'failed')->count();
+
+        return __(':pending pending, :failed failed', ['pending' => $pending, 'failed' => $failed]);
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('regenerate_token')
+                ->label(__('Regenerate Agent Token'))
+                ->icon('heroicon-o-key')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription(__('The current token will stop working immediately — update the on-site agent\'s config.ini with the new value right after.'))
+                ->action(function () {
+                    BookingSetting::set('printer.agent_token', Str::random(40));
+                    $this->fillForm();
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('Agent token regenerated.'))
+                        ->send();
+                }),
+
             Action::make('send_test_print')
                 ->label(__('Send Test Print'))
                 ->icon('heroicon-o-signal')
@@ -171,7 +160,7 @@ class PrinterSettings extends Page implements HasForms
 
                         Notification::make()
                             ->success()
-                            ->title(__('Test print sent successfully.'))
+                            ->title(__('Test print queued — it will print once the on-site agent picks it up.'))
                             ->send();
                     } catch (Throwable $e) {
                         Notification::make()
@@ -186,26 +175,11 @@ class PrinterSettings extends Page implements HasForms
 
     public function save(): void
     {
-        $state   = $this->form->getState();
-        $network = $state['network'] ?? [];
-        $cups    = $state['cups']    ?? [];
-        $windows = $state['windows'] ?? [];
-        $file    = $state['file']    ?? [];
+        $state = $this->form->getState();
 
         BookingSetting::set('printer.enabled', !empty($state['enabled']) ? '1' : '0');
-        BookingSetting::set('printer.driver', $state['driver']);
         BookingSetting::set('printer.paper_width_dots', $state['paper_width_dots']);
-        BookingSetting::set('printer.timeout_seconds', $state['timeout_seconds']);
         BookingSetting::set('printer.graphics_mode', !empty($state['graphics_mode']) ? '1' : '0');
-
-        BookingSetting::set('printer.network.host', $network['host'] ?? '');
-        BookingSetting::set('printer.network.port', $network['port'] ?? 9100);
-
-        BookingSetting::set('printer.cups.printer_name', $cups['printer_name'] ?? '');
-
-        BookingSetting::set('printer.windows.printer_name', $windows['printer_name'] ?? '');
-
-        BookingSetting::set('printer.file.path', $file['path'] ?? '');
 
         Notification::make()
             ->title(__('Printer settings saved.'))

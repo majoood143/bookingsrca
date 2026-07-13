@@ -1,7 +1,7 @@
 <?php
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
-    $currency = __('financial_report.currency', [], $locale);
+    $currency = \App\Models\BookingSetting::get('currency_code') ?: __('financial_report.currency', [], $locale);
 
     $trendLabels = $revenueTrend->pluck('date')->values();
     $trendData = $revenueTrend->pluck('revenue')->values();

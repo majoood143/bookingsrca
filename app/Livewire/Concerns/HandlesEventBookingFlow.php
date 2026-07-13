@@ -10,6 +10,8 @@ use App\Models\ExtraService;
 use App\Models\BookingAttendee;
 use App\Models\Booking;
 use App\Models\BookingSetting;
+use App\Models\PromoCode;
+use App\Services\PromoCodeService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +66,13 @@ trait HandlesEventBookingFlow
 
     public $step       = 1;
     public $totalPrice = 0;
+
+    // Promo code
+    public string $promoCode      = '';
+    public ?int   $promoCodeId    = null;
+    public float  $discountAmount = 0;
+    public ?string $promoMessage  = null;
+    public bool   $promoApplied   = false;
 
     // Per-request in-memory cache — not serialized by Livewire, so these are
     // refreshed each Livewire request but shared across all methods within it.
@@ -328,6 +337,69 @@ trait HandlesEventBookingFlow
                 }
             }
         }
+
+        $this->recalculatePromoDiscount();
+    }
+
+    // Final amount the customer pays after the promo discount.
+    public function finalTotal(): float
+    {
+        return max(0, (float) $this->totalPrice - $this->discountAmount);
+    }
+
+    // ── Promo code ───────────────────────────────────────────────────────────
+
+    public function applyPromoCode(): void
+    {
+        $this->promoMessage = null;
+
+        if (blank($this->promoCode)) {
+            $this->promoMessage = __('promo.invalid_code');
+            return;
+        }
+
+        $result = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, (float) $this->totalPrice);
+
+        if (!$result['valid']) {
+            $this->promoApplied    = false;
+            $this->promoCodeId     = null;
+            $this->discountAmount  = 0;
+            $this->promoMessage    = $result['message'];
+            return;
+        }
+
+        $this->promoCodeId    = $result['promo_code_id'];
+        $this->discountAmount = $result['discount_amount'];
+        $this->promoApplied   = true;
+        $this->promoMessage   = $result['message'];
+    }
+
+    public function removePromoCode(): void
+    {
+        $this->promoCode      = '';
+        $this->promoCodeId    = null;
+        $this->discountAmount = 0;
+        $this->promoApplied   = false;
+        $this->promoMessage   = null;
+    }
+
+    // Re-derives the discount whenever totalPrice changes (ticket/service
+    // quantity edits), and silently drops the code if it's no longer valid
+    // (e.g. it expired or hit its usage limit while the customer was shopping).
+    protected function recalculatePromoDiscount(): void
+    {
+        if (!$this->promoApplied || !$this->promoCodeId) {
+            return;
+        }
+
+        $promoCode = PromoCode::find($this->promoCodeId);
+
+        if (!$promoCode || !$promoCode->isValid($this->event->id)) {
+            $this->removePromoCode();
+            return;
+        }
+
+        $this->discountAmount = $promoCode->calculateDiscount((float) $this->totalPrice);
     }
 
     // ── Attendee helpers ────────────────────────────────────────────────────
@@ -465,7 +537,7 @@ trait HandlesEventBookingFlow
     {
         $this->validate();
 
-        if ($this->totalPrice <= 0) {
+        if ($this->finalTotal() <= 0) {
             return $this->submitBooking();
         }
 
@@ -476,7 +548,7 @@ trait HandlesEventBookingFlow
     // Locks stock, creates the Booking + BookingAttendees + extra-service
     // pivots inside one DB transaction, and returns the created Booking.
     //
-    // $resolveAttributes(float $ticketPrice, float $servicesPrice): array
+    // $resolveAttributes(float $ticketPrice, float $servicesPrice, float $discountAmount): array
     //     Called with the freshly recomputed (DB-locked) prices — returns the
     //     Booking attributes specific to the caller (source, payment_method, kiosk_id...).
     // $afterCreate(Booking $booking, float $ticketPrice, float $servicesPrice): void
@@ -546,6 +618,22 @@ trait HandlesEventBookingFlow
                 ->keys()
                 ->first();
 
+            // Re-validate the promo code against the DB-locked subtotal rather than
+            // trusting the client-side discount, so a stale/expired/exhausted code
+            // never slips through.
+            $subtotal       = $ticketPrice + $servicesPrice;
+            $discountAmount = 0;
+            $promoCodeId    = null;
+
+            if ($this->promoApplied && $this->promoCodeId) {
+                $promoResult = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, $subtotal);
+
+                if ($promoResult['valid']) {
+                    $discountAmount = $promoResult['discount_amount'];
+                    $promoCodeId    = $promoResult['promo_code_id'];
+                }
+            }
+
             $booking = Booking::create(array_merge([
                 'event_id'        => $this->event->id,
                 'time_slot_id'    => $this->selectedSlot,
@@ -554,13 +642,15 @@ trait HandlesEventBookingFlow
                 'quantity'        => $totalQty,
                 'ticket_price'    => $ticketPrice,
                 'services_price'  => $servicesPrice,
-                'total_price'     => $ticketPrice + $servicesPrice,
+                'total_price'     => max(0, $subtotal - $discountAmount),
+                'promo_code_id'   => $promoCodeId,
+                'discount_amount' => $discountAmount,
                 'locale'          => app()->getLocale(),
                 'status'          => 'pending',
                 'payment_status'  => 'pending',
                 'ip_address'      => request()->ip(),
                 'user_agent'      => request()->userAgent(),
-            ], $resolveAttributes($ticketPrice, $servicesPrice)));
+            ], $resolveAttributes($ticketPrice, $servicesPrice, $discountAmount)));
 
             // Create one BookingAttendee per ticket
             $ticketTypesById = $this->loadedTicketTypes()->keyBy('id');

@@ -99,11 +99,14 @@ class CCAvenueService
 
     /**
      * Build the encrypted request CCAvenue expects and the redirect target,
-     * for an auto-submitting POST form. order_id uses booking_reference
-     * (not the sequential booking id) to match Thawani's approach and avoid
-     * exposing sequential identifiers to the gateway/back-office. If the real
-     * gateway rejects the hyphen in booking_reference, strip it here and in
-     * the callback lookup consistently.
+     * for an auto-submitting POST form. order_id is derived from
+     * booking_reference (not the sequential booking id) to match Thawani's
+     * approach and avoid exposing sequential identifiers to the gateway/
+     * back-office — but with the hyphen stripped, since CCAvenue/Bank Muscat
+     * rejects it ("order_id: Invalid Character. Error Code: 21000") and only
+     * accepts alphanumeric order_ids. The stripped value is stored on
+     * payment_session_id so the callback can look the booking back up by
+     * the exact same value CCAvenue echoes back as order_id.
      *
      * @return array{url: string, encRequest: string, access_code: string}
      */
@@ -111,10 +114,11 @@ class CCAvenueService
     {
         $callbackUrl = route('payment.callback.ccavenue');
         $attendee    = $booking->attendees->first();
+        $orderId     = preg_replace('/[^A-Za-z0-9]/', '', $booking->booking_reference);
 
         $plainData = [
             'merchant_id'      => $this->merchantId,
-            'order_id'         => $booking->booking_reference,
+            'order_id'         => $orderId,
             'amount'           => number_format((float) $booking->total_price, 3, '.', ''),
             'redirect_url'     => $callbackUrl,
             'cancel_url'       => $callbackUrl,
@@ -149,7 +153,7 @@ class CCAvenueService
             ['encRequest_len' => strlen($encRequest)],
         );
 
-        $booking->update(['payment_session_id' => $booking->booking_reference]);
+        $booking->update(['payment_session_id' => $orderId]);
 
         return [
             'url'         => $this->endpointUrl,

@@ -32,11 +32,27 @@ use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 use Backstage\FilamentMails\Facades\FilamentMails;
 use Backstage\FilamentMails\FilamentMailsPlugin;
 use App\Filament\Pages\Auth\Login;
+use App\Models\BookingSetting;
 use MarcoGermani87\FilamentCaptcha\FilamentCaptcha;
 use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * Reads the control panel theme color from settings. Falls back to the
+     * default green when the table isn't migrated yet (e.g. fresh install).
+     */
+    protected function panelPrimaryColor(): string|array
+    {
+        try {
+            $color = BookingSetting::get('panel_primary_color');
+
+            return $color ? Color::generateV3Palette($color) : Color::Green;
+        } catch (\Throwable $e) {
+            return Color::Green;
+        }
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -52,7 +68,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('4rem')
             //->routes(fn() => FilamentMails::routes())
             ->colors([
-                'primary' => Color::Green,
+                'primary' => $this->panelPrimaryColor(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

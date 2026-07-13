@@ -42,8 +42,8 @@ class EventBooking extends Component
     public function submitBooking()
     {
         try {
-            $booking = $this->persistBooking(function (float $ticketPrice, float $servicesPrice) {
-                $isFree = ($ticketPrice + $servicesPrice) <= 0;
+            $booking = $this->persistBooking(function (float $ticketPrice, float $servicesPrice, float $discountAmount) {
+                $isFree = ($ticketPrice + $servicesPrice - $discountAmount) <= 0;
 
                 return [
                     'source'         => 'online',
@@ -121,6 +121,14 @@ class EventBooking extends Component
                 }
             }
 
+            // Thawani charges the sum of the product lines rather than
+            // booking->total_price, so a promo discount has to be folded into
+            // those lines to keep the amount charged in sync with the booking.
+            $discountBasisa = $thawani->toBasisa((float) $booking->discount_amount);
+            if ($discountBasisa > 0) {
+                $products = $this->applyDiscountToProductLines($products, $discountBasisa);
+            }
+
             $response = $thawani->createSession([
                 'client_reference_id' => $booking->booking_reference,
                 'products'            => $products,
@@ -144,6 +152,27 @@ class EventBooking extends Component
             $booking->cancel();
             session()->flash('error', $e->getMessage());
         }
+    }
+
+    // Reduces product line unit_amounts (from the end of the list) to absorb a
+    // promo discount, since Thawani charges the sum of the lines rather than
+    // accepting a single discount total.
+    protected function applyDiscountToProductLines(array $products, int $discountBasisa): array
+    {
+        $remaining = $discountBasisa;
+
+        for ($i = count($products) - 1; $i >= 0 && $remaining > 0; $i--) {
+            $qty       = $products[$i]['quantity'];
+            $lineTotal = $products[$i]['unit_amount'] * $qty;
+            $reduce    = min($remaining, $lineTotal);
+
+            $newLineTotal = $lineTotal - $reduce;
+            $products[$i]['unit_amount'] = intdiv($newLineTotal, $qty);
+
+            $remaining -= $lineTotal - ($products[$i]['unit_amount'] * $qty);
+        }
+
+        return $products;
     }
 
     // ── NBO redirect ─────────────────────────────────────────────────────────

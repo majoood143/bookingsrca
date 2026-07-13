@@ -13,6 +13,7 @@
 /.zed
 /auth.json
 /node_modules
+/print-agent/config.ini
 /public/build
 /public/hot
 /public/storage

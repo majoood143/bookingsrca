@@ -227,7 +227,15 @@ class EventResource extends Resource
 
                         Select::make('status')
                             ->label(__('event.fields.status'))
-                            ->options(__('event.options.status'))
+                            ->options(function () {
+                                $options = __('event.options.status');
+
+                                if (!\App\Models\BookingSetting::get('module_private_events_enabled', true)) {
+                                    unset($options['private']);
+                                }
+
+                                return $options;
+                            })
                             ->default('draft')
                             ->required()
                             ->native(false)

@@ -124,7 +124,11 @@ class CCAvenuePaymentTest extends TestCase
         $this->assertSame('TESTACCESSCODE', $payload['access_code']);
 
         $booking->refresh();
-        $this->assertSame($booking->booking_reference, $booking->payment_session_id);
+        // order_id (and payment_session_id) is booking_reference with the
+        // hyphen stripped, since CCAvenue rejects non-alphanumeric order_ids.
+        $expectedOrderId = str_replace('-', '', $booking->booking_reference);
+        $this->assertSame($expectedOrderId, $booking->payment_session_id);
+        $this->assertStringNotContainsString('-', $booking->payment_session_id);
 
         $log = PaymentGatewayLog::where('booking_id', $booking->id)->first();
         $this->assertNotNull($log);
@@ -135,7 +139,7 @@ class CCAvenuePaymentTest extends TestCase
         // and carries the booking's order_id/amount.
         $decrypted = $service->decrypt($payload['encRequest']);
         parse_str($decrypted, $data);
-        $this->assertSame($booking->booking_reference, $data['order_id']);
+        $this->assertSame($expectedOrderId, $data['order_id']);
         $this->assertSame('5.000', $data['amount']);
     }
 
@@ -174,13 +178,27 @@ class CCAvenuePaymentTest extends TestCase
         $this->assertNotSame(419, $response->getStatusCode());
     }
 
+    /**
+     * Simulate having already gone through buildRedirectPayload(): sets
+     * payment_session_id to the alphanumeric order_id CCAvenue would echo
+     * back in its callback, and returns that order_id for use in the test.
+     */
+    protected function initiateAndGetOrderId(Booking $booking): string
+    {
+        $orderId = str_replace('-', '', $booking->booking_reference);
+        $booking->update(['payment_session_id' => $orderId]);
+
+        return $orderId;
+    }
+
     public function test_successful_callback_confirms_booking(): void
     {
         $booking = $this->makeBooking(5.00);
+        $orderId = $this->initiateAndGetOrderId($booking);
         $service = app(CCAvenueService::class);
 
         $encResp = $service->encrypt(http_build_query([
-            'order_id' => $booking->booking_reference,
+            'order_id' => $orderId,
             'order_status' => 'Success',
             'amount' => '5.00',
             'tracking_id' => 'TRACK123',
@@ -199,10 +217,11 @@ class CCAvenuePaymentTest extends TestCase
     public function test_callback_with_tampered_amount_does_not_confirm_booking(): void
     {
         $booking = $this->makeBooking(5.00);
+        $orderId = $this->initiateAndGetOrderId($booking);
         $service = app(CCAvenueService::class);
 
         $encResp = $service->encrypt(http_build_query([
-            'order_id' => $booking->booking_reference,
+            'order_id' => $orderId,
             'order_status' => 'Success',
             'amount' => '0.01', // tampered
         ]));
@@ -217,10 +236,11 @@ class CCAvenuePaymentTest extends TestCase
     public function test_aborted_callback_cancels_booking(): void
     {
         $booking = $this->makeBooking(5.00);
+        $orderId = $this->initiateAndGetOrderId($booking);
         $service = app(CCAvenueService::class);
 
         $encResp = $service->encrypt(http_build_query([
-            'order_id' => $booking->booking_reference,
+            'order_id' => $orderId,
             'order_status' => 'Aborted',
             'amount' => '5.00',
         ]));
@@ -235,10 +255,11 @@ class CCAvenuePaymentTest extends TestCase
     public function test_unrecognized_status_marks_payment_failed_without_cancelling(): void
     {
         $booking = $this->makeBooking(5.00);
+        $orderId = $this->initiateAndGetOrderId($booking);
         $service = app(CCAvenueService::class);
 
         $encResp = $service->encrypt(http_build_query([
-            'order_id' => $booking->booking_reference,
+            'order_id' => $orderId,
             'order_status' => 'invalid',
             'amount' => '5.00',
         ]));

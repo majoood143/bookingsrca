@@ -93,16 +93,16 @@ class ViewBooking extends ViewRecord
                 ->color('gray')
                 ->action(function () {
                     try {
-                        app(AttendeeTicketPrintService::class)->printAttendeeTickets($this->record);
+                        app(AttendeeTicketPrintService::class)->enqueue($this->record);
 
                         Notification::make()
                             ->success()
-                            ->title(__('booking.notifications.tickets_printed'))
+                            ->title(__('booking.notifications.tickets_queued'))
                             ->send();
                     } catch (\Throwable $e) {
                         Notification::make()
                             ->danger()
-                            ->title(__('booking.notifications.tickets_print_failed'))
+                            ->title(__('booking.notifications.tickets_queue_failed'))
                             ->body($e->getMessage())
                             ->send();
                     }

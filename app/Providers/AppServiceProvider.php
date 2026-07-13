@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
 use RickDBCN\FilamentEmail\Models\Email;
 use App\Policies\EmailPolicy;
+use App\Models\BookingSetting;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -47,6 +48,19 @@ class AppServiceProvider extends ServiceProvider
         // This is not gated by APP_ENV because the app is always served from the
         // /events subdirectory via an Apache Alias, regardless of environment.
         URL::forceRootUrl(config('app.url'));
+
+        // Apply the configurable timezone from booking settings, falling back
+        // to config/app.php when the settings table isn't migrated yet.
+        try {
+            $timezone = BookingSetting::get('timezone');
+
+            if ($timezone) {
+                config(['app.timezone' => $timezone]);
+                date_default_timezone_set($timezone);
+            }
+        } catch (\Throwable $e) {
+            // Settings table not ready yet (e.g. during initial migration).
+        }
 
         // Direct Livewire to send its network polling/submits through the alias
         Livewire::setUpdateRoute(function ($handle) {

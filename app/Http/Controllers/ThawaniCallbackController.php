@@ -52,10 +52,21 @@ class ThawaniCallbackController extends Controller
             $paymentStatus = $response['data']['payment_status'] ?? null;
 
             if ($paymentStatus === 'paid') {
+                $reference = $response['data']['payment_ref'] ?? null;
+
                 $booking->update([
                     'payment_status'    => 'paid',
-                    'payment_reference' => $response['data']['payment_ref'] ?? null,
+                    'payment_reference' => $reference,
                 ]);
+
+                $booking->payments()->firstOrCreate(
+                    ['payment_method' => 'thawani'],
+                    [
+                        'amount'    => $booking->total_price,
+                        'reference' => $reference,
+                        'notes'     => 'Online payment via Thawani.',
+                    ]
+                );
 
                 $booking->confirm();
 
@@ -108,10 +119,21 @@ class ThawaniCallbackController extends Controller
 
         if ($event === 'payment_completed' && $sessionId) {
             if ($booking && $booking->status !== 'confirmed') {
+                $reference = $data['data']['payment_ref'] ?? null;
+
                 $booking->update([
                     'payment_status'    => 'paid',
-                    'payment_reference' => $data['data']['payment_ref'] ?? null,
+                    'payment_reference' => $reference,
                 ]);
+
+                $booking->payments()->firstOrCreate(
+                    ['payment_method' => 'thawani'],
+                    [
+                        'amount'    => $booking->total_price,
+                        'reference' => $reference,
+                        'notes'     => 'Online payment via Thawani.',
+                    ]
+                );
 
                 $booking->confirm();
             }

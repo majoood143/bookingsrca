@@ -115,6 +115,15 @@ class NboCallbackController extends Controller
                     'payment_reference' => $paymentId,
                 ]);
 
+                $booking->payments()->firstOrCreate(
+                    ['payment_method' => 'nbo'],
+                    [
+                        'amount'    => $booking->total_price,
+                        'reference' => $paymentId,
+                        'notes'     => 'Online payment via NBO.',
+                    ]
+                );
+
                 $booking->confirm();
 
                 return redirect()->route('booking.success', $booking->booking_reference);

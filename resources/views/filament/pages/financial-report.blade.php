@@ -9,7 +9,7 @@
         $report = $this->getReportData();
         $from   = $report['from'];
         $to     = $report['to'];
-        $currency = __('financial_report.currency');
+        $currency = \App\Models\BookingSetting::get('currency_code') ?: __('financial_report.currency');
     @endphp
 
     <p class="text-sm text-gray-500 dark:text-gray-400 -mt-2">

@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Exports\FinancialReportExport;
 use App\Filament\Pages\Concerns\HasReportPeriodFilter;
 use App\Models\Booking;
+use App\Models\BookingSetting;
 use App\Models\Event;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -273,7 +274,7 @@ class FinancialReport extends Page implements HasForms
                     $locale = $this->getReportLanguage();
                     $period = $this->data['period'] ?? 'this_month';
                     $filename = __('financial_report.export.filename', [], $locale) . '-' . $period . '-' . now()->format('Y-m-d') . '.csv';
-                    $currency = __('financial_report.currency', [], $locale);
+                    $currency = BookingSetting::get('currency_code') ?: __('financial_report.currency', [], $locale);
 
                     return Response::streamDownload(function () use ($report, $locale, $currency) {
                         $out = fopen('php://output', 'w');
@@ -334,7 +335,7 @@ class FinancialReport extends Page implements HasForms
                     $locale = $this->getReportLanguage();
                     $period = $this->data['period'] ?? 'this_month';
                     $filename = __('financial_report.export.filename', [], $locale) . '-' . $period . '-' . now()->format('Y-m-d') . '.xlsx';
-                    $currency = __('financial_report.currency', [], $locale);
+                    $currency = BookingSetting::get('currency_code') ?: __('financial_report.currency', [], $locale);
 
                     return Excel::download(new FinancialReportExport($report, $locale, $currency), $filename);
                 }),

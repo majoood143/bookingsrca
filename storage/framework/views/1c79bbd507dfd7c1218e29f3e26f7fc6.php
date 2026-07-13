@@ -572,11 +572,57 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 </div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
+                            
+                            <div class="pt-3 border-t border-gray-100">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promoApplied): ?>
+                                    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                        <div class="text-xs">
+                                            <p class="font-semibold text-green-700"><?php echo e(__('promo.applied')); ?> — <?php echo e(strtoupper($promoCode)); ?></p>
+                                        </div>
+                                        <button type="button" wire:click="removePromoCode"
+                                            class="text-xs text-gray-400 hover:text-red-500 font-medium">
+                                            <?php echo e(__('promo.remove')); ?>
+
+                                        </button>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="flex gap-2">
+                                        <input type="text" wire:model="promoCode"
+                                            wire:keydown.enter.prevent="applyPromoCode"
+                                            placeholder="<?php echo e(__('promo.placeholder')); ?>"
+                                            class="flex-1 min-w-0 rounded-lg border-gray-300 text-sm uppercase focus:border-brand focus:ring-brand">
+                                        <button type="button" wire:click="applyPromoCode" wire:loading.attr="disabled"
+                                            wire:target="applyPromoCode"
+                                            class="shrink-0 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 disabled:opacity-50">
+                                            <span wire:loading.remove wire:target="applyPromoCode"><?php echo e(__('promo.apply')); ?></span>
+                                            <span wire:loading wire:target="applyPromoCode"><?php echo e(__('promo.checking')); ?></span>
+                                        </button>
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promoMessage): ?>
+                                    <p class="text-xs mt-1.5 <?php echo e($promoApplied ? 'text-green-600' : 'text-red-500'); ?>">
+                                        <?php echo e($promoMessage); ?></p>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promoApplied && $discountAmount > 0): ?>
+                                <div class="pt-3 border-t border-gray-100 space-y-1">
+                                    <div class="flex justify-between text-sm text-gray-600">
+                                        <span><?php echo e(__('promo.subtotal_label')); ?></span>
+                                        <span>OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-green-600 font-medium">
+                                        <span><?php echo e(__('promo.discount_label')); ?></span>
+                                        <span>-OMR<?php echo e(number_format($discountAmount, 3)); ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
                             <div class="pt-3 border-t-2 border-gray-200 flex justify-between items-baseline">
                                 <span
                                     class="font-bold text-gray-900 text-base"><?php echo e(__('event_booking.summary.total')); ?></span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                                    class="font-black text-2xl text-blue-600">OMR<?php echo e(number_format($this->finalTotal(), 3)); ?></span>
                             </div>
 
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($activeGateway === 'thawani'): ?>

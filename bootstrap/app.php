@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'booking/payment/callback/nbo',
             'booking/payment/callback/ccavenue',
             'kiosk/*/heartbeat',
+            'print-agent/*',
         ]);
 
         // Apply locale from session on every web request

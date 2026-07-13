@@ -68,6 +68,7 @@ class PaymentsRelationManager extends RelationManager
                         'success' => 'cash',
                         'info'    => 'credit_debit',
                         'warning' => 'partial',
+                        'primary' => ['thawani', 'nbo', 'ccavenue'],
                     ]),
 
                 TextColumn::make('amount')

@@ -10,6 +10,7 @@ use App\Http\Controllers\NboCallbackController;
 use App\Http\Controllers\CCAvenueRedirectController;
 use App\Http\Controllers\CCAvenueCallbackController;
 use App\Http\Controllers\KioskHeartbeatController;
+use App\Http\Controllers\PrintAgentController;
 
 Route::get('/', function () {
     $events = Event::published()
@@ -72,3 +73,12 @@ Route::get('/admin/bookings/{booking}/receipt', function (\App\Models\Booking $b
         'booking' => $booking->load(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices', 'payments']),
     ]);
 })->middleware(['auth'])->name('bookings.receipt');
+
+// ── On-site print agent ──────────────────────────────────────────────────────
+// Polled by the on-site print-agent script (see print-agent/README.md) over
+// HTTPS — no browser session, so CSRF is excluded (see bootstrap/app.php) and
+// requests are instead authenticated with a bearer token (PrintAgentController).
+Route::middleware(['throttle:120,1'])->group(function () {
+    Route::get('/print-agent/jobs/next', [PrintAgentController::class, 'next'])->name('print-agent.next');
+    Route::post('/print-agent/jobs/{job}/ack', [PrintAgentController::class, 'ack'])->name('print-agent.ack');
+});

@@ -27,8 +27,8 @@ use Filament\Tables\Table;
 class BookingSettingResource extends Resource
 {
     protected static ?string $model = BookingSetting::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
-    protected static ?int $navigationSort = 99;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?int $navigationSort = 90;
 
     public static function getNavigationLabel(): string
     {
@@ -62,26 +62,23 @@ class BookingSettingResource extends Resource
                             ->disabled()
                             ->helperText(__('booking_setting.fields.key_helper')),
 
-                        Toggle::make('value')
+                        Toggle::make('value_boolean')
                             ->label(__('booking_setting.fields.value'))
                     // ->onLabel(__('booking_setting.fields.enabled'))
                     // ->offLabel(__('booking_setting.fields.disabled'))
                     ->onIcon('heroicon-m-check')
                     ->offIcon('heroicon-m-x-mark')
-                            ->afterStateHydrated(function (Toggle $component, $state) {
-                                $component->state(filter_var($state, FILTER_VALIDATE_BOOLEAN));
-                            })
                             ->dehydrateStateUsing(fn($state) => $state ? 'true' : 'false')
                             ->helperText(fn($record) => $record?->description)
                             ->visible(fn($record) => $record && $record->type === 'boolean'),
 
-                        RichEditor::make('value')
+                        RichEditor::make('value_richtext')
                             ->label(__('booking_setting.fields.value'))
                             ->helperText(fn($record) => $record?->description)
                             ->fileAttachmentsDisk('public')
                             ->visible(fn($record) => $record && $record->type === 'richtext'),
 
-                        FileUpload::make('value')
+                        FileUpload::make('value_file')
                             ->label(__('booking_setting.fields.value'))
                             ->image()
                             ->disk('public')
@@ -90,12 +87,12 @@ class BookingSettingResource extends Resource
                             ->helperText(fn($record) => $record?->description)
                             ->visible(fn($record) => $record && $record->type === 'file'),
 
-                        ColorPicker::make('value')
+                        ColorPicker::make('value_color')
                             ->label(__('booking_setting.fields.value'))
                             ->helperText(fn($record) => $record?->description)
                             ->visible(fn($record) => $record && $record->type === 'color'),
 
-                        TextInput::make('value')
+                        TextInput::make('value_text')
                             ->label(__('booking_setting.fields.value'))
                             ->required()
                             ->numeric(fn($record) => $record && $record->type === 'number')

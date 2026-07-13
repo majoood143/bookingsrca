@@ -737,16 +737,16 @@ class BookingResource extends Resource
                         ->color('gray')
                         ->action(function (Booking $record) {
                             try {
-                                app(AttendeeTicketPrintService::class)->printAttendeeTickets($record);
+                                app(AttendeeTicketPrintService::class)->enqueue($record);
 
                                 Notification::make()
                                     ->success()
-                                    ->title(__('booking.notifications.tickets_printed'))
+                                    ->title(__('booking.notifications.tickets_queued'))
                                     ->send();
                             } catch (\Throwable $e) {
                                 Notification::make()
                                     ->danger()
-                                    ->title(__('booking.notifications.tickets_print_failed'))
+                                    ->title(__('booking.notifications.tickets_queue_failed'))
                                     ->body($e->getMessage())
                                     ->send();
                             }

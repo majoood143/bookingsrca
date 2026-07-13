@@ -82,6 +82,16 @@ class BookingSetting extends Model
             'site_logo',
             'primary_color',
             'secondary_color',
+            'timezone',
+            'currency_code',
+            'currency_symbol',
+            'app_logo',
+            'favicon',
+            'panel_primary_color',
+            'module_kiosk_enabled',
+            'module_extra_services_enabled',
+            'module_private_events_enabled',
+            'module_promo_codes_enabled',
         ];
     }
 }

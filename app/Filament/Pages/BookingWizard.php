@@ -677,16 +677,16 @@ class BookingWizard extends Page implements HasForms
         }
 
         try {
-            app(AttendeeTicketPrintService::class)->printAttendeeTickets($this->createdBooking);
+            app(AttendeeTicketPrintService::class)->enqueue($this->createdBooking);
 
             Notification::make()
                 ->success()
-                ->title(__('booking.notifications.tickets_printed'))
+                ->title(__('booking.notifications.tickets_queued'))
                 ->send();
         } catch (Exception $e) {
             Notification::make()
                 ->danger()
-                ->title(__('booking.notifications.tickets_print_failed'))
+                ->title(__('booking.notifications.tickets_queue_failed'))
                 ->body($e->getMessage())
                 ->send();
         }

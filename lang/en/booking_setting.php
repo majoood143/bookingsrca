@@ -3,9 +3,9 @@
 return [
 
     'navigation' => [
-        'label' => 'Booking Settings',
+        'label' => 'Advanced Settings',
         'group' => 'Settings',
-        'plural' => 'Booking Settings',
+        'plural' => 'Advanced Settings',
     ],
 
     'sections' => [

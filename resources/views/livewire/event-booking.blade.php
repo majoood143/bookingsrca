@@ -524,11 +524,56 @@
                                 </div>
                             @endif
 
+                            {{-- Promo code --}}
+                            <div class="pt-3 border-t border-gray-100">
+                                @if ($promoApplied)
+                                    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                        <div class="text-xs">
+                                            <p class="font-semibold text-green-700">{{ __('promo.applied') }} — {{ strtoupper($promoCode) }}</p>
+                                        </div>
+                                        <button type="button" wire:click="removePromoCode"
+                                            class="text-xs text-gray-400 hover:text-red-500 font-medium">
+                                            {{ __('promo.remove') }}
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="flex gap-2">
+                                        <input type="text" wire:model="promoCode"
+                                            wire:keydown.enter.prevent="applyPromoCode"
+                                            placeholder="{{ __('promo.placeholder') }}"
+                                            class="flex-1 min-w-0 rounded-lg border-gray-300 text-sm uppercase focus:border-brand focus:ring-brand">
+                                        <button type="button" wire:click="applyPromoCode" wire:loading.attr="disabled"
+                                            wire:target="applyPromoCode"
+                                            class="shrink-0 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 disabled:opacity-50">
+                                            <span wire:loading.remove wire:target="applyPromoCode">{{ __('promo.apply') }}</span>
+                                            <span wire:loading wire:target="applyPromoCode">{{ __('promo.checking') }}</span>
+                                        </button>
+                                    </div>
+                                @endif
+                                @if ($promoMessage)
+                                    <p class="text-xs mt-1.5 {{ $promoApplied ? 'text-green-600' : 'text-red-500' }}">
+                                        {{ $promoMessage }}</p>
+                                @endif
+                            </div>
+
+                            @if ($promoApplied && $discountAmount > 0)
+                                <div class="pt-3 border-t border-gray-100 space-y-1">
+                                    <div class="flex justify-between text-sm text-gray-600">
+                                        <span>{{ __('promo.subtotal_label') }}</span>
+                                        <span>OMR{{ number_format($totalPrice, 3) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-green-600 font-medium">
+                                        <span>{{ __('promo.discount_label') }}</span>
+                                        <span>-OMR{{ number_format($discountAmount, 3) }}</span>
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="pt-3 border-t-2 border-gray-200 flex justify-between items-baseline">
                                 <span
                                     class="font-bold text-gray-900 text-base">{{ __('event_booking.summary.total') }}</span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">OMR{{ number_format($totalPrice, 3) }}</span>
+                                    class="font-black text-2xl text-blue-600">OMR{{ number_format($this->finalTotal(), 3) }}</span>
                             </div>
 
                             @if ($activeGateway === 'thawani')

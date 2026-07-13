@@ -38,6 +38,8 @@ class Booking extends Model
         'ticket_price',
         'services_price',
         'total_price',
+        'promo_code_id',
+        'discount_amount',
         'source',
         'created_by',
         'kiosk_id',
@@ -60,6 +62,7 @@ class Booking extends Model
         'ticket_price' => 'decimal:2',
         'services_price' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
@@ -135,6 +138,11 @@ class Booking extends Model
         return $this->belongsTo(Kiosk::class);
     }
 
+    public function promoCode()
+    {
+        return $this->belongsTo(PromoCode::class);
+    }
+
     public function gatewayLogs()
     {
         return $this->hasMany(PaymentGatewayLog::class)->latest();
@@ -176,6 +184,10 @@ class Booking extends Model
 
         foreach ($this->extraServices as $service) {
             $service->increment('quantity_used', $service->pivot->quantity);
+        }
+
+        if ($this->promo_code_id) {
+            app(\App\Services\PromoCodeService::class)->recordUsage($this);
         }
 
         $this->sendAllTickets();

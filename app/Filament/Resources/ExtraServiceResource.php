@@ -48,6 +48,11 @@ class ExtraServiceResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 4;
 
+    public static function canAccess(): bool
+    {
+        return parent::canAccess() && (bool) \App\Models\BookingSetting::get('module_extra_services_enabled', true);
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __('extra_service.navigation.group');

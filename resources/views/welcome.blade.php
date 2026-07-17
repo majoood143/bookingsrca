@@ -114,7 +114,7 @@
                                         <span class="font-bold text-gray-900">{{ __('home.card.free') }}</span>
                                     @else
                                         <span class="text-gray-500">{{ __('home.card.from') }}</span>
-                                        <span class="font-bold text-gray-900">OMR{{ number_format($minPrice, 3) }}</span>
+                                        <span class="font-bold text-gray-900">@include('partials.currency-amount', ['amount' => $minPrice])</span>
                                     @endif
                                 </div>
 

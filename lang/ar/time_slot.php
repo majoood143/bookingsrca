@@ -99,6 +99,19 @@ return [
         'generate_slots'      => 'إنشاء فترات زمنية',
         'edit_time_range'     => 'تعديل النطاق الزمني',
         'export'              => 'تصدير',
+        'view_attendees'      => 'الحضور',
+        'download_attendees'  => 'تنزيل الحضور',
+    ],
+
+    'tooltips' => [
+        'view_attendees'     => 'عرض جميع الحضور المسجلين في هذه الفترة الزمنية',
+        'download_attendees' => 'تنزيل حضور هذه الفترة الزمنية كملف إكسل',
+    ],
+
+    'attendees_modal' => [
+        'summary'     => ':checked_in من :total تم تسجيل حضورهم · :emailed من :total تم إرسال البريد إليهم',
+        'empty'       => 'لا يوجد حضور لهذه الفترة الزمنية.',
+        'booking_ref' => 'مرجع الحجز',
     ],
 
     'modals' => [

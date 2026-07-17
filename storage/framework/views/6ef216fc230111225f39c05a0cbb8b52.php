@@ -29,7 +29,7 @@
                             <span class="font-semibold"><?php echo e(__('booking.fields.ticket_type')); ?>:</span>
                             <?php echo e($attendee->ticketType->getTranslation('name', app()->getLocale())); ?>
 
-                            <span class="text-green-600 font-semibold">OMR <?php echo e(number_format($attendee->ticket_price, 3)); ?></span>
+                            <span class="text-green-600 font-semibold"><?php echo $__env->make('partials.currency-amount', ['amount' => $attendee->ticket_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                         </p>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 

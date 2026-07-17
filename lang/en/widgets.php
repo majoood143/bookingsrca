@@ -96,4 +96,21 @@ return [
         'active_types_desc' => 'Across all events',
     ],
 
+    'event_insights' => [
+        'total_bookings'            => 'Total Bookings',
+        'attendees'                 => ':count attendees',
+        'revenue'                   => 'Revenue',
+        'avg_ticket_price'          => 'Avg. ticket: :amount',
+        'confirmed'                 => 'Confirmed',
+        'pending_desc'              => 'Pending: :count',
+        'checked_in'                => 'Checked-in',
+        'cancelled_desc'            => 'Cancelled: :count',
+        'capacity'                  => 'Capacity Filled',
+        'unlimited'                 => 'Unlimited',
+        'remaining'                 => 'Remaining: :count',
+        'trend_heading'             => 'Bookings & Revenue Trend (Last 30 Days)',
+        'ticket_breakdown_heading'  => 'Ticket Type Breakdown',
+        'remaining_stock'          => 'Remaining Stock',
+    ],
+
 ];

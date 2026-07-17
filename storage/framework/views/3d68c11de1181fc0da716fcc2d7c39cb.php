@@ -117,7 +117,7 @@
                                         <span class="font-bold text-gray-900"><?php echo e(__('home.card.free')); ?></span>
                                     <?php else: ?>
                                         <span class="text-gray-500"><?php echo e(__('home.card.from')); ?></span>
-                                        <span class="font-bold text-gray-900">OMR<?php echo e(number_format($minPrice, 3)); ?></span>
+                                        <span class="font-bold text-gray-900"><?php echo $__env->make('partials.currency-amount', ['amount' => $minPrice], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
 

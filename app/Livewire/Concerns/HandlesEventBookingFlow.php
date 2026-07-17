@@ -58,6 +58,26 @@ trait HandlesEventBookingFlow
     public bool $showNationality = true;
     public bool $showIdentityNumber = true;
     public int  $maxAttendeeAge  = 75;
+    public bool $showSlotEndTime = true;
+
+    // Whether each shown field is required — independent of visibility so a
+    // field can be shown but optional (defaults mirror the previous hardcoded
+    // behavior: date of birth and nationality were never required).
+    public bool $requireEmail       = true;
+    public bool $requirePhone       = true;
+    public bool $requireDateOfBirth = false;
+    public bool $requireGender      = true;
+    public bool $requireNationality = false;
+    public bool $requireIdentityNumber = true;
+
+    // Which per-event override scope applies to this component — "event_booking"
+    // for the public web flow, "kiosk" for KioskBooking (overridden there). A
+    // method rather than a property, since PHP forbids a trait property and
+    // the composing class from disagreeing on a default value.
+    protected function fieldVisibilityScope(): string
+    {
+        return 'event_booking';
+    }
 
     // Terms and conditions
     public string $termsEn       = '';
@@ -100,14 +120,24 @@ trait HandlesEventBookingFlow
         foreach ($this->attendees as $i => $attendee) {
             $rules["attendees.$i.first_name"]    = 'required|string|max:255';
             $rules["attendees.$i.last_name"]     = 'required|string|max:255';
-            $rules["attendees.$i.email"]         = $this->showEmail       ? 'required|email|max:255'  : 'nullable';
-            $rules["attendees.$i.phone"]         = $this->showPhone       ? ['required', 'string', 'regex:/^\+?\d{7,15}$/'] : 'nullable';
-            $rules["attendees.$i.date_of_birth"] = $this->showDateOfBirth
-                ? "nullable|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
+            $rules["attendees.$i.email"]         = $this->showEmail
+                ? ($this->requireEmail ? 'required' : 'nullable') . '|email|max:255'
                 : 'nullable';
-            $rules["attendees.$i.gender"]        = $this->showGender      ? 'required|in:male,female' : 'nullable';
-            $rules["attendees.$i.nationality"]   = $this->showNationality ? 'nullable|string|max:100' : 'nullable';
-            $rules["attendees.$i.identity_number"] = $this->showIdentityNumber ? 'required|string|max:50' : 'nullable';
+            $rules["attendees.$i.phone"]         = $this->showPhone
+                ? [$this->requirePhone ? 'required' : 'nullable', 'string', 'regex:/^\+?\d{7,15}$/']
+                : 'nullable';
+            $rules["attendees.$i.date_of_birth"] = $this->showDateOfBirth
+                ? ($this->requireDateOfBirth ? 'required' : 'nullable') . "|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
+                : 'nullable';
+            $rules["attendees.$i.gender"]        = $this->showGender
+                ? ($this->requireGender ? 'required' : 'nullable') . '|in:male,female'
+                : 'nullable';
+            $rules["attendees.$i.nationality"]   = $this->showNationality
+                ? ($this->requireNationality ? 'required' : 'nullable') . '|string|max:100'
+                : 'nullable';
+            $rules["attendees.$i.identity_number"] = $this->showIdentityNumber
+                ? ($this->requireIdentityNumber ? 'required' : 'nullable') . '|string|max:50'
+                : 'nullable';
         }
 
         return $rules;
@@ -160,9 +190,50 @@ trait HandlesEventBookingFlow
         $this->showNationality = (bool) BookingSetting::get('show_nationality', true);
         $this->showIdentityNumber = (bool) BookingSetting::get('show_identity_number', true);
         $this->maxAttendeeAge  = (int) BookingSetting::get('max_attendee_age_years', 75);
+        $this->showSlotEndTime = (bool) BookingSetting::get('show_slot_end_time', true);
 
-        $this->termsEn = (string) BookingSetting::get('terms_en', '');
-        $this->termsAr = (string) BookingSetting::get('terms_ar', '');
+        // "Required" has no global setting today — showing a field implied
+        // requiring it everywhere except date of birth and nationality.
+        // Kept as the default here so global-only events behave exactly as
+        // before; per-event overrides (below) can change this independently.
+        $this->requireEmail          = true;
+        $this->requirePhone          = true;
+        $this->requireDateOfBirth    = false;
+        $this->requireGender         = true;
+        $this->requireNationality    = false;
+        $this->requireIdentityNumber = true;
+
+        // An event-level override for this flow (event booking page vs kiosk)
+        // fully replaces the global show/require values above for that flow only.
+        $overrides = $this->event?->fieldVisibilityOverridesFor($this->fieldVisibilityScope());
+
+        if ($overrides !== null) {
+            $this->showEmail             = $overrides['show_email'];
+            $this->requireEmail          = $overrides['require_email'];
+            $this->showPhone             = $overrides['show_phone'];
+            $this->requirePhone          = $overrides['require_phone'];
+            $this->showDateOfBirth       = $overrides['show_date_of_birth'];
+            $this->requireDateOfBirth    = $overrides['require_date_of_birth'];
+            $this->showGender            = $overrides['show_gender'];
+            $this->requireGender         = $overrides['require_gender'];
+            $this->showNationality       = $overrides['show_nationality'];
+            $this->requireNationality    = $overrides['require_nationality'];
+            $this->showIdentityNumber    = $overrides['show_identity_number'];
+            $this->requireIdentityNumber = $overrides['require_identity_number'];
+        }
+
+        // An event with its own terms & conditions (in either language)
+        // fully replaces the global terms for that event's booking flow.
+        $eventTermsEn = (string) ($this->event?->getTranslation('terms_and_conditions', 'en', false) ?? '');
+        $eventTermsAr = (string) ($this->event?->getTranslation('terms_and_conditions', 'ar', false) ?? '');
+
+        if (filled($eventTermsEn) || filled($eventTermsAr)) {
+            $this->termsEn = $eventTermsEn;
+            $this->termsAr = $eventTermsAr;
+        } else {
+            $this->termsEn = (string) BookingSetting::get('terms_en', '');
+            $this->termsAr = (string) BookingSetting::get('terms_ar', '');
+        }
     }
 
     public function selectDate($date)

@@ -99,6 +99,19 @@ return [
         'generate_slots'      => 'Generate Slots',
         'edit_time_range'     => 'Edit Time Range',
         'export'              => 'Export',
+        'view_attendees'      => 'Attendees',
+        'download_attendees'  => 'Download Attendees',
+    ],
+
+    'tooltips' => [
+        'view_attendees'     => 'View all attendees booked for this time slot',
+        'download_attendees' => 'Download this time slot\'s attendees as an Excel file',
+    ],
+
+    'attendees_modal' => [
+        'summary'     => ':checked_in of :total checked in · :emailed of :total emailed',
+        'empty'       => 'No attendees found for this time slot.',
+        'booking_ref' => 'Booking Ref',
     ],
 
     'modals' => [

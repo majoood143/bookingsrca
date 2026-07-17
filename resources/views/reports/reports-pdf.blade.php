@@ -1,7 +1,7 @@
 @php
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
-    $fmt = fn($n) => 'OMR ' . number_format((float) $n, 3);
+    $fmt = fn($n) => view('partials.currency-amount', ['amount' => (float) $n])->render();
 
     $eventLabels = $byEvent->pluck('event')->values();
     $eventData = $byEvent->pluck('revenue')->values();
@@ -104,7 +104,7 @@
                 <div class="stat-label">{{ __('reports.stats.total_attendees', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalRevenue) }}</div>
+                <div class="stat-value">{!! $fmt($totalRevenue) !!}</div>
                 <div class="stat-label">{{ __('reports.stats.total_revenue', [], $locale) }}</div>
             </div>
         </div>
@@ -140,7 +140,7 @@
                         <td class="text-center">{{ $row['cancelled'] }}</td>
                         <td class="text-center">{{ $row['checked_in'] }}</td>
                         <td class="text-center">{{ $row['attendees'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -165,7 +165,7 @@
                         <td>{{ $row['ticket_type'] }}</td>
                         <td class="text-center">{{ $row['bookings'] }}</td>
                         <td class="text-center">{{ $row['attendees'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>

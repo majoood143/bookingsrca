@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
 use RickDBCN\FilamentEmail\Models\Email;
 use App\Policies\EmailPolicy;
+use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
+use App\Policies\QueueMonitorPolicy;
 use App\Models\BookingSetting;
 
 
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Email::class, EmailPolicy::class);
+        Gate::policy(QueueMonitor::class, QueueMonitorPolicy::class);
 
         // Force HTTPS if you are on production SSL
         // if (config('app.env') === 'production' || str_contains(config('app.url'), 'https://')) {

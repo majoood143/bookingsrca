@@ -68,8 +68,7 @@
                 </div>
                 <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                     <span class="text-base font-bold text-gray-900"><?php echo e(__('event_booking.success.total_paid')); ?></span>
-                    <span class="text-xl font-bold text-green-600">OMR
-                        <?php echo e(number_format($booking->total_price, 3)); ?></span>
+                    <span class="text-xl font-bold text-green-600"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 </div>
             </div>
 

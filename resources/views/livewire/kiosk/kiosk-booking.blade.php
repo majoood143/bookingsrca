@@ -1,4 +1,11 @@
+@php
+    use App\Models\BookingSetting;
+
+    $primaryColor = BookingSetting::get('primary_color', '#05602b');
+    $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+@endphp
 <div
+    style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};"
     x-data="{
         timeoutSeconds: {{ (int) $kiosk->idle_timeout_seconds }},
         timer: null,
@@ -186,7 +193,7 @@
                             <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">
                                 {{ __('kiosk_booking.confirmation.amount_due') }}</p>
                             <p class="text-2xl font-black text-amber-600">
-                                OMR{{ number_format($confirmedBooking->total_price, 3) }}</p>
+                                @include('partials.currency-amount', ['amount' => $confirmedBooking->total_price])</p>
                         </div>
                     @endif
                 </div>

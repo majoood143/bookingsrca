@@ -35,12 +35,14 @@ use App\Filament\Resources\TimeSlotResource\Pages\ListTimeSlotActivities;
 use App\Filament\Resources\TimeSlotResource\Pages;
 use App\Models\TimeSlot;
 use App\Models\Event;
+use App\Exports\TimeSlotAttendeesExport;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Schemas\Components\Utilities\Get;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TimeSlotResource extends Resource
 {
@@ -455,6 +457,31 @@ class TimeSlotResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+
+                    Action::make('view_attendees')
+                        ->label(__('time_slot.actions.view_attendees'))
+                        ->icon('heroicon-o-users')
+                        ->color('info')
+                        ->modalHeading(fn($record) => __('time_slot.actions.view_attendees') . ' - ' . $record->getTimeRange())
+                        ->modalContent(fn(TimeSlot $record) => view('filament.modals.time-slot-attendees', [
+                            'timeSlot' => $record->load('bookings.attendees.ticketType'),
+                        ]))
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel(__('booking.actions.close'))
+                        ->modalWidth('4xl')
+                        ->tooltip(__('time_slot.tooltips.view_attendees'))
+                        ->slideOver(),
+
+                    Action::make('download_attendees')
+                        ->label(__('time_slot.actions.download_attendees'))
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->action(fn(TimeSlot $record) => Excel::download(
+                            new TimeSlotAttendeesExport($record),
+                            'time-slot-' . $record->id . '-attendees.xlsx'
+                        ))
+                        ->disabled(fn(TimeSlot $record) => $record->current_bookings === 0)
+                        ->tooltip(__('time_slot.tooltips.download_attendees')),
 
                     Action::make('toggle_active')
                         ->label(fn($record) => $record->is_active

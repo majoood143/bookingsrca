@@ -18,7 +18,9 @@ class Event extends Model
         'description',
         'slug',
         'location',
+        'location_link',
         'organizer',
+        'organizer_phone',
         'start_date',
         'end_date',
         'is_recurring',
@@ -27,26 +29,32 @@ class Event extends Model
         'status',
         'password',
         'max_attendees',
+        'timeline',
+        'faq',
+        'terms_and_conditions',
+        'promotional_video_url',
     ];
 
     protected $hidden = ['password'];
 
-    protected $translatable = ['title', 'description', 'location', 'organizer'];
+    protected $translatable = ['title', 'description', 'location', 'organizer', 'timeline', 'terms_and_conditions'];
 
     protected $casts = [
         'recurring_days' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
         'is_recurring' => 'boolean',
+        'faq' => 'array',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly([
-                'title', 'description', 'location', 'organizer',
+                'title', 'description', 'location', 'location_link', 'organizer', 'organizer_phone',
                 'status', 'start_date', 'end_date', 'max_attendees',
                 'is_recurring', 'recurring_days',
+                'timeline', 'faq', 'terms_and_conditions', 'promotional_video_url',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
@@ -89,9 +97,19 @@ class Event extends Model
         return $this->hasOne(EventSignageSetting::class);
     }
 
+    public function fieldVisibilitySetting()
+    {
+        return $this->hasOne(EventFieldVisibilitySetting::class);
+    }
+
     public function kiosks()
     {
         return $this->hasMany(Kiosk::class);
+    }
+
+    public function reportSubscription()
+    {
+        return $this->hasOne(EventReportSubscription::class);
     }
 
     // Returns the configured signage settings for this event, or an
@@ -109,6 +127,15 @@ class Event extends Model
             'language_switch_seconds' => 10,
             'is_enabled' => true,
         ]);
+    }
+
+    // Returns this event's [show_x => bool, require_x => bool] attendee-field
+    // overrides for the given flow ("event_booking" or "kiosk"), or null when
+    // no override is configured — the caller should fall back to the global
+    // booking settings in that case.
+    public function fieldVisibilityOverridesFor(string $scope): ?array
+    {
+        return $this->fieldVisibilitySetting?->overridesFor($scope);
     }
 
     // Scopes
@@ -218,6 +245,21 @@ class Event extends Model
     public function getRemainingCapacity()
     {
         return max(0, $this->max_attendees - $this->getTotalBookings());
+    }
+
+    // Extracts the video ID from a youtube.com/youtu.be URL so the booking
+    // page can embed it, or null if the URL doesn't look like YouTube.
+    public function getPromotionalVideoEmbedId(): ?string
+    {
+        if (blank($this->promotional_video_url)) {
+            return null;
+        }
+
+        if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/', $this->promotional_video_url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }
 

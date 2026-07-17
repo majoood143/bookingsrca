@@ -28,8 +28,6 @@ class KioskBooking extends Component
     public function mount(Kiosk $kiosk)
     {
         $this->kiosk = $kiosk;
-        $this->loadBookingFieldSettings();
-
         $this->eventLocked = $kiosk->event_id !== null;
 
         if ($this->eventLocked) {
@@ -38,6 +36,10 @@ class KioskBooking extends Component
         } else {
             $this->step = 0;
         }
+
+        // Runs after $this->event is set (when pinned) so event-level terms
+        // & conditions overrides are picked up from the start.
+        $this->loadBookingFieldSettings();
     }
 
     // ── Step 0 — event picker (only shown when the kiosk isn't pinned) ───────
@@ -48,6 +50,9 @@ class KioskBooking extends Component
 
         $this->event = $event;
         $this->step = 1;
+
+        // Re-resolve terms & conditions now that the event is known.
+        $this->loadBookingFieldSettings();
     }
 
     // ── Idle reset — called by the front-end idle timer via wire:click/poll ──
@@ -181,6 +186,13 @@ class KioskBooking extends Component
         $this->payAtCounter();
     }
 
+    // Kiosk gets its own field-visibility override scope, independent from
+    // the public event booking page.
+    protected function fieldVisibilityScope(): string
+    {
+        return 'kiosk';
+    }
+
     protected function showConfirmation(Booking $booking): void
     {
         $this->confirmedBooking = $booking->load(['event', 'timeSlot', 'attendees', 'extraServices']);
@@ -222,6 +234,13 @@ class KioskBooking extends Component
             'showGender'      => $this->showGender,
             'showNationality' => $this->showNationality,
             'showIdentityNumber' => $this->showIdentityNumber,
+            'requireEmail'       => $this->requireEmail,
+            'requirePhone'       => $this->requirePhone,
+            'requireDateOfBirth' => $this->requireDateOfBirth,
+            'requireGender'      => $this->requireGender,
+            'requireNationality' => $this->requireNationality,
+            'requireIdentityNumber' => $this->requireIdentityNumber,
+            'showSlotEndTime' => $this->showSlotEndTime,
             'minBirthDate'    => $this->minBirthDate(),
             'maxBirthDate'    => now()->format('Y-m-d'),
         ]);

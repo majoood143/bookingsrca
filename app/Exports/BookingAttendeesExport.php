@@ -73,6 +73,10 @@ class BookingAttendeesExport extends ExcelExport
                 ->heading(__('booking_attendee.fields.event_date'))
                 ->getStateUsing(fn($record) => $record->booking->event_date?->format('Y-m-d')),
 
+            Column::make('time_slot')
+                ->heading(__('booking_attendee.fields.time_slot'))
+                ->getStateUsing(fn($record) => $record->booking->timeSlot?->getTimeRange()),
+
             Column::make('booking_status')
                 ->heading(__('booking_attendee.fields.booking_status'))
                 ->getStateUsing(fn($record) => ucfirst(str_replace('_', ' ', $record->booking->status))),

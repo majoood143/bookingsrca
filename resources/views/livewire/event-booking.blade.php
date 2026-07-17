@@ -1,4 +1,11 @@
-<div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+@php
+    use App\Models\BookingSetting;
+
+    $primaryColor = BookingSetting::get('primary_color', '#05602b');
+    $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+@endphp
+<div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
+    style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};">
 @if (in_array($event->status, ['draft', 'cancelled']))
     {{-- ── Maintenance / Unavailable View ── --}}
     <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -131,11 +138,23 @@
                 {{ $event->getTranslation('description', app()->getLocale()) }}
             </p>
             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-blue-200">
-                <span>📍 {{ $event->getTranslation('location', app()->getLocale()) }}</span>
+                @if ($event->location_link)
+                    <a href="{{ $event->location_link }}" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-white underline-offset-2 hover:underline">
+                        📍 {{ $event->getTranslation('location', app()->getLocale()) }}
+                    </a>
+                @else
+                    <span>📍 {{ $event->getTranslation('location', app()->getLocale()) }}</span>
+                @endif
                 {{-- <span>📅 {{ $event->start_date->locale(app()->getLocale())->translatedFormat('M d') }} –
                     {{ $event->end_date->locale(app()->getLocale())->translatedFormat('M d, Y') }}</span> --}}
                 @if ($event->organizer)
                     <span>👤 {{ $event->organizer }}</span>
+                @endif
+                @if ($event->organizer_phone)
+                    <a href="tel:{{ $event->organizer_phone }}" class="hover:text-white">
+                        📞 {{ $event->organizer_phone }}
+                    </a>
                 @endif
             </div>
         </div>
@@ -196,6 +215,70 @@
 
     {{-- ── Main Content ── --}}
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+
+        @if ($step === 1)
+            @php
+                $eventTimeline = $event->getTranslation('timeline', app()->getLocale());
+                $eventFaq      = $event->faq ?? [];
+                $videoEmbedId  = $event->getPromotionalVideoEmbedId();
+            @endphp
+
+            @if ($videoEmbedId || filled($eventTimeline) || !empty($eventFaq))
+                <div class="mb-8 space-y-6">
+                    @if ($videoEmbedId)
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="aspect-video">
+                                <iframe class="w-full h-full"
+                                    src="https://www.youtube.com/embed/{{ $videoEmbedId }}"
+                                    title="{{ __('event_booking.details.promo_video') }}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if (filled($eventTimeline))
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">{{ __('event_booking.details.timeline') }}</h2>
+                            <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                                {!! $eventTimeline !!}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if (!empty($eventFaq))
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">{{ __('event_booking.details.faq') }}</h2>
+                            <div class="divide-y divide-gray-100">
+                                @foreach ($eventFaq as $item)
+                                    @php
+                                        $question = $item['question'][app()->getLocale()] ?? $item['question']['en'] ?? '';
+                                        $answer   = $item['answer'][app()->getLocale()] ?? $item['answer']['en'] ?? '';
+                                    @endphp
+                                    @if ($question)
+                                        <details class="group py-3">
+                                            <summary
+                                                class="flex items-center justify-between cursor-pointer list-none font-semibold text-gray-800 text-sm">
+                                                {{ $question }}
+                                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 group-open:rotate-180 shrink-0 ms-3"
+                                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </summary>
+                                            <p class="mt-2 text-sm text-gray-500 leading-relaxed">{{ $answer }}</p>
+                                        </details>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
+        @endif
 
         @include('livewire.partials.booking-wizard-steps')
 
@@ -453,7 +536,7 @@
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         {{ __('event_booking.summary.time') }}</p>
                                     <p class="font-medium text-gray-800">
-                                        {{ $timeSlots->find($selectedSlot)?->getTimeRange() }}</p>
+                                        {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i') }}</p>
                                 </div>
                             </div>
 
@@ -469,7 +552,7 @@
                                                 class="truncate pr-2">{{ $ticketType->getTranslation('name', app()->getLocale()) }}
                                                 × {{ $qty }}</span>
                                             <span
-                                                class="shrink-0">{{ $ticketType->price > 0 ? 'OMR' . number_format($ticketType->price * $qty, 3) : __('event_booking.step3.free') }}</span>
+                                                class="shrink-0">@if ($ticketType->price > 0)@include('partials.currency-amount', ['amount' => $ticketType->price * $qty])@else{{ __('event_booking.step3.free') }}@endif</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -515,7 +598,7 @@
                                                             class="truncate pr-2">{{ $svc->getTranslation('name', app()->getLocale()) }}
                                                             × {{ $count }}</span>
                                                         <span
-                                                            class="shrink-0">OMR{{ number_format($svc->price * $count, 3) }}</span>
+                                                            class="shrink-0">@include('partials.currency-amount', ['amount' => $svc->price * $count])</span>
                                                     </div>
                                                 @endif
                                             @endforeach
@@ -560,11 +643,11 @@
                                 <div class="pt-3 border-t border-gray-100 space-y-1">
                                     <div class="flex justify-between text-sm text-gray-600">
                                         <span>{{ __('promo.subtotal_label') }}</span>
-                                        <span>OMR{{ number_format($totalPrice, 3) }}</span>
+                                        <span>@include('partials.currency-amount', ['amount' => $totalPrice])</span>
                                     </div>
                                     <div class="flex justify-between text-sm text-green-600 font-medium">
                                         <span>{{ __('promo.discount_label') }}</span>
-                                        <span>-OMR{{ number_format($discountAmount, 3) }}</span>
+                                        <span>-@include('partials.currency-amount', ['amount' => $discountAmount])</span>
                                     </div>
                                 </div>
                             @endif
@@ -573,7 +656,7 @@
                                 <span
                                     class="font-bold text-gray-900 text-base">{{ __('event_booking.summary.total') }}</span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">OMR{{ number_format($this->finalTotal(), 3) }}</span>
+                                    class="font-black text-2xl text-blue-600">@include('partials.currency-amount', ['amount' => $this->finalTotal()])</span>
                             </div>
 
                             @if ($activeGateway === 'thawani')

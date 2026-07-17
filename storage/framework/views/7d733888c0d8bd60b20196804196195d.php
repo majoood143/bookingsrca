@@ -33,33 +33,33 @@
                                 wire:click="<?php echo e($isSoldOut ? '' : "selectDate('{$date}')"); ?>"
                                 <?php echo e($isSoldOut ? 'disabled' : ''); ?>
 
-                                class="group relative p-4 border-2 rounded-2xl text-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden
+                                class="group relative p-4 border-2 rounded-2xl text-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover overflow-hidden
                                     <?php echo e($isSoldOut
                                         ? 'border-gray-100 bg-gray-50 cursor-not-allowed'
                                         : ($selectedDate === $date
-                                            ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
-                                            : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm')); ?>">
+                                            ? 'border-green-600 bg-green-600 shadow-md shadow-green-600'
+                                            : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm')); ?>">
                                 <div
                                     class="text-xs font-bold uppercase tracking-widest
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-blue-400' : 'text-gray-400')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover/70' : 'text-gray-400')); ?>">
                                     <?php echo e($d->translatedFormat('D')); ?>
 
                                 </div>
                                 <div
                                     class="text-4xl font-black my-1
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-blue-600' : 'text-gray-800')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-800')); ?>">
                                     <?php echo e($d->format('d')); ?>
 
                                 </div>
                                 <div
                                     class="text-sm font-semibold
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-blue-500' : 'text-gray-500')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-500')); ?>">
                                     <?php echo e($d->translatedFormat('M Y')); ?>
 
                                 </div>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedDate === $date && !$isSoldOut): ?>
                                     <div class="mt-2">
-                                        <span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                                        <span class="inline-block w-2 h-2 rounded-full bg-brand-hover"></span>
                                     </div>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isSoldOut): ?>
@@ -79,7 +79,7 @@
 
             <div wire:loading wire:target="selectDate"
                 class="fixed inset-0 bg-white/60 flex items-center justify-center z-50">
-                <svg class="animate-spin w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin w-8 h-8 text-brand-hover" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                         stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -109,14 +109,14 @@
                         <button wire:click="<?php echo e($slotAvailable ? 'selectSlot(' . $slot->id . ')' : ''); ?>"
                             <?php echo e(!$slotAvailable ? 'disabled' : ''); ?>
 
-                            class="w-full p-5 border-2 rounded-2xl text-left transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500
+                            class="w-full p-5 border-2 rounded-2xl text-left transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover
                                 <?php echo e($selectedSlot == $slot->id
-                                    ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
+                                    ? 'border-brand-hover bg-brand-hover/10 shadow-md shadow-brand-hover/20'
                                     : ($slotAvailable
-                                        ? 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                                        ? 'border-gray-200 bg-white hover:border-brand-hover/45 hover:shadow-sm cursor-pointer'
                                         : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50')); ?>">
                             <div class="flex justify-between items-start mb-3">
-                                <span class="text-xl font-bold text-gray-900"><?php echo e($slot->getTimeRange()); ?></span>
+                                <span class="text-xl font-bold text-gray-900"><?php echo e($showSlotEndTime ? $slot->getTimeRange() : $slot->start_time->format('H:i')); ?></span>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$slotAvailable): ?>
                                     <span
                                         class="text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-full font-semibold"><?php echo e(__('event_booking.step2.full')); ?></span>
@@ -142,7 +142,7 @@
                 </div>
 
                 <button wire:click="previousStep"
-                    class="mt-6 inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-800 font-medium text-sm transition-colors">
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                     ← <?php echo e(__('event_booking.back')); ?>
 
                 </button>
@@ -173,7 +173,7 @@
                         ?>
                         <div
                             class="p-5 border-2 rounded-2xl transition-all duration-150
-                            <?php echo e($qty > 0 ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100' : 'border-gray-200 bg-white'); ?>
+                            <?php echo e($qty > 0 ? 'border-brand-hover bg-brand-hover/10 shadow-md shadow-brand-hover/20' : 'border-gray-200 bg-white'); ?>
 
                             <?php echo e(!$typeAvailable || $isBlocked ? 'opacity-60' : ''); ?>">
 
@@ -188,7 +188,7 @@
                                         </h3>
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($qty > 0): ?>
                                             <span
-                                                class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">
+                                                class="text-xs bg-brand-hover text-white px-2 py-0.5 rounded-full font-medium">
                                                 <?php echo e(__('event_booking.step3.n_selected', ['n' => $qty])); ?>
 
                                             </span>
@@ -230,7 +230,7 @@
                                             <?php echo e(__('event_booking.step3.free')); ?></div>
                                     <?php else: ?>
                                         <div class="text-2xl font-black text-gray-900">
-                                            OMR<?php echo e(number_format($ticketType->price, 3)); ?></div>
+                                            <?php echo $__env->make('partials.currency-amount', ['amount' => $ticketType->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></div>
                                         <div class="text-xs text-gray-400"><?php echo e(__('event_booking.step3.per_ticket')); ?>
 
                                         </div>
@@ -244,7 +244,7 @@
                                             <?php echo e($qty <= 0 ? 'disabled' : ''); ?>
 
                                             class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
-                                                <?php echo e($qty <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'); ?>">
+                                                <?php echo e($qty <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover'); ?>">
                                             −
                                         </button>
                                         <span
@@ -259,7 +259,7 @@
                                             <?php echo e($atMax ? 'disabled' : ''); ?>
 
                                             class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
-                                                <?php echo e($atMax ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'); ?>">
+                                                <?php echo e($atMax ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover'); ?>">
                                             +
                                         </button>
                                     </div>
@@ -267,9 +267,8 @@
                                     
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($qty > 0): ?>
                                         <div class="text-right shrink-0 min-w-[80px]">
-                                            <div class="text-sm font-semibold text-blue-700">
-                                                <?php echo e($ticketType->price > 0 ? 'OMR' . number_format($ticketType->price * $qty, 3) : __('event_booking.step3.free')); ?>
-
+                                            <div class="text-sm font-semibold text-green-700">
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ticketType->price > 0): ?><?php echo $__env->make('partials.currency-amount', ['amount' => $ticketType->price * $qty], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php else: ?><?php echo e(__('event_booking.step3.free')); ?><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </div>
                                             <div class="text-xs text-gray-400">
                                                 <?php echo e(__('event_booking.step3.subtotal')); ?></div>
@@ -319,13 +318,13 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                             <span
                                 class="ml-2 text-xs text-gray-500"><?php echo e(__('event_booking.step3.n_tickets', ['n' => $totalQty])); ?></span>
                         </div>
-                        <span class="text-2xl font-black">OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                        <span class="text-2xl font-black"><?php echo $__env->make('partials.currency-amount', ['amount' => $totalPrice], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                     </div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 <div class="mt-6 flex items-center gap-4">
                     <button wire:click="previousStep"
-                        class="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-800 font-medium text-sm transition-colors">
+                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                         ← <?php echo e(__('event_booking.back')); ?>
 
                     </button>
@@ -378,7 +377,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <?php $selectedCount = $ticketTypeServices[$ticketType->id][$service->id] ?? 0; ?>
                                             <div
                                                 class="p-5 border-2 rounded-2xl transition-all duration-150
-                                                    <?php echo e($selectedCount > 0 ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100' : 'border-gray-200 bg-white'); ?>">
+                                                    <?php echo e($selectedCount > 0 ? 'border-brand-hover bg-brand-hover/10 shadow-md shadow-brand-hover/20' : 'border-gray-200 bg-white'); ?>">
                                                 <div class="flex items-start gap-4">
                                                     <div class="flex-1 min-w-0">
                                                         <h3 class="font-bold text-gray-900">
@@ -390,8 +389,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                                                         </p>
                                                         <p class="text-xs text-gray-400 mt-1">
-                                                            OMR<?php echo e(number_format($service->price, 3)); ?>
-
+                                                            <?php echo $__env->make('partials.currency-amount', ['amount' => $service->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                                             <?php echo e(__('event_booking.step4.per_ticket')); ?>
 
                                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($service->quantity_available): ?>
@@ -411,7 +409,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                                                 <?php echo e($selectedCount <= 0 ? 'disabled' : ''); ?>
 
                                                                 class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
-                                                                    <?php echo e($selectedCount <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'); ?>">
+                                                                    <?php echo e($selectedCount <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover'); ?>">
                                                                 −
                                                             </button>
                                                             <span
@@ -424,15 +422,13 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                                                 <?php echo e($selectedCount >= $qty ? 'disabled' : ''); ?>
 
                                                                 class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
-                                                                    <?php echo e($selectedCount >= $qty ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'); ?>">
+                                                                    <?php echo e($selectedCount >= $qty ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover'); ?>">
                                                                 +
                                                             </button>
                                                         </div>
                                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedCount > 0): ?>
-                                                            <div class="text-xs text-blue-600 font-medium">
-                                                                = OMR
-                                                                <?php echo e(number_format($service->price * $selectedCount, 3)); ?>
-
+                                                            <div class="text-xs text-brand-hover font-medium">
+                                                                = <?php echo $__env->make('partials.currency-amount', ['amount' => $service->price * $selectedCount], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                                             </div>
                                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </div>
@@ -449,12 +445,12 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                 
                 <div class="mt-6 p-4 sm:p-5 bg-gray-900 text-white rounded-2xl flex justify-between items-center">
                     <span class="font-medium text-gray-300"><?php echo e(__('event_booking.step3.running_total')); ?></span>
-                    <span class="text-2xl font-black">OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                    <span class="text-2xl font-black"><?php echo $__env->make('partials.currency-amount', ['amount' => $totalPrice], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 </div>
 
                 <div class="mt-6 flex items-center gap-4">
                     <button wire:click="previousStep"
-                        class="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-800 font-medium text-sm transition-colors">
+                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                         ← <?php echo e(__('event_booking.back')); ?>
 
                     </button>
@@ -499,15 +495,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                             <div
                                 class="border-2 rounded-2xl
-                                <?php echo e($i === 0 ? 'border-blue-200' : 'border-gray-200'); ?>">
+                                <?php echo e($i === 0 ? 'border-brand-hover/30' : 'border-gray-200'); ?>">
 
                                 
                                 <div
                                     class="px-5 py-3 flex items-center gap-3 rounded-t-2xl
-                                    <?php echo e($i === 0 ? 'bg-blue-50 border-b border-blue-200' : 'bg-gray-50 border-b border-gray-200'); ?>">
+                                    <?php echo e($i === 0 ? 'bg-brand-hover/10 border-b border-brand-hover/30' : 'bg-gray-50 border-b border-gray-200'); ?>">
                                     <div
                                         class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0
-                                        <?php echo e($i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-400 text-white'); ?>">
+                                        <?php echo e($i === 0 ? 'bg-brand-hover text-white' : 'bg-gray-400 text-white'); ?>">
                                         <?php echo e($i + 1); ?>
 
                                     </div>
@@ -516,7 +512,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($i === 0): ?>
                                             <span
-                                                class="text-xs text-blue-500 font-normal ml-1">(<?php echo e(__('event_booking.step5.primary')); ?>)</span>
+                                                class="text-xs text-brand-hover font-normal ml-1">(<?php echo e(__('event_booking.step5.primary')); ?>)</span>
                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </span>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($attendeeTicketType): ?>
@@ -540,7 +536,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <input type="text"
                                                 wire:model="attendees.<?php echo e($i); ?>.first_name"
                                                 placeholder="<?php echo e(__('event_booking.step5.first_name_placeholder')); ?>"
-                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                     <?php echo e($errors->has("attendees.$i.first_name") ? 'border-red-400 bg-red-50 ring-1 ring-red-300' : 'border-gray-300'); ?>">
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.first_name"];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -561,7 +557,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <input type="text"
                                                 wire:model="attendees.<?php echo e($i); ?>.last_name"
                                                 placeholder="<?php echo e(__('event_booking.step5.last_name_placeholder')); ?>"
-                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                     <?php echo e($errors->has("attendees.$i.last_name") ? 'border-red-400 bg-red-50 ring-1 ring-red-300' : 'border-gray-300'); ?>">
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.last_name"];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -580,15 +576,18 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showEmail): ?>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                                <?php echo e(__('event_booking.step5.email_address')); ?> <span
-                                                    class="text-red-500">*</span>
+                                                <?php echo e(__('event_booking.step5.email_address')); ?>
+
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireEmail): ?>
+                                                    <span class="text-red-500">*</span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </label>
                                             <input type="email"
                                                 wire:model.live="attendees.<?php echo e($i); ?>.email"
                                                 placeholder="john@example.com"
                                                 <?php echo e($copyContactToAll && $i > 0 ? 'readonly' : ''); ?>
 
-                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                     <?php echo e($copyContactToAll && $i > 0 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''); ?>
 
                                                     <?php echo e($errors->has("attendees.$i.email") ? 'border-red-400 bg-red-50 ring-1 ring-red-300' : 'border-gray-300'); ?>">
@@ -613,8 +612,11 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showPhone): ?>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                                <?php echo e(__('event_booking.step5.phone_number')); ?> <span
-                                                    class="text-red-500">*</span>
+                                                <?php echo e(__('event_booking.step5.phone_number')); ?>
+
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requirePhone): ?>
+                                                    <span class="text-red-500">*</span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </label>
                                             <input type="tel" pattern="\+?\d{7,15}" inputmode="numeric"
                                                 autocomplete="tel"
@@ -622,7 +624,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                                 placeholder="+968 00000000"
                                                 <?php echo e($copyContactToAll && $i > 0 ? 'readonly' : ''); ?>
 
-                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                     <?php echo e($copyContactToAll && $i > 0 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''); ?>
 
                                                     <?php echo e($errors->has("attendees.$i.phone") ? 'border-red-400 bg-red-50 ring-1 ring-red-300' : 'border-gray-300'); ?>">
@@ -654,12 +656,17 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                         <div class="grid grid-cols-1 sm:grid-cols-<?php echo e($optCount); ?> gap-4">
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showDateOfBirth): ?>
                                                 <div>
-                                                    <label
-                                                        class="block text-sm font-semibold text-gray-700 mb-1.5"><?php echo e(__('event_booking.step5.date_of_birth')); ?></label>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        <?php echo e(__('event_booking.step5.date_of_birth')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireDateOfBirth): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </label>
                                                     <input type="date" dir="ltr"
                                                         wire:model="attendees.<?php echo e($i); ?>.date_of_birth"
                                                         min="<?php echo e($minBirthDate); ?>" max="<?php echo e($maxBirthDate); ?>"
-                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 text-left focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 text-left focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             <?php echo e($errors->has("attendees.$i.date_of_birth") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
                                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.date_of_birth"];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -676,11 +683,14 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showGender): ?>
                                                 <div>
                                                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                                        <?php echo e(__('event_booking.step5.gender')); ?> <span
-                                                            class="text-red-500">*</span>
+                                                        <?php echo e(__('event_booking.step5.gender')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireGender): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </label>
                                                     <select wire:model="attendees.<?php echo e($i); ?>.gender"
-                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             <?php echo e($errors->has("attendees.$i.gender") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
                                                         <option value="">
                                                             <?php echo e(__('event_booking.step5.select_gender')); ?></option>
@@ -720,20 +730,25 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                                     },
                                                 }"
                                                     x-init="search = options[$wire.attendees[<?php echo e($i); ?>].nationality] ?? ''">
-                                                    <label
-                                                        class="block text-sm font-semibold text-gray-700 mb-1.5"><?php echo e(__('event_booking.step5.nationality')); ?></label>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        <?php echo e(__('event_booking.step5.nationality')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireNationality): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </label>
                                                     <input type="text" x-model="search" @focus="open = true"
                                                         @input="open = true" @keydown.escape="open = false"
                                                         @click.outside="open = false" autocomplete="off"
                                                         placeholder="<?php echo e(__('booking.placeholders.nationality')); ?>"
-                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             <?php echo e($errors->has("attendees.$i.nationality") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
                                                     <div x-show="open" x-transition style="display: none;"
                                                         class="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
                                                         <template x-for="[code, label] in Object.entries(filtered)"
                                                             :key="code">
                                                             <div @click="choose(code, label)"
-                                                                class="px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer"
+                                                                class="px-4 py-2 text-sm text-gray-700 hover:bg-brand-hover/10 cursor-pointer"
                                                                 x-text="label"></div>
                                                         </template>
                                                         <div x-show="Object.keys(filtered).length === 0"
@@ -757,13 +772,16 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showIdentityNumber): ?>
                                                 <div>
                                                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                                        <?php echo e(__('event_booking.step5.identity_number')); ?> <span
-                                                            class="text-red-500">*</span>
+                                                        <?php echo e(__('event_booking.step5.identity_number')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireIdentityNumber): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </label>
                                                     <input type="text"
                                                         wire:model="attendees.<?php echo e($i); ?>.identity_number"
                                                         placeholder="<?php echo e(__('booking.placeholders.identity_number')); ?>"
-                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             <?php echo e($errors->has("attendees.$i.identity_number") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
                                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.identity_number"];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -829,7 +847,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                             <div class="flex items-start gap-3">
                                 <input type="checkbox" wire:model="agreedToTerms" id="agreedToTerms"
-                                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0
+                                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-hover focus:ring-brand-hover cursor-pointer shrink-0
                                         <?php echo e($errors->has('agreedToTerms') ? 'border-red-400 ring-1 ring-red-300' : ''); ?>">
                                 <label for="agreedToTerms" class="text-sm text-gray-700 cursor-pointer leading-snug">
                                     <?php echo e(__('event_booking.step5.terms_agree')); ?>
@@ -910,7 +928,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         <?php echo e(__('event_booking.summary.time')); ?></p>
                                     <p class="font-medium text-gray-800">
-                                        <?php echo e($timeSlots->find($selectedSlot)?->getTimeRange()); ?></p>
+                                        <?php echo e($showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i')); ?></p>
                                 </div>
                             </div>
 
@@ -930,9 +948,9 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                         </div>
                                         <div class="flex justify-between text-gray-500 text-xs mb-2">
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ticketType->price > 0): ?>
-                                                <span>OMR<?php echo e(number_format($ticketType->price, 3)); ?> ×
+                                                <span><?php echo $__env->make('partials.currency-amount', ['amount' => $ticketType->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?> ×
                                                     <?php echo e($qty); ?></span>
-                                                <span>OMR<?php echo e(number_format($ticketType->price * $qty, 3)); ?></span>
+                                                <span><?php echo $__env->make('partials.currency-amount', ['amount' => $ticketType->price * $qty], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                             <?php else: ?>
                                                 <span><?php echo e(__('event_booking.step3.free')); ?></span>
                                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -983,7 +1001,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                                                             × <?php echo e($count); ?></span>
                                                         <span
-                                                            class="shrink-0">OMR<?php echo e(number_format($svc->price * $count, 3)); ?></span>
+                                                            class="shrink-0"><?php echo $__env->make('partials.currency-amount', ['amount' => $svc->price * $count], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                                     </div>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -996,7 +1014,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <span
                                     class="font-bold text-gray-900 text-base"><?php echo e(__('event_booking.summary.total')); ?></span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                                    class="font-black text-2xl text-green-700"><?php echo $__env->make('partials.currency-amount', ['amount' => $totalPrice], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                             </div>
 
                         </div>

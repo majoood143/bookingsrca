@@ -154,18 +154,18 @@
         @foreach ($booking->extraServices as $service)
             <div class="row">
                 <span class="label">{{ $service->getTranslation('name', $locale) }} &times; {{ $service->pivot->quantity }}</span>
-                <span class="value">OMR {{ number_format($service->pivot->quantity * $service->pivot->price, 3) }}</span>
+                <span class="value">@include('partials.currency-amount', ['amount' => $service->pivot->quantity * $service->pivot->price])</span>
             </div>
         @endforeach
     @endif
 
     <div class="divider"></div>
 
-    <div class="row"><span class="label">{{ __('booking.receipt.tickets') }}</span><span class="value">OMR {{ number_format($booking->ticket_price, 3) }}</span></div>
+    <div class="row"><span class="label">{{ __('booking.receipt.tickets') }}</span><span class="value">@include('partials.currency-amount', ['amount' => $booking->ticket_price])</span></div>
     @if ($booking->services_price > 0)
-        <div class="row"><span class="label">{{ __('booking.receipt.services') }}</span><span class="value">OMR {{ number_format($booking->services_price, 3) }}</span></div>
+        <div class="row"><span class="label">{{ __('booking.receipt.services') }}</span><span class="value">@include('partials.currency-amount', ['amount' => $booking->services_price])</span></div>
     @endif
-    <div class="row total-row"><span class="label">{{ __('booking.receipt.total') }}</span><span class="value">OMR {{ number_format($booking->total_price, 3) }}</span></div>
+    <div class="row total-row"><span class="label">{{ __('booking.receipt.total') }}</span><span class="value">@include('partials.currency-amount', ['amount' => $booking->total_price])</span></div>
 
     @if ($booking->payments->count() > 0)
         <div class="divider"></div>
@@ -173,11 +173,11 @@
         @foreach ($booking->payments as $payment)
             <div class="row">
                 <span class="label">{{ __('booking.payments.methods.' . $payment->payment_method) }}</span>
-                <span class="value">OMR {{ number_format($payment->amount, 3) }}</span>
+                <span class="value">@include('partials.currency-amount', ['amount' => $payment->amount])</span>
             </div>
         @endforeach
-        <div class="row"><span class="label">{{ __('booking.receipt.paid') }}</span><span class="value">OMR {{ number_format($booking->total_paid, 3) }}</span></div>
-        <div class="row"><span class="label">{{ __('booking.receipt.balance_due') }}</span><span class="value">OMR {{ number_format($booking->balance_due, 3) }}</span></div>
+        <div class="row"><span class="label">{{ __('booking.receipt.paid') }}</span><span class="value">@include('partials.currency-amount', ['amount' => $booking->total_paid])</span></div>
+        <div class="row"><span class="label">{{ __('booking.receipt.balance_due') }}</span><span class="value">@include('partials.currency-amount', ['amount' => $booking->balance_due])</span></div>
     @endif
 
     <div class="footer">

@@ -53,6 +53,7 @@ class GeneralSettings extends Page implements HasForms
             'timezone' => BookingSetting::get('timezone', 'Asia/Muscat'),
             'currency_code' => BookingSetting::get('currency_code', 'OMR'),
             'currency_symbol' => BookingSetting::get('currency_symbol', 'OMR'),
+            'currency_icon' => BookingSetting::get('currency_icon'),
 
             'site_logo' => BookingSetting::get('site_logo'),
             'app_logo' => BookingSetting::get('app_logo'),
@@ -72,6 +73,7 @@ class GeneralSettings extends Page implements HasForms
             'show_gender' => (bool) BookingSetting::get('show_gender', true),
             'show_nationality' => (bool) BookingSetting::get('show_nationality', true),
             'show_identity_number' => (bool) BookingSetting::get('show_identity_number', true),
+            'show_slot_end_time' => (bool) BookingSetting::get('show_slot_end_time', true),
 
             'terms_en' => BookingSetting::get('terms_en', ''),
             'terms_ar' => BookingSetting::get('terms_ar', ''),
@@ -144,7 +146,16 @@ class GeneralSettings extends Page implements HasForms
                                                 ->label(__('general_settings.fields.currency_symbol'))
                                                 ->required()
                                                 ->maxLength(10),
+
                                         ]),
+
+                                        FileUpload::make('currency_icon')
+                                            ->label(__('general_settings.fields.currency_icon'))
+                                            ->helperText(__('general_settings.fields.currency_icon_helper'))
+                                            ->acceptedFileTypes(['image/svg+xml'])
+                                            ->disk('public')
+                                            ->directory('branding')
+                                            ->visibility('public'),
                                     ]),
                             ]),
 
@@ -233,6 +244,10 @@ class GeneralSettings extends Page implements HasForms
                                                 ->minValue(1)
                                                 ->required(),
                                         ]),
+
+                                        Toggle::make('show_slot_end_time')
+                                            ->label(__('general_settings.fields.show_slot_end_time'))
+                                            ->helperText(__('general_settings.fields.show_slot_end_time_helper')),
                                     ]),
                             ]),
 
@@ -321,6 +336,7 @@ class GeneralSettings extends Page implements HasForms
             'timezone',
             'currency_code',
             'currency_symbol',
+            'currency_icon',
             'site_logo',
             'app_logo',
             'favicon',
@@ -344,6 +360,7 @@ class GeneralSettings extends Page implements HasForms
             'show_gender',
             'show_nationality',
             'show_identity_number',
+            'show_slot_end_time',
             'module_kiosk_enabled',
             'module_extra_services_enabled',
             'module_private_events_enabled',

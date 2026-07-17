@@ -150,7 +150,7 @@
                 @endif
                 <div class="detail-row">
                     <span class="detail-label">{{ __('event_booking.email.total_amount') }}</span>
-                    <span class="detail-value">OMR {{ number_format($booking->total_price, 3) }}</span>
+                    <span class="detail-value">@include('partials.currency-amount', ['amount' => $booking->total_price])</span>
                 </div>
             </div>
 

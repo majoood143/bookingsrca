@@ -36,6 +36,8 @@ return [
         'timezone' => 'Timezone',
         'currency_code' => 'Currency',
         'currency_symbol' => 'Currency Symbol',
+        'currency_icon' => 'Currency Icon (SVG)',
+        'currency_icon_helper' => 'Optional SVG icon used instead of the currency symbol text on the booking page.',
 
         'site_logo' => 'Public Site Logo',
         'site_logo_helper' => 'Shown on the public booking site header.',
@@ -55,6 +57,8 @@ return [
         'max_attendee_age_years' => 'Maximum Attendee Age (Years)',
         'pending_booking_expiry_minutes' => 'Pending Booking Expiry (Minutes)',
         'pending_booking_expiry_minutes_helper' => 'Unpaid bookings are automatically cancelled after this many minutes.',
+        'show_slot_end_time' => 'Show Time Slot End Time',
+        'show_slot_end_time_helper' => 'When off, only the start time is shown for time slots on the booking and kiosk pages (e.g. "09:00" instead of "09:00 - 10:00").',
 
         'show_email' => 'Show Email Field',
         'show_phone' => 'Show Mobile Number Field',

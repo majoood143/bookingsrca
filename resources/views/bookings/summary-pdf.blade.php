@@ -376,7 +376,7 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Price per Ticket:</div>
-                <div class="info-value">OMR {{ number_format($booking->ticket_price / $booking->quantity, 3) }}</div>
+                <div class="info-value">@include('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity])</div>
             </div>
         </div>
     </div>
@@ -428,8 +428,8 @@
             <li>
                 <strong>{{ $service->getTranslation('name', 'en') }}</strong><br>
                 <span class="service-amount">
-                    Quantity: {{ $service->pivot->quantity }} &times; OMR {{ number_format($service->pivot->price, 3) }}
-                    = OMR {{ number_format($service->pivot->quantity * $service->pivot->price, 3) }}
+                    Quantity: {{ $service->pivot->quantity }} &times; @include('partials.currency-amount', ['amount' => $service->pivot->price])
+                    = @include('partials.currency-amount', ['amount' => $service->pivot->quantity * $service->pivot->price])
                 </span>
             </li>
             @endforeach
@@ -445,20 +445,20 @@
         <div class="price-summary">
             <table class="price-table">
                 <tr>
-                    <td>Tickets ({{ $booking->quantity }} &times; OMR{{ number_format($booking->ticket_price / $booking->quantity, 3) }}):</td>
-                    <td class="price-amount">OMR {{ number_format($booking->ticket_price, 3) }}</td>
+                    <td>Tickets ({{ $booking->quantity }} &times; @include('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity])):</td>
+                    <td class="price-amount">@include('partials.currency-amount', ['amount' => $booking->ticket_price])</td>
                 </tr>
 
                 @if($booking->services_price > 0)
                 <tr>
                     <td>Extra Services:</td>
-                    <td class="price-amount">OMR {{ number_format($booking->services_price, 3) }}</td>
+                    <td class="price-amount">@include('partials.currency-amount', ['amount' => $booking->services_price])</td>
                 </tr>
                 @endif
 
                 <tr class="price-total-row">
                     <td>Total Amount:</td>
-                    <td class="price-amount">OMR {{ number_format($booking->total_price, 3) }}</td>
+                    <td class="price-amount">@include('partials.currency-amount', ['amount' => $booking->total_price])</td>
                 </tr>
             </table>
         </div>

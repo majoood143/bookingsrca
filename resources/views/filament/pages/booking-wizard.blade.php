@@ -27,15 +27,15 @@
                     </div>
                     <div>
                         <span class="block text-gray-500 dark:text-gray-400">{{ __('booking.payments.summary.total_paid') }}</span>
-                        <span class="block font-semibold text-success-600">OMR {{ number_format($createdBooking->total_paid, 3) }}</span>
+                        <span class="block font-semibold text-success-600">@include('partials.currency-amount', ['amount' => $createdBooking->total_paid])</span>
                     </div>
                     <div>
                         <span class="block text-gray-500 dark:text-gray-400">{{ __('booking.payments.summary.balance_due') }}</span>
-                        <span class="block font-semibold {{ $createdBooking->balance_due > 0 ? 'text-danger-600' : 'text-success-600' }}">OMR {{ number_format($createdBooking->balance_due, 3) }}</span>
+                        <span class="block font-semibold {{ $createdBooking->balance_due > 0 ? 'text-danger-600' : 'text-success-600' }}">@include('partials.currency-amount', ['amount' => $createdBooking->balance_due])</span>
                     </div>
                     <div class="col-span-2 border-t border-gray-100 pt-3 dark:border-gray-700">
                         <span class="block text-gray-500 dark:text-gray-400">{{ __('booking.fields.total_price') }}</span>
-                        <span class="block text-2xl font-bold text-success-600">OMR {{ number_format($createdBooking->total_price, 3) }}</span>
+                        <span class="block text-2xl font-bold text-success-600">@include('partials.currency-amount', ['amount' => $createdBooking->total_price])</span>
                     </div>
                 </div>
             </x-filament::section>

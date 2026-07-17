@@ -38,6 +38,13 @@ return [
         'incorrect'        => 'Incorrect password. Please try again.',
     ],
 
+    // ── Event details panel (timeline / FAQ / promo video) ───────────────────
+    'details' => [
+        'timeline'    => 'Event Timeline',
+        'faq'         => 'Frequently Asked Questions',
+        'promo_video' => 'Promotional Video',
+    ],
+
     // ── Step 1 — Select Date ──────────────────────────────────────────────────
     'step1' => [
         'heading'         => 'Select a Date',

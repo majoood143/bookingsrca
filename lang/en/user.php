@@ -13,6 +13,7 @@ return [
         'email'             => 'Email',
         'email_verified_at' => 'Email Verified At',
         'password'          => 'Password',
+        'is_active'         => 'Active',
     ],
 
     'columns' => [
@@ -22,6 +23,7 @@ return [
         'created_at'        => 'Created At',
         'updated_at'        => 'Updated At',
         'role'              => 'Role',
+        'is_active'         => 'Active',
     ],
 
 ];

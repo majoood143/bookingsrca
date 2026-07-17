@@ -57,7 +57,7 @@
                 ['label' => __('reports.stats.cancelled'),       'value' => $report['cancelledCount'], 'color' => 'bg-red-100 dark:bg-red-900/40',        'text' => 'text-red-700 dark:text-red-300'],
                 ['label' => __('reports.stats.checked_in'),      'value' => $report['checkedInCount'], 'color' => 'bg-blue-100 dark:bg-blue-900/40',      'text' => 'text-blue-700 dark:text-blue-300'],
                 ['label' => __('reports.stats.total_attendees'), 'value' => $report['totalAttendees'], 'color' => 'bg-purple-100 dark:bg-purple-900/40',  'text' => 'text-purple-700 dark:text-purple-300'],
-                ['label' => __('reports.stats.total_revenue'),   'value' => 'OMR' . number_format((float)$report['totalRevenue'], 3), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
+                ['label' => __('reports.stats.total_revenue'),   'value' => view('partials.currency-amount', ['amount' => (float)$report['totalRevenue']])->render(), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300', 'html' => true],
             ];
         ?>
 
@@ -68,8 +68,7 @@
 
                 </span>
                 <span class="text-2xl font-bold <?php echo e($stat['text']); ?>">
-                    <?php echo e($stat['value']); ?>
-
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($stat['html'])): ?> <?php echo $stat['value']; ?> <?php else: ?> <?php echo e($stat['value']); ?> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </span>
             </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -137,8 +136,7 @@
                                 </td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300"><?php echo e($row['attendees']); ?></td>
                                 <td class="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                                    OMR <?php echo e(number_format((float)$row['revenue'], 3)); ?>
-
+                                    <?php echo $__env->make('partials.currency-amount', ['amount' => (float)$row['revenue']], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                 </td>
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -191,8 +189,7 @@
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300"><?php echo e($row['bookings']); ?></td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300"><?php echo e($row['attendees']); ?></td>
                                 <td class="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                                    OMR<?php echo e(number_format((float)$row['revenue'], 3)); ?>
-
+                                    <?php echo $__env->make('partials.currency-amount', ['amount' => (float)$row['revenue']], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                 </td>
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

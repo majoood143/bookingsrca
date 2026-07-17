@@ -360,7 +360,7 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Price per Ticket:</div>
-                <div class="info-value">OMR <?php echo e(number_format($booking->ticket_price / $booking->quantity, 3)); ?></div>
+                <div class="info-value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></div>
             </div>
         </div>
     </div>
@@ -412,10 +412,8 @@
             <li>
                 <strong><?php echo e($service->getTranslation('name', 'en')); ?></strong><br>
                 <span class="service-amount">
-                    Quantity: <?php echo e($service->pivot->quantity); ?> &times; OMR <?php echo e(number_format($service->pivot->price, 3)); ?>
-
-                    = OMR <?php echo e(number_format($service->pivot->quantity * $service->pivot->price, 3)); ?>
-
+                    Quantity: <?php echo e($service->pivot->quantity); ?> &times; <?php echo $__env->make('partials.currency-amount', ['amount' => $service->pivot->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    = <?php echo $__env->make('partials.currency-amount', ['amount' => $service->pivot->quantity * $service->pivot->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                 </span>
             </li>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -431,20 +429,20 @@
         <div class="price-summary">
             <table class="price-table">
                 <tr>
-                    <td>Tickets (<?php echo e($booking->quantity); ?> &times; OMR<?php echo e(number_format($booking->ticket_price / $booking->quantity, 3)); ?>):</td>
-                    <td class="price-amount">OMR <?php echo e(number_format($booking->ticket_price, 3)); ?></td>
+                    <td>Tickets (<?php echo e($booking->quantity); ?> &times; <?php echo $__env->make('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>):</td>
+                    <td class="price-amount"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->ticket_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></td>
                 </tr>
 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->services_price > 0): ?>
                 <tr>
                     <td>Extra Services:</td>
-                    <td class="price-amount">OMR <?php echo e(number_format($booking->services_price, 3)); ?></td>
+                    <td class="price-amount"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->services_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></td>
                 </tr>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 <tr class="price-total-row">
                     <td>Total Amount:</td>
-                    <td class="price-amount">OMR <?php echo e(number_format($booking->total_price, 3)); ?></td>
+                    <td class="price-amount"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></td>
                 </tr>
             </table>
         </div>

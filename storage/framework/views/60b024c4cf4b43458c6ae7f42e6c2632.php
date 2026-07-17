@@ -1,4 +1,11 @@
+<?php
+    use App\Models\BookingSetting;
+
+    $primaryColor = BookingSetting::get('primary_color', '#05602b');
+    $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+?>
 <div
+    style="--color-brand: <?php echo e($primaryColor); ?>; --color-brand-hover: <?php echo e($secondaryColor); ?>;"
     x-data="{
         timeoutSeconds: <?php echo e((int) $kiosk->idle_timeout_seconds); ?>,
         timer: null,
@@ -181,7 +188,7 @@
                             <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">
                                 <?php echo e(__('kiosk_booking.confirmation.amount_due')); ?></p>
                             <p class="text-2xl font-black text-amber-600">
-                                OMR<?php echo e(number_format($confirmedBooking->total_price, 3)); ?></p>
+                                <?php echo $__env->make('partials.currency-amount', ['amount' => $confirmedBooking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></p>
                         </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>

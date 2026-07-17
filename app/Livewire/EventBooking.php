@@ -239,6 +239,13 @@ class EventBooking extends Component
             'showGender'      => $this->showGender,
             'showNationality' => $this->showNationality,
             'showIdentityNumber' => $this->showIdentityNumber,
+            'requireEmail'       => $this->requireEmail,
+            'requirePhone'       => $this->requirePhone,
+            'requireDateOfBirth' => $this->requireDateOfBirth,
+            'requireGender'      => $this->requireGender,
+            'requireNationality' => $this->requireNationality,
+            'requireIdentityNumber' => $this->requireIdentityNumber,
+            'showSlotEndTime' => $this->showSlotEndTime,
             'minBirthDate'    => $this->minBirthDate(),
             'maxBirthDate'    => now()->format('Y-m-d'),
         ]);

@@ -155,18 +155,18 @@
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $booking->extraServices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="row">
                 <span class="label"><?php echo e($service->getTranslation('name', $locale)); ?> &times; <?php echo e($service->pivot->quantity); ?></span>
-                <span class="value">OMR <?php echo e(number_format($service->pivot->quantity * $service->pivot->price, 3)); ?></span>
+                <span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $service->pivot->quantity * $service->pivot->price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
             </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <div class="divider"></div>
 
-    <div class="row"><span class="label"><?php echo e(__('booking.receipt.tickets')); ?></span><span class="value">OMR <?php echo e(number_format($booking->ticket_price, 3)); ?></span></div>
+    <div class="row"><span class="label"><?php echo e(__('booking.receipt.tickets')); ?></span><span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->ticket_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span></div>
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->services_price > 0): ?>
-        <div class="row"><span class="label"><?php echo e(__('booking.receipt.services')); ?></span><span class="value">OMR <?php echo e(number_format($booking->services_price, 3)); ?></span></div>
+        <div class="row"><span class="label"><?php echo e(__('booking.receipt.services')); ?></span><span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->services_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span></div>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-    <div class="row total-row"><span class="label"><?php echo e(__('booking.receipt.total')); ?></span><span class="value">OMR <?php echo e(number_format($booking->total_price, 3)); ?></span></div>
+    <div class="row total-row"><span class="label"><?php echo e(__('booking.receipt.total')); ?></span><span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span></div>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->payments->count() > 0): ?>
         <div class="divider"></div>
@@ -174,11 +174,11 @@
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $booking->payments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $payment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="row">
                 <span class="label"><?php echo e(__('booking.payments.methods.' . $payment->payment_method)); ?></span>
-                <span class="value">OMR <?php echo e(number_format($payment->amount, 3)); ?></span>
+                <span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $payment->amount], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
             </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-        <div class="row"><span class="label"><?php echo e(__('booking.receipt.paid')); ?></span><span class="value">OMR <?php echo e(number_format($booking->total_paid, 3)); ?></span></div>
-        <div class="row"><span class="label"><?php echo e(__('booking.receipt.balance_due')); ?></span><span class="value">OMR <?php echo e(number_format($booking->balance_due, 3)); ?></span></div>
+        <div class="row"><span class="label"><?php echo e(__('booking.receipt.paid')); ?></span><span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->total_paid], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span></div>
+        <div class="row"><span class="label"><?php echo e(__('booking.receipt.balance_due')); ?></span><span class="value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->balance_due], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span></div>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <div class="footer">

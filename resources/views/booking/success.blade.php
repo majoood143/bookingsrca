@@ -63,8 +63,7 @@
                 </div>
                 <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                     <span class="text-base font-bold text-gray-900">{{ __('event_booking.success.total_paid') }}</span>
-                    <span class="text-xl font-bold text-green-600">OMR
-                        {{ number_format($booking->total_price, 3) }}</span>
+                    <span class="text-xl font-bold text-green-600">@include('partials.currency-amount', ['amount' => $booking->total_price])</span>
                 </div>
             </div>
 

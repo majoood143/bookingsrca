@@ -88,6 +88,8 @@ class NboService
     {
         $responseUrl = route('payment.callback.nbo');
 
+        $attendee = $booking->attendees->first();
+
         $plainData = [
             'id'           => $this->tranportalId,
             'password'     => $this->tranportalPassword,
@@ -98,6 +100,9 @@ class NboService
             'trackId'      => $this->trackId($booking),
             'responseURL'  => $responseUrl,
             'errorURL'     => $responseUrl,
+            'udf1'         => (string) $booking->booking_reference,
+            'udf2'         => preg_replace('/\D+/', '', (string) ($attendee?->phone ?? '')),
+            'udf3'         => (string) ($attendee?->email ?? ''),
             'billingInfo'  => $this->billingInfo($booking),
         ];
 

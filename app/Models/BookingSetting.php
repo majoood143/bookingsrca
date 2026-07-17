@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -54,6 +55,32 @@ class BookingSetting extends Model
         Cache::forget("booking_setting_{$key}");
     }
 
+    /**
+     * The currency symbol/code to display alongside amounts (e.g. "OMR").
+     */
+    public static function currencySymbol(): string
+    {
+        return (string) self::get('currency_symbol', 'OMR');
+    }
+
+    /**
+     * Base64 data URI of the uploaded currency SVG icon, or null if none is
+     * configured. Embedding as a data URI (rather than linking the storage
+     * URL) means it renders the same whether the caller is a browser page,
+     * an email client, or a PDF engine (mPDF/browsershot) with no network
+     * access back to this app.
+     */
+    public static function currencyIconDataUri(): ?string
+    {
+        $path = self::get('currency_icon');
+
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        return 'data:image/svg+xml;base64,' . base64_encode(Storage::disk('public')->get($path));
+    }
+
     public static function clearCache(): void
     {
         foreach (self::getCacheKeys() as $key) {
@@ -72,6 +99,7 @@ class BookingSetting extends Model
             'show_gender',
             'show_nationality',
             'show_identity_number',
+            'show_slot_end_time',
             'max_attendee_age_years',
             'terms_en',
             'terms_ar',
@@ -85,6 +113,7 @@ class BookingSetting extends Model
             'timezone',
             'currency_code',
             'currency_symbol',
+            'currency_icon',
             'app_logo',
             'favicon',
             'panel_primary_color',

@@ -64,15 +64,15 @@
                     </div>
                     <div>
                         <span class="block text-gray-500 dark:text-gray-400"><?php echo e(__('booking.payments.summary.total_paid')); ?></span>
-                        <span class="block font-semibold text-success-600">OMR <?php echo e(number_format($createdBooking->total_paid, 3)); ?></span>
+                        <span class="block font-semibold text-success-600"><?php echo $__env->make('partials.currency-amount', ['amount' => $createdBooking->total_paid], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                     </div>
                     <div>
                         <span class="block text-gray-500 dark:text-gray-400"><?php echo e(__('booking.payments.summary.balance_due')); ?></span>
-                        <span class="block font-semibold <?php echo e($createdBooking->balance_due > 0 ? 'text-danger-600' : 'text-success-600'); ?>">OMR <?php echo e(number_format($createdBooking->balance_due, 3)); ?></span>
+                        <span class="block font-semibold <?php echo e($createdBooking->balance_due > 0 ? 'text-danger-600' : 'text-success-600'); ?>"><?php echo $__env->make('partials.currency-amount', ['amount' => $createdBooking->balance_due], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                     </div>
                     <div class="col-span-2 border-t border-gray-100 pt-3 dark:border-gray-700">
                         <span class="block text-gray-500 dark:text-gray-400"><?php echo e(__('booking.fields.total_price')); ?></span>
-                        <span class="block text-2xl font-bold text-success-600">OMR <?php echo e(number_format($createdBooking->total_price, 3)); ?></span>
+                        <span class="block text-2xl font-bold text-success-600"><?php echo $__env->make('partials.currency-amount', ['amount' => $createdBooking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                     </div>
                 </div>
              <?php echo $__env->renderComponent(); ?>

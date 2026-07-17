@@ -151,7 +151,7 @@
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <div class="detail-row">
                     <span class="detail-label"><?php echo e(__('event_booking.email.total_amount')); ?></span>
-                    <span class="detail-value">OMR <?php echo e(number_format($booking->total_price, 3)); ?></span>
+                    <span class="detail-value"><?php echo $__env->make('partials.currency-amount', ['amount' => $booking->total_price], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 </div>
             </div>
 

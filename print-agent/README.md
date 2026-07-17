@@ -2,51 +2,57 @@
 
 The booking app is hosted in the cloud. The thermal receipt printer is on a
 private, on-site network the cloud app cannot reach directly. This folder is
-a small standalone script that runs on a PC at the printer's location: it
+a small, self-contained agent that runs on a PC at the printer's location: it
 polls the cloud app for queued print jobs and delivers the raw ESC/POS bytes
 straight to the printer over the local network (or a local/shared Windows
-printer). It does not use Composer — only a plain PHP CLI is required.
+printer). Nothing needs to be installed system-wide — the whole thing is one
+folder you copy onto the PC.
 
 ## Setup (Windows PC)
 
-1. Install PHP for Windows if it isn't already present (the CLI is enough,
-   no web server needed): https://windows.php.net/download — pick the
-   "Non Thread Safe" x64 zip, extract it somewhere like `C:\php`.
-2. Copy this whole `print-agent` folder onto the on-site PC.
-3. Copy `config.example.ini` to `config.ini` and fill in:
+1. **Get a portable PHP** — no installer needed. Go to
+   https://windows.php.net/download/ and download the **"Non Thread Safe"
+   x64 .zip** (not the installer .msi). Extract it, then copy the extracted
+   contents into a `php` subfolder here, so you end up with
+   `print-agent/php/php.exe`.
+2. Copy `config.example.ini` to `config.ini` and fill in:
    - `CLOUD_BASE_URL` — the app's public URL.
-   - `API_TOKEN` — from **Admin > Settings > Printer Settings > Agent
+   - `API_TOKEN` — from **Admin → Settings → Printer Settings → Agent
      Token** (use "Regenerate Agent Token" there if you need a new one).
    - `PRINT_MODE` — `network` if the printer has its own Ethernet/WiFi
      port and IP address, or `windows` if it's USB-attached to this PC
      (installed as a local or shared printer).
    - The matching `PRINTER_HOST`/`PRINTER_PORT` or `PRINTER_NAME` fields.
-4. Test it manually first, in a console window:
-   ```
-   C:\php\php.exe print-agent.php
-   ```
-   Leave it running, then trigger "Print Attendee Tickets" from the admin
-   app (or click "Send Test Print" on the Printer Settings page). Watch the
-   console output and `agent.log` in this folder — you should see the job
-   claimed and printed within one poll interval.
+3. Copy this whole `print-agent` folder (now including `php/` and
+   `config.ini`) onto the on-site PC. That's the entire install — no admin
+   rights, no system PATH changes, nothing registered in Windows yet.
+4. Double-click `run.bat` to test it. A console window opens and stays open,
+   logging `Print agent started...`. Leave it running, then trigger "Print
+   Attendee Tickets" from the admin app (or click "Send Test Print" on the
+   Printer Settings page). You should see the job claimed and printed
+   within one poll interval, both in the console and in `agent.log`.
 
 ## Running it continuously
 
-Once the manual test prints correctly, wrap it so it survives reboots and
-restarts itself if it crashes. The simplest option is
-[NSSM](https://nssm.cc/) (Non-Sucking Service Manager):
+Once the manual test in `run.bat` prints correctly, double-click
+`install-startup-task.bat` **once**. It registers a Windows scheduled task
+(via `schtasks`, built into every Windows install — nothing else to
+download) that starts `run.bat` automatically whenever this account logs in.
+`run.bat` itself loops forever and restarts `print-agent.php` if it ever
+exits or crashes, so between the two you get "starts on boot/login" and
+"recovers from a crash" without needing a real Windows service or any extra
+tooling like NSSM.
 
-```
-nssm install PrintAgent "C:\php\php.exe" "C:\print-agent\print-agent.php"
-nssm set PrintAgent AppDirectory "C:\print-agent"
-nssm set PrintAgent AppExit Default Restart
-nssm start PrintAgent
-```
+To stop it from starting automatically, run `uninstall-startup-task.bat`.
+To start it immediately without logging off/on: `schtasks /run /tn "PrintAgent"`,
+or just double-click `run.bat` directly.
 
-This registers it as a Windows service named `PrintAgent` that starts on
-boot and restarts itself if it exits unexpectedly. Check `agent.log` if
-prints stop arriving — every poll, print attempt, and error is logged there
-with a timestamp.
+(If you'd prefer a true background Windows service instead of a scheduled
+task — e.g. so it runs even when nobody is logged in — you can still wrap
+`run.bat` with [NSSM](https://nssm.cc/): `nssm install PrintAgent
+"C:\path\to\print-agent\run.bat"`. Most front-desk/box-office PCs stay
+logged in permanently, so the scheduled-task approach above is usually
+enough.)
 
 ## Troubleshooting
 
@@ -59,6 +65,7 @@ with a timestamp.
 - **Windows mode fails to copy to the printer**: confirm the printer name
   matches exactly what's shown in "Devices and Printers", and that it's
   shared if another account/service will be printing to it.
-- Nothing happening at all: confirm the service/console process is actually
-  running, and that `CLOUD_BASE_URL` is reachable from this PC (it's just a
-  normal HTTPS request — try opening it in a browser on the same machine).
+- Nothing happening at all: confirm `run.bat` (or the scheduled task) is
+  actually running, and that `CLOUD_BASE_URL` is reachable from this PC
+  (it's just a normal HTTPS request — try opening it in a browser on the
+  same machine).

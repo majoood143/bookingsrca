@@ -29,6 +29,7 @@ class User extends Authenticatable implements HasAvatar
         'email',
         'password',
         'avatar_url',
+        'is_active',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable implements HasAvatar
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -69,12 +71,8 @@ class User extends Authenticatable implements HasAvatar
     }
 
 
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     // Option A: Allow EVERY registered user in your database to log in
-    //     return true;
-
-    //     // Option B: (Recommended for production) Restrict by specific email domain or specific user
-    //     // return str_ends_with($this->email, '@razatfarm.gov.om');
-    // }
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_active;
+    }
 }

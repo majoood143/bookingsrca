@@ -28,7 +28,7 @@
                 ['label' => __('reports.stats.cancelled'),       'value' => $report['cancelledCount'], 'color' => 'bg-red-100 dark:bg-red-900/40',        'text' => 'text-red-700 dark:text-red-300'],
                 ['label' => __('reports.stats.checked_in'),      'value' => $report['checkedInCount'], 'color' => 'bg-blue-100 dark:bg-blue-900/40',      'text' => 'text-blue-700 dark:text-blue-300'],
                 ['label' => __('reports.stats.total_attendees'), 'value' => $report['totalAttendees'], 'color' => 'bg-purple-100 dark:bg-purple-900/40',  'text' => 'text-purple-700 dark:text-purple-300'],
-                ['label' => __('reports.stats.total_revenue'),   'value' => 'OMR' . number_format((float)$report['totalRevenue'], 3), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
+                ['label' => __('reports.stats.total_revenue'),   'value' => view('partials.currency-amount', ['amount' => (float)$report['totalRevenue']])->render(), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300', 'html' => true],
             ];
         @endphp
 
@@ -38,7 +38,7 @@
                     {{ $stat['label'] }}
                 </span>
                 <span class="text-2xl font-bold {{ $stat['text'] }}">
-                    {{ $stat['value'] }}
+                    @if (!empty($stat['html'])) {!! $stat['value'] !!} @else {{ $stat['value'] }} @endif
                 </span>
             </div>
         @endforeach
@@ -92,7 +92,7 @@
                                 </td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['attendees'] }}</td>
                                 <td class="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                                    OMR {{ number_format((float)$row['revenue'], 3) }}
+                                    @include('partials.currency-amount', ['amount' => (float)$row['revenue']])
                                 </td>
                             </tr>
                         @endforeach
@@ -126,7 +126,7 @@
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['bookings'] }}</td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['attendees'] }}</td>
                                 <td class="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                                    OMR{{ number_format((float)$row['revenue'], 3) }}
+                                    @include('partials.currency-amount', ['amount' => (float)$row['revenue']])
                                 </td>
                             </tr>
                         @endforeach

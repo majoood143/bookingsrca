@@ -4,11 +4,16 @@ namespace App\Filament\Resources;
 
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\CheckboxList;
@@ -74,297 +79,500 @@ class EventResource extends Resource
     {
         return $schema
             ->components([
-                Section::make(__('event.sections.information'))
-                    ->description(__('event.sections.information_desc'))
-                    ->schema([
-                        Grid::make(2)
+                Tabs::make('event_tabs')
+                    ->persistTabInQueryString()
+                    ->columnSpanFull()
+                    ->tabs([
+                        Tab::make(__('event.tabs.general'))
+                            ->icon('heroicon-o-identification')
                             ->schema([
-                                TextInput::make('title.en')
-                                    ->label(__('event.fields.title_en'))
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
-                                        if (! $get('slug')) {
-                                            $set('slug', Str::slug($state));
-                                        }
-                                    }),
+                                Section::make(__('event.sections.information'))
+                                    ->description(__('event.sections.information_desc'))
+                                    ->schema([
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('title.en')
+                                                    ->label(__('event.fields.title_en'))
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                                        if (! $get('slug')) {
+                                                            $set('slug', Str::slug($state));
+                                                        }
+                                                    }),
 
-                                TextInput::make('title.ar')
-                                    ->label(__('event.fields.title_ar'))
-                                    ->required()
-                                    ->maxLength(255),
+                                                TextInput::make('title.ar')
+                                                    ->label(__('event.fields.title_ar'))
+                                                    ->required()
+                                                    ->maxLength(255),
+                                            ]),
+
+                                        TextInput::make('slug')
+                                            ->required()
+                                            ->unique(ignoreRecord: true)
+                                            ->maxLength(255)
+                                            ->helperText(__('event.fields.slug_helper')),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                Textarea::make('description.en')
+                                                    ->label(__('event.fields.description_en'))
+                                                    ->required()
+                                                    ->rows(4)
+                                                    ->columnSpanFull(),
+
+                                                Textarea::make('description.ar')
+                                                    ->label(__('event.fields.description_ar'))
+                                                    ->required()
+                                                    ->rows(4)
+                                                    ->columnSpanFull(),
+                                            ]),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('organizer.en')
+                                                    ->label(__('event.fields.organizer_en'))
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder(__('event.placeholders.organizer_en')),
+
+                                                TextInput::make('organizer.ar')
+                                                    ->label(__('event.fields.organizer_ar'))
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder(__('event.placeholders.organizer_ar')),
+                                            ]),
+
+                                        TextInput::make('organizer_phone')
+                                            ->label(__('event.fields.organizer_phone'))
+                                            ->tel()
+                                            ->maxLength(50)
+                                            ->placeholder('+968 1234 5678')
+                                            ->helperText(__('event.fields.organizer_phone_helper')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
                             ]),
 
-                        TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255)
-                            ->helperText(__('event.fields.slug_helper')),
-
-                        Grid::make(2)
+                        Tab::make(__('event.tabs.location_schedule'))
+                            ->icon('heroicon-o-map-pin')
                             ->schema([
-                                Textarea::make('description.en')
-                                    ->label(__('event.fields.description_en'))
-                                    ->required()
-                                    ->rows(4)
-                                    ->columnSpanFull(),
+                                Section::make(__('event.sections.location_schedule'))
+                                    ->description(__('event.sections.location_desc'))
+                                    ->schema([
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('location.en')
+                                                    ->label(__('event.fields.location_en'))
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder(__('event.placeholders.location_en')),
 
-                                Textarea::make('description.ar')
-                                    ->label(__('event.fields.description_ar'))
-                                    ->required()
-                                    ->rows(4)
-                                    ->columnSpanFull(),
+                                                TextInput::make('location.ar')
+                                                    ->label(__('event.fields.location_ar'))
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder(__('event.placeholders.location_ar')),
+                                            ]),
+
+                                        TextInput::make('location_link')
+                                            ->label(__('event.fields.location_link'))
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->prefixIcon('heroicon-o-map')
+                                            ->placeholder('https://maps.google.com/...')
+                                            ->helperText(__('event.fields.location_link_helper')),
+
+                                        Grid::make(3)
+                                            ->schema([
+                                                DatePicker::make('start_date')
+                                                    ->label(__('event.fields.start_date'))
+                                                    ->required()
+                                                    ->native(false)
+                                                    ->displayFormat('Y-m-d')
+                                                    ->default(now()),
+
+                                                DatePicker::make('end_date')
+                                                    ->label(__('event.fields.end_date'))
+                                                    ->required()
+                                                    ->native(false)
+                                                    ->displayFormat('Y-m-d')
+                                                    ->after('start_date')
+                                                    ->default(now()->addDays(1)),
+
+                                                TextInput::make('max_attendees')
+                                                    ->label(__('event.fields.max_attendees'))
+                                                    ->required()
+                                                    ->numeric()
+                                                    ->default(100)
+                                                    ->minValue(1)
+                                                    ->suffix(__('event.suffix.people'))
+                                                    ->helperText(__('event.fields.max_attendees_helper')),
+                                            ]),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
+
+                                Section::make(__('event.sections.recurring'))
+                                    ->description(__('event.sections.recurring_desc'))
+                                    ->schema([
+                                        Toggle::make('is_recurring')
+                                            ->label(__('event.fields.is_recurring'))
+                                            ->helperText(__('event.fields.is_recurring_helper'))
+                                            ->default(false)
+                                            ->live()
+                                            ->columnSpanFull(),
+
+                                        CheckboxList::make('recurring_days')
+                                            ->label(__('event.fields.recurring_days'))
+                                            ->options(__('event.options.days'))
+                                            ->columns(4)
+                                            ->gridDirection('row')
+                                            ->visible(fn(Get $get): bool => $get('is_recurring') === true)
+                                            ->required(fn(Get $get): bool => $get('is_recurring') === true)
+                                            ->helperText(__('event.fields.recurring_days_helper')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
                             ]),
 
-                        Grid::make(2)
+                        Tab::make(__('event.tabs.content'))
+                            ->icon('heroicon-o-document-text')
                             ->schema([
-                                TextInput::make('organizer.en')
-                                    ->label(__('event.fields.organizer_en'))
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->placeholder(__('event.placeholders.organizer_en')),
+                                Section::make(__('event.sections.timeline'))
+                                    ->description(__('event.sections.timeline_desc'))
+                                    ->schema([
+                                        RichEditor::make('timeline.en')
+                                            ->label(__('event.fields.timeline_en'))
+                                            ->fileAttachmentsDisk('public'),
 
-                                TextInput::make('organizer.ar')
-                                    ->label(__('event.fields.organizer_ar'))
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->placeholder(__('event.placeholders.organizer_ar')),
-                            ]),
-                    ])
-                    ->columns(1)
-                    ->collapsible(),
+                                        RichEditor::make('timeline.ar')
+                                            ->label(__('event.fields.timeline_ar'))
+                                            ->fileAttachmentsDisk('public'),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
 
-                Section::make(__('event.sections.location_schedule'))
-                    ->description(__('event.sections.location_desc'))
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('location.en')
-                                    ->label(__('event.fields.location_en'))
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->placeholder(__('event.placeholders.location_en')),
+                                Section::make(__('event.sections.faq'))
+                                    ->description(__('event.sections.faq_desc'))
+                                    ->schema([
+                                        Repeater::make('faq')
+                                            ->label('')
+                                            ->schema([
+                                                Grid::make(2)
+                                                    ->schema([
+                                                        TextInput::make('question.en')
+                                                            ->label(__('event.fields.faq_question_en'))
+                                                            ->required()
+                                                            ->maxLength(255),
 
-                                TextInput::make('location.ar')
-                                    ->label(__('event.fields.location_ar'))
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->placeholder(__('event.placeholders.location_ar')),
-                            ]),
+                                                        TextInput::make('question.ar')
+                                                            ->label(__('event.fields.faq_question_ar'))
+                                                            ->required()
+                                                            ->maxLength(255),
+                                                    ]),
 
-                        Grid::make(3)
-                            ->schema([
-                                DatePicker::make('start_date')
-                                    ->label(__('event.fields.start_date'))
-                                    ->required()
-                                    ->native(false)
-                                    ->displayFormat('Y-m-d')
-                                    ->default(now()),
+                                                Grid::make(2)
+                                                    ->schema([
+                                                        Textarea::make('answer.en')
+                                                            ->label(__('event.fields.faq_answer_en'))
+                                                            ->required()
+                                                            ->rows(2),
 
-                                DatePicker::make('end_date')
-                                    ->label(__('event.fields.end_date'))
-                                    ->required()
-                                    ->native(false)
-                                    ->displayFormat('Y-m-d')
-                                    ->after('start_date')
-                                    ->default(now()->addDays(1)),
+                                                        Textarea::make('answer.ar')
+                                                            ->label(__('event.fields.faq_answer_ar'))
+                                                            ->required()
+                                                            ->rows(2),
+                                                    ]),
+                                            ])
+                                            ->itemLabel(fn (array $state): ?string => $state['question']['en'] ?? null)
+                                            ->addActionLabel(__('event.fields.faq_add'))
+                                            ->collapsible()
+                                            ->reorderable()
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
 
-                                TextInput::make('max_attendees')
-                                    ->label(__('event.fields.max_attendees'))
-                                    ->required()
-                                    ->numeric()
-                                    ->default(100)
-                                    ->minValue(1)
-                                    ->suffix(__('event.suffix.people'))
-                                    ->helperText(__('event.fields.max_attendees_helper')),
-                            ]),
-                    ])
-                    ->columns(1)
-                    ->collapsible(),
+                                Section::make(__('event.sections.terms'))
+                                    ->description(__('event.sections.terms_desc'))
+                                    ->schema([
+                                        RichEditor::make('terms_and_conditions.en')
+                                            ->label(__('event.fields.terms_en'))
+                                            ->fileAttachmentsDisk('public'),
 
-                Section::make(__('event.sections.recurring'))
-                    ->description(__('event.sections.recurring_desc'))
-                    ->schema([
-                        Toggle::make('is_recurring')
-                            ->label(__('event.fields.is_recurring'))
-                            ->helperText(__('event.fields.is_recurring_helper'))
-                            ->default(false)
-                            ->live()
-                            ->columnSpanFull(),
+                                        RichEditor::make('terms_and_conditions.ar')
+                                            ->label(__('event.fields.terms_ar'))
+                                            ->fileAttachmentsDisk('public'),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
 
-                        CheckboxList::make('recurring_days')
-                            ->label(__('event.fields.recurring_days'))
-                            ->options(__('event.options.days'))
-                            ->columns(4)
-                            ->gridDirection('row')
-                            ->visible(fn(Get $get): bool => $get('is_recurring') === true)
-                            ->required(fn(Get $get): bool => $get('is_recurring') === true)
-                            ->helperText(__('event.fields.recurring_days_helper')),
-                    ])
-                    ->columns(1)
-                    ->collapsible()
-                    ->collapsed(),
-
-                Section::make(__('event.sections.media_status'))
-                    ->description(__('event.sections.media_desc'))
-                    ->schema([
-                        FileUpload::make('image')
-                            ->label(__('event.fields.image'))
-                            ->image()
-                            ->disk('public')
-                            ->directory('events')
-                            ->visibility('public')
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
-                            ->maxSize(2048)
-                            ->helperText(__('event.fields.image_helper'))
-                            ->columnSpanFull(),
-
-                        Select::make('status')
-                            ->label(__('event.fields.status'))
-                            ->options(function () {
-                                $options = __('event.options.status');
-
-                                if (!\App\Models\BookingSetting::get('module_private_events_enabled', true)) {
-                                    unset($options['private']);
-                                }
-
-                                return $options;
-                            })
-                            ->default('draft')
-                            ->required()
-                            ->native(false)
-                            ->live()
-                            ->helperText(__('event.fields.status_helper')),
-
-                        TextInput::make('password')
-                            ->label(__('event.fields.password'))
-                            ->maxLength(255)
-                            ->password()
-                            ->revealable()
-                            ->visible(fn (Get $get): bool => $get('status') === 'private')
-                            ->required(fn (Get $get): bool => $get('status') === 'private')
-                            ->helperText(__('event.fields.password_helper')),
-                    ])
-                    ->columns(1)
-                    ->collapsible(),
-
-                Section::make(__('event.sections.signage'))
-                    ->description(__('event.sections.signage_desc'))
-                    ->relationship('signageSetting')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                FileUpload::make('logo_path')
-                                    ->label(__('event.fields.signage_logo'))
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('signage/logos')
-                                    ->visibility('public')
-                                    ->helperText(__('event.fields.signage_logo_helper')),
-
-                                FileUpload::make('background_image_path')
-                                    ->label(__('event.fields.signage_background'))
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('signage/backgrounds')
-                                    ->visibility('public')
-                                    ->helperText(__('event.fields.signage_background_helper')),
-
-                                FileUpload::make('qr_code_image_path')
-                                    ->label(__('event.fields.signage_qr'))
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('signage/qrcodes')
-                                    ->visibility('public')
-                                    ->helperText(__('event.fields.signage_qr_helper')),
+                                Section::make(__('event.sections.promotional_video'))
+                                    ->description(__('event.sections.promotional_video_desc'))
+                                    ->schema([
+                                        TextInput::make('promotional_video_url')
+                                            ->label(__('event.fields.promotional_video'))
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->prefixIcon('heroicon-o-play-circle')
+                                            ->placeholder('https://www.youtube.com/watch?v=...')
+                                            ->helperText(__('event.fields.promotional_video_helper')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
                             ]),
 
-                        TextInput::make('contact_phone')
-                            ->label(__('event.fields.signage_phone'))
-                            ->tel()
-                            ->maxLength(50)
-                            ->placeholder('+968 1234 5678'),
-
-                        Grid::make(2)
+                        Tab::make(__('event.tabs.media_status'))
+                            ->icon('heroicon-o-photo')
                             ->schema([
-                                TextInput::make('meeting_point.en')
-                                    ->label(__('event.fields.signage_meeting_point_en'))
-                                    ->maxLength(255),
+                                Section::make(__('event.sections.media_status'))
+                                    ->description(__('event.sections.media_desc'))
+                                    ->schema([
+                                        FileUpload::make('image')
+                                            ->label(__('event.fields.image'))
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('events')
+                                            ->visibility('public')
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                '16:9',
+                                                '4:3',
+                                                '1:1',
+                                            ])
+                                            ->maxSize(2048)
+                                            ->helperText(__('event.fields.image_helper'))
+                                            ->columnSpanFull(),
 
-                                TextInput::make('meeting_point.ar')
-                                    ->label(__('event.fields.signage_meeting_point_ar'))
-                                    ->maxLength(255),
+                                        Select::make('status')
+                                            ->label(__('event.fields.status'))
+                                            ->options(function () {
+                                                $options = __('event.options.status');
+
+                                                if (!\App\Models\BookingSetting::get('module_private_events_enabled', true)) {
+                                                    unset($options['private']);
+                                                }
+
+                                                return $options;
+                                            })
+                                            ->default('draft')
+                                            ->required()
+                                            ->native(false)
+                                            ->live()
+                                            ->helperText(__('event.fields.status_helper')),
+
+                                        TextInput::make('password')
+                                            ->label(__('event.fields.password'))
+                                            ->maxLength(255)
+                                            ->password()
+                                            ->revealable()
+                                            ->visible(fn (Get $get): bool => $get('status') === 'private')
+                                            ->required(fn (Get $get): bool => $get('status') === 'private')
+                                            ->helperText(__('event.fields.password_helper')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
                             ]),
 
-                        Grid::make(2)
+                        Tab::make(__('event.tabs.signage'))
+                            ->icon('heroicon-o-computer-desktop')
                             ->schema([
-                                TextInput::make('welcome_message.en')
-                                    ->label(__('event.fields.signage_welcome_en'))
-                                    ->maxLength(255),
+                                Section::make(__('event.sections.signage'))
+                                    ->description(__('event.sections.signage_desc'))
+                                    ->relationship('signageSetting')
+                                    ->schema([
+                                        Grid::make(3)
+                                            ->schema([
+                                                FileUpload::make('logo_path')
+                                                    ->label(__('event.fields.signage_logo'))
+                                                    ->image()
+                                                    ->disk('public')
+                                                    ->directory('signage/logos')
+                                                    ->visibility('public')
+                                                    ->helperText(__('event.fields.signage_logo_helper')),
 
-                                TextInput::make('welcome_message.ar')
-                                    ->label(__('event.fields.signage_welcome_ar'))
-                                    ->maxLength(255),
+                                                FileUpload::make('background_image_path')
+                                                    ->label(__('event.fields.signage_background'))
+                                                    ->image()
+                                                    ->disk('public')
+                                                    ->directory('signage/backgrounds')
+                                                    ->visibility('public')
+                                                    ->helperText(__('event.fields.signage_background_helper')),
+
+                                                FileUpload::make('qr_code_image_path')
+                                                    ->label(__('event.fields.signage_qr'))
+                                                    ->image()
+                                                    ->disk('public')
+                                                    ->directory('signage/qrcodes')
+                                                    ->visibility('public')
+                                                    ->helperText(__('event.fields.signage_qr_helper')),
+                                            ]),
+
+                                        TextInput::make('contact_phone')
+                                            ->label(__('event.fields.signage_phone'))
+                                            ->tel()
+                                            ->maxLength(50)
+                                            ->placeholder('+968 1234 5678'),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('meeting_point.en')
+                                                    ->label(__('event.fields.signage_meeting_point_en'))
+                                                    ->maxLength(255),
+
+                                                TextInput::make('meeting_point.ar')
+                                                    ->label(__('event.fields.signage_meeting_point_ar'))
+                                                    ->maxLength(255),
+                                            ]),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('welcome_message.en')
+                                                    ->label(__('event.fields.signage_welcome_en'))
+                                                    ->maxLength(255),
+
+                                                TextInput::make('welcome_message.ar')
+                                                    ->label(__('event.fields.signage_welcome_ar'))
+                                                    ->maxLength(255),
+                                            ]),
+
+                                        TextInput::make('language_switch_seconds')
+                                            ->label(__('event.fields.signage_language_switch'))
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->default(10)
+                                            ->suffix(__('event.suffix.seconds'))
+                                            ->helperText(__('event.fields.signage_language_switch_helper')),
+
+                                        Grid::make(5)
+                                            ->schema([
+                                                TextInput::make('early_arrival_minutes')
+                                                    ->label(__('event.fields.signage_early_arrival'))
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->default(5),
+
+                                                TextInput::make('gathering_alert_minutes')
+                                                    ->label(__('event.fields.signage_gathering_alert'))
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->default(5),
+
+                                                TextInput::make('ready_threshold_minutes')
+                                                    ->label(__('event.fields.signage_ready_threshold'))
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->default(15),
+
+                                                TextInput::make('soon_threshold_minutes')
+                                                    ->label(__('event.fields.signage_soon_threshold'))
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->default(60),
+
+                                                TextInput::make('upcoming_trips_count')
+                                                    ->label(__('event.fields.signage_upcoming_count'))
+                                                    ->numeric()
+                                                    ->minValue(1)
+                                                    ->maxValue(20)
+                                                    ->default(4),
+                                            ]),
+
+                                        Toggle::make('is_enabled')
+                                            ->label(__('event.fields.signage_enabled'))
+                                            ->helperText(__('event.fields.signage_enabled_helper'))
+                                            ->default(true),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible()
+                                    ->collapsed(),
                             ]),
 
-                        TextInput::make('language_switch_seconds')
-                            ->label(__('event.fields.signage_language_switch'))
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(10)
-                            ->suffix(__('event.suffix.seconds'))
-                            ->helperText(__('event.fields.signage_language_switch_helper')),
-
-                        Grid::make(5)
+                        Tab::make(__('event.tabs.field_visibility'))
+                            ->icon('heroicon-o-adjustments-horizontal')
                             ->schema([
-                                TextInput::make('early_arrival_minutes')
-                                    ->label(__('event.fields.signage_early_arrival'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->default(5),
+                                Section::make(__('event.sections.field_visibility'))
+                                    ->description(__('event.sections.field_visibility_desc'))
+                                    ->relationship('fieldVisibilitySetting')
+                                    ->schema([
+                                        Section::make(__('event.sections.field_visibility_event_booking'))
+                                            ->description(__('event.sections.field_visibility_event_booking_desc'))
+                                            ->schema([
+                                                Toggle::make('event_booking_override_enabled')
+                                                    ->label(__('event.fields.field_visibility_override_enabled'))
+                                                    ->helperText(__('event.fields.field_visibility_override_enabled_helper'))
+                                                    ->live()
+                                                    ->default(false)
+                                                    ->columnSpanFull(),
 
-                                TextInput::make('gathering_alert_minutes')
-                                    ->label(__('event.fields.signage_gathering_alert'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->default(5),
+                                                Grid::make(3)
+                                                    ->schema(static::fieldVisibilityFieldset('event_booking'))
+                                                    ->visible(fn (Get $get): bool => (bool) $get('event_booking_override_enabled')),
+                                            ])
+                                            ->columns(1)
+                                            ->collapsible(),
 
-                                TextInput::make('ready_threshold_minutes')
-                                    ->label(__('event.fields.signage_ready_threshold'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->default(15),
+                                        Section::make(__('event.sections.field_visibility_kiosk'))
+                                            ->description(__('event.sections.field_visibility_kiosk_desc'))
+                                            ->schema([
+                                                Toggle::make('kiosk_override_enabled')
+                                                    ->label(__('event.fields.field_visibility_override_enabled'))
+                                                    ->helperText(__('event.fields.field_visibility_override_enabled_helper'))
+                                                    ->live()
+                                                    ->default(false)
+                                                    ->columnSpanFull(),
 
-                                TextInput::make('soon_threshold_minutes')
-                                    ->label(__('event.fields.signage_soon_threshold'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->default(60),
-
-                                TextInput::make('upcoming_trips_count')
-                                    ->label(__('event.fields.signage_upcoming_count'))
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(20)
-                                    ->default(4),
+                                                Grid::make(3)
+                                                    ->schema(static::fieldVisibilityFieldset('kiosk'))
+                                                    ->visible(fn (Get $get): bool => (bool) $get('kiosk_override_enabled')),
+                                            ])
+                                            ->columns(1)
+                                            ->collapsible(),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
                             ]),
-
-                        Toggle::make('is_enabled')
-                            ->label(__('event.fields.signage_enabled'))
-                            ->helperText(__('event.fields.signage_enabled_helper'))
-                            ->default(true),
-                    ])
-                    ->columns(1)
-                    ->collapsible()
-                    ->collapsed(),
+                    ]),
             ])
             ->columns(1);
+    }
+
+    // Builds the 6 Show/Required toggle pairs (one per attendee field) for a
+    // given override scope ("event_booking" or "kiosk") on the Event form.
+    protected static function fieldVisibilityFieldset(string $prefix): array
+    {
+        $fields = [
+            'email'           => __('event.fields.field_email'),
+            'phone'           => __('event.fields.field_phone'),
+            'date_of_birth'   => __('event.fields.field_date_of_birth'),
+            'gender'          => __('event.fields.field_gender'),
+            'nationality'     => __('event.fields.field_nationality'),
+            'identity_number' => __('event.fields.field_identity_number'),
+        ];
+
+        return collect($fields)
+            ->map(fn (string $label, string $key) => Fieldset::make($label)
+                ->schema([
+                    Toggle::make("{$prefix}_show_{$key}")
+                        ->label(__('event.fields.field_show'))
+                        ->default(true)
+                        ->live(),
+
+                    Toggle::make("{$prefix}_require_{$key}")
+                        ->label(__('event.fields.field_required'))
+                        ->default(true)
+                        ->visible(fn (Get $get) => (bool) $get("{$prefix}_show_{$key}")),
+                ])
+                ->columns(2))
+            ->values()
+            ->all();
     }
 
     public static function table(Table $table): Table

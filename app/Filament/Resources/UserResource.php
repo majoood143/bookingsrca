@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
@@ -65,6 +67,10 @@ class UserResource extends Resource
                 DateTimePicker::make('email_verified_at')
                     ->label(__('user.fields.email_verified_at')),
 
+                Toggle::make('is_active')
+                    ->label(__('user.fields.is_active'))
+                    ->default(true),
+
                 TextInput::make('password')
                     ->label(__('user.fields.password'))
                     ->password()
@@ -96,10 +102,15 @@ class UserResource extends Resource
                     ->label(__('user.columns.role'))
                     ->badge()
                     ->searchable(),
+                
 
                 TextColumn::make('email_verified_at')
                     ->label(__('user.columns.email_verified_at'))
                     ->dateTime()
+                    ->sortable(),
+
+                ToggleColumn::make('is_active')
+                    ->label(__('user.columns.is_active'))
                     ->sortable(),
 
                 TextColumn::make('created_at')

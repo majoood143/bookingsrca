@@ -1,4 +1,11 @@
-<div dir="<?php echo e(app()->getLocale() === 'ar' ? 'rtl' : 'ltr'); ?>">
+<?php
+    use App\Models\BookingSetting;
+
+    $primaryColor = BookingSetting::get('primary_color', '#05602b');
+    $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+?>
+<div dir="<?php echo e(app()->getLocale() === 'ar' ? 'rtl' : 'ltr'); ?>"
+    style="--color-brand: <?php echo e($primaryColor); ?>; --color-brand-hover: <?php echo e($secondaryColor); ?>;">
 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(in_array($event->status, ['draft', 'cancelled'])): ?>
     
     <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -154,10 +161,24 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
             </p>
             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-blue-200">
-                <span>📍 <?php echo e($event->getTranslation('location', app()->getLocale())); ?></span>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($event->location_link): ?>
+                    <a href="<?php echo e($event->location_link); ?>" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-white underline-offset-2 hover:underline">
+                        📍 <?php echo e($event->getTranslation('location', app()->getLocale())); ?>
+
+                    </a>
+                <?php else: ?>
+                    <span>📍 <?php echo e($event->getTranslation('location', app()->getLocale())); ?></span>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($event->organizer): ?>
                     <span>👤 <?php echo e($event->organizer); ?></span>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($event->organizer_phone): ?>
+                    <a href="tel:<?php echo e($event->organizer_phone); ?>" class="hover:text-white">
+                        📞 <?php echo e($event->organizer_phone); ?>
+
+                    </a>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
@@ -220,6 +241,72 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
     
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($step === 1): ?>
+            <?php
+                $eventTimeline = $event->getTranslation('timeline', app()->getLocale());
+                $eventFaq      = $event->faq ?? [];
+                $videoEmbedId  = $event->getPromotionalVideoEmbedId();
+            ?>
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($videoEmbedId || filled($eventTimeline) || !empty($eventFaq)): ?>
+                <div class="mb-8 space-y-6">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($videoEmbedId): ?>
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="aspect-video">
+                                <iframe class="w-full h-full"
+                                    src="https://www.youtube.com/embed/<?php echo e($videoEmbedId); ?>"
+                                    title="<?php echo e(__('event_booking.details.promo_video')); ?>"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(filled($eventTimeline)): ?>
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <h2 class="text-lg font-bold text-gray-900 mb-3"><?php echo e(__('event_booking.details.timeline')); ?></h2>
+                            <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                                <?php echo $eventTimeline; ?>
+
+                            </div>
+                        </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($eventFaq)): ?>
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <h2 class="text-lg font-bold text-gray-900 mb-3"><?php echo e(__('event_booking.details.faq')); ?></h2>
+                            <div class="divide-y divide-gray-100">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $eventFaq; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php
+                                        $question = $item['question'][app()->getLocale()] ?? $item['question']['en'] ?? '';
+                                        $answer   = $item['answer'][app()->getLocale()] ?? $item['answer']['en'] ?? '';
+                                    ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($question): ?>
+                                        <details class="group py-3">
+                                            <summary
+                                                class="flex items-center justify-between cursor-pointer list-none font-semibold text-gray-800 text-sm">
+                                                <?php echo e($question); ?>
+
+                                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 group-open:rotate-180 shrink-0 ms-3"
+                                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </summary>
+                                            <p class="mt-2 text-sm text-gray-500 leading-relaxed"><?php echo e($answer); ?></p>
+                                        </details>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <?php echo $__env->make('livewire.partials.booking-wizard-steps', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
@@ -499,7 +586,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         <?php echo e(__('event_booking.summary.time')); ?></p>
                                     <p class="font-medium text-gray-800">
-                                        <?php echo e($timeSlots->find($selectedSlot)?->getTimeRange()); ?></p>
+                                        <?php echo e($showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i')); ?></p>
                                 </div>
                             </div>
 
@@ -516,7 +603,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                                                 × <?php echo e($qty); ?></span>
                                             <span
-                                                class="shrink-0"><?php echo e($ticketType->price > 0 ? 'OMR' . number_format($ticketType->price * $qty, 3) : __('event_booking.step3.free')); ?></span>
+                                                class="shrink-0"><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ticketType->price > 0): ?><?php echo $__env->make('partials.currency-amount', ['amount' => $ticketType->price * $qty], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php else: ?><?php echo e(__('event_booking.step3.free')); ?><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?></span>
                                         </div>
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -563,7 +650,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                                                             × <?php echo e($count); ?></span>
                                                         <span
-                                                            class="shrink-0">OMR<?php echo e(number_format($svc->price * $count, 3)); ?></span>
+                                                            class="shrink-0"><?php echo $__env->make('partials.currency-amount', ['amount' => $svc->price * $count], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                                     </div>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -609,11 +696,11 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <div class="pt-3 border-t border-gray-100 space-y-1">
                                     <div class="flex justify-between text-sm text-gray-600">
                                         <span><?php echo e(__('promo.subtotal_label')); ?></span>
-                                        <span>OMR<?php echo e(number_format($totalPrice, 3)); ?></span>
+                                        <span><?php echo $__env->make('partials.currency-amount', ['amount' => $totalPrice], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                     </div>
                                     <div class="flex justify-between text-sm text-green-600 font-medium">
                                         <span><?php echo e(__('promo.discount_label')); ?></span>
-                                        <span>-OMR<?php echo e(number_format($discountAmount, 3)); ?></span>
+                                        <span>-<?php echo $__env->make('partials.currency-amount', ['amount' => $discountAmount], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                                     </div>
                                 </div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -622,7 +709,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <span
                                     class="font-bold text-gray-900 text-base"><?php echo e(__('event_booking.summary.total')); ?></span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">OMR<?php echo e(number_format($this->finalTotal(), 3)); ?></span>
+                                    class="font-black text-2xl text-blue-600"><?php echo $__env->make('partials.currency-amount', ['amount' => $this->finalTotal()], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                             </div>
 
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($activeGateway === 'thawani'): ?>

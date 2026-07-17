@@ -96,4 +96,21 @@ return [
         'active_types_desc' => 'عبر جميع الفعاليات',
     ],
 
+    'event_insights' => [
+        'total_bookings'            => 'إجمالي الحجوزات',
+        'attendees'                 => ':count زائر',
+        'revenue'                   => 'الإيرادات',
+        'avg_ticket_price'          => 'متوسط سعر التذكرة: :amount',
+        'confirmed'                 => 'مؤكدة',
+        'pending_desc'              => 'قيد الانتظار: :count',
+        'checked_in'                => 'تم تسجيل الدخول',
+        'cancelled_desc'            => 'ملغاة: :count',
+        'capacity'                  => 'نسبة امتلاء الطاقة',
+        'unlimited'                 => 'غير محدود',
+        'remaining'                 => 'المتبقي: :count',
+        'trend_heading'             => 'اتجاه الحجوزات والإيرادات (آخر 30 يومًا)',
+        'ticket_breakdown_heading'  => 'تفصيل أنواع التذاكر',
+        'remaining_stock'          => 'المخزون المتبقي',
+    ],
+
 ];

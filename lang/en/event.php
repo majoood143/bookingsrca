@@ -8,6 +8,15 @@ return [
         'plural' => 'Events',
     ],
 
+    'tabs' => [
+        'general'           => 'General',
+        'location_schedule' => 'Location & Schedule',
+        'content'           => 'Additional Content',
+        'media_status'      => 'Media & Status',
+        'signage'           => 'Digital Signage',
+        'field_visibility'  => 'Field Visibility',
+    ],
+
     'sections' => [
         'information'       => 'Event Information',
         'information_desc'  => 'Enter the basic event details in both languages',
@@ -19,6 +28,20 @@ return [
         'media_desc'        => 'Upload event image and set status',
         'signage'           => 'Digital Signage',
         'signage_desc'      => 'Branding and content shown on the public trip display screen for this event',
+        'timeline'                => 'Event Timeline',
+        'timeline_desc'           => 'Optional schedule/agenda shown on the public booking page',
+        'faq'                     => 'Frequently Asked Questions',
+        'faq_desc'                => 'Optional Q&A list shown on the public booking page',
+        'terms'                   => 'Terms & Conditions',
+        'terms_desc'              => 'Optional event-specific terms. When filled, this replaces the general terms & conditions for this event only',
+        'promotional_video'       => 'Promotional Video',
+        'promotional_video_desc'  => 'Optional YouTube link shown on the public booking page',
+        'field_visibility'                    => 'Attendee Field Visibility',
+        'field_visibility_desc'               => 'Override which attendee fields are shown and required for this event, separately for the public booking page and the kiosk. When off, the general Booking Settings apply.',
+        'field_visibility_event_booking'      => 'Event Booking Page',
+        'field_visibility_event_booking_desc' => 'Applies to the public online booking flow for this event.',
+        'field_visibility_kiosk'              => 'Kiosk Booking',
+        'field_visibility_kiosk_desc'         => 'Applies to the self-service kiosk booking flow for this event.',
     ],
 
     'fields' => [
@@ -30,8 +53,12 @@ return [
         'description_ar'   => 'Description (Arabic)',
         'organizer_en'     => 'Organizer (English)',
         'organizer_ar'     => 'Organizer (Arabic)',
+        'organizer_phone'        => 'Organizer Phone Number',
+        'organizer_phone_helper' => 'Optional. Shown to visitors on the public booking page',
         'location_en'      => 'Location (English)',
         'location_ar'      => 'Location (Arabic)',
+        'location_link'        => 'Location Link (Google Maps)',
+        'location_link_helper' => 'Optional. When set, the location on the booking page links here',
         'start_date'       => 'Start Date',
         'end_date'         => 'End Date',
         'max_attendees'    => 'Max Attendees',
@@ -66,6 +93,32 @@ return [
         'signage_language_switch_helper' => 'Automatically alternates the screen between English and Arabic every N seconds. Set 0 to disable.',
         'signage_enabled'           => 'Signage Screen Enabled',
         'signage_enabled_helper'    => 'Turn off to disable the public signage page for this event',
+
+        'timeline_en'            => 'Timeline (English)',
+        'timeline_ar'            => 'Timeline (Arabic)',
+
+        'faq_question_en'        => 'Question (English)',
+        'faq_question_ar'        => 'Question (Arabic)',
+        'faq_answer_en'          => 'Answer (English)',
+        'faq_answer_ar'          => 'Answer (Arabic)',
+        'faq_add'                => 'Add Question',
+
+        'terms_en'                => 'Terms & Conditions (English)',
+        'terms_ar'                => 'Terms & Conditions (Arabic)',
+
+        'promotional_video'        => 'Promotional Video (YouTube Link)',
+        'promotional_video_helper' => 'Optional. Paste a YouTube video URL to embed it on the booking page',
+
+        'field_visibility_override_enabled'        => 'Override General Booking Settings for This Event',
+        'field_visibility_override_enabled_helper' => 'When off, this event uses the field visibility/requirement settings from General Settings.',
+        'field_email'           => 'Email',
+        'field_phone'           => 'Mobile Number',
+        'field_date_of_birth'   => 'Date of Birth',
+        'field_gender'          => 'Gender',
+        'field_nationality'     => 'Nationality',
+        'field_identity_number' => 'Identity Number',
+        'field_show'            => 'Show',
+        'field_required'        => 'Required',
     ],
 
     'placeholders' => [

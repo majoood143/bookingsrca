@@ -27,7 +27,7 @@
                         <p class="text-sm text-gray-700 mt-1">
                             <span class="font-semibold">{{ __('booking.fields.ticket_type') }}:</span>
                             {{ $attendee->ticketType->getTranslation('name', app()->getLocale()) }}
-                            <span class="text-green-600 font-semibold">OMR {{ number_format($attendee->ticket_price, 3) }}</span>
+                            <span class="text-green-600 font-semibold">@include('partials.currency-amount', ['amount' => $attendee->ticket_price])</span>
                         </p>
                     @endif
 

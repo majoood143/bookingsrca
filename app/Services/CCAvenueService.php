@@ -12,8 +12,8 @@ class CCAvenueService
     // Generic CCAvenue-documented hosts. Bank Muscat's MCPG instance may use a
     // different white-labeled host — override via ccavenue.endpoint_url once
     // the real merchant-provided sandbox/live URLs are known.
-    private const SANDBOX_URL = 'https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction';
-    private const LIVE_URL    = 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction';
+    private const SANDBOX_URL = 'https://mti.bankmuscat.com:6443/transaction.do?command=initiateTransaction';
+    private const LIVE_URL    = 'https://smartpaytrns.bankmuscat.com/transaction.do?command=initiateTransaction';
     private const CIPHER      = 'aes-256-gcm';
     private const CURRENCY    = 'OMR';
 

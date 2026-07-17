@@ -209,8 +209,8 @@ class PaymentGateways extends Page implements HasForms
                             ->helperText(__('Leave blank to use the placeholder default; must be overridden with the real Bank Muscat/CCAvenue transaction URL before going live.'))
                             ->url()
                             ->placeholder(fn ($get) => $get('ccavenue.test_mode')
-                                ? 'https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction'
-                                : 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction')
+                                ? 'https://mti.bankmuscat.com:6443/transaction.do?command=initiateTransaction'
+                                : 'https://smartpaytrns.bankmuscat.com/transaction.do?command=initiateTransaction')
                             ->maxLength(255),
                     ]),
             ])

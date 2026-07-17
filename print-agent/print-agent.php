@@ -45,6 +45,15 @@ if ($baseUrl === '' || $token === '') {
     exit(1);
 }
 
+if (str_starts_with($baseUrl, 'https://') && !extension_loaded('openssl')) {
+    fwrite(STDERR,
+        "The \"openssl\" PHP extension is not enabled, so this PHP build cannot make HTTPS requests.\n" .
+        "Fix: in the php/ folder, copy php.ini-production to php.ini (if you haven't already), open it,\n" .
+        "and remove the leading \";\" from the line \"extension=openssl\". Then run run.bat again.\n"
+    );
+    exit(1);
+}
+
 /**
  * Deliver raw ESC/POS bytes to the printer over whatever local link this
  * on-site machine actually has to it — a plain TCP socket for a networked
@@ -114,32 +123,84 @@ function deliver_to_printer(string $bytes, string $mode, string $host, int $port
     throw new RuntimeException("Unknown PRINT_MODE '{$mode}' — use 'network' or 'windows'.");
 }
 
+/**
+ * Prefers curl when it's enabled — it's far more reliable and gives useful
+ * error messages (e.g. "Connection refused") — and falls back to PHP's
+ * built-in http:// stream wrapper otherwise, whose Windows error reporting
+ * for this case is frustratingly generic ("HTTP request failed!" with no
+ * further detail, even on an outright connection failure).
+ */
 function http_request(string $method, string $url, string $token, ?array $jsonBody = null): array
 {
     $headers = ['Authorization: Bearer ' . $token, 'Accept: application/json'];
+    $content = $jsonBody !== null ? json_encode($jsonBody) : null;
+
+    if ($jsonBody !== null) {
+        $headers[] = 'Content-Type: application/json';
+    }
+
+    if (extension_loaded('curl')) {
+        return http_request_curl($method, $url, $headers, $content);
+    }
+
+    return http_request_stream($method, $url, $headers, $content);
+}
+
+function http_request_curl(string $method, string $url, array $headers, ?string $content): array
+{
+    $ch = curl_init($url);
 
     $options = [
         CURLOPT_CUSTOMREQUEST => $method,
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $headers,
         CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 10,
     ];
 
-    if ($jsonBody !== null) {
-        $headers[] = 'Content-Type: application/json';
-        $options[CURLOPT_POSTFIELDS] = json_encode($jsonBody);
+    if ($content !== null) {
+        $options[CURLOPT_POSTFIELDS] = $content;
     }
 
-    $options[CURLOPT_HTTPHEADER] = $headers;
-
-    $ch = curl_init($url);
     curl_setopt_array($ch, $options);
 
     $body = curl_exec($ch);
-    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
 
     if ($body === false) {
         throw new RuntimeException("HTTP request to {$url} failed: {$error}");
+    }
+
+    return [$status, $body];
+}
+
+function http_request_stream(string $method, string $url, array $headers, ?string $content): array
+{
+    $context = stream_context_create([
+        'http' => [
+            'method' => $method,
+            'header' => implode("\r\n", $headers),
+            'content' => $content,
+            'timeout' => 15,
+            // Read the response body even on a 4xx/5xx status instead of
+            // file_get_contents() just returning false for it.
+            'ignore_errors' => true,
+        ],
+    ]);
+
+    $body = @file_get_contents($url, false, $context);
+
+    if ($body === false) {
+        $error = error_get_last();
+        throw new RuntimeException("HTTP request to {$url} failed: " . ($error['message'] ?? 'unknown error'));
+    }
+
+    $status = 0;
+    foreach ($http_response_header ?? [] as $header) {
+        if (preg_match('#^HTTP/\S+\s+(\d{3})#', $header, $matches) === 1) {
+            $status = (int) $matches[1];
+        }
     }
 
     return [$status, $body];

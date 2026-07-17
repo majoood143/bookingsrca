@@ -59,10 +59,11 @@ class AttendeeTicketPrintService
         $rendered    = 0;
         $currentPath = null;
         $bytes       = '';
+        $logo        = $this->logoDataUri();
 
         try {
             foreach ($attendees as $attendee) {
-                $currentPath = $this->renderAttendeeTicketToPng($booking, $attendee, $tmpDir);
+                $currentPath = $this->renderAttendeeTicketToPng($booking, $attendee, $tmpDir, $logo);
 
                 $image = EscposImage::load(Storage::disk('local')->path($currentPath));
 
@@ -140,7 +141,27 @@ class AttendeeTicketPrintService
         ]);
     }
 
-    private function renderAttendeeTicketToPng(Booking $booking, BookingAttendee $attendee, string $tmpDir): string
+    /**
+     * Browsershot renders this HTML from a local temp file with no web
+     * server behind it, so any <img> pointing at an asset()/HTTP URL would
+     * force Chrome to make a real HTTP request back into this same app to
+     * fetch it — which deadlocks on a single-worker dev server (the request
+     * rendering the ticket is the only one that could ever answer it) and
+     * fails after Puppeteer's navigation timeout. Every image must be
+     * self-contained as a data URI instead, same as the barcode already is.
+     */
+    private function logoDataUri(): string
+    {
+        $path = storage_path('app/public/images/horizontalLogo-02.svg');
+
+        if (!is_file($path)) {
+            return '';
+        }
+
+        return 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($path));
+    }
+
+    private function renderAttendeeTicketToPng(Booking $booking, BookingAttendee $attendee, string $tmpDir, string $logo): string
     {
         $locale         = app()->getLocale();
         $isRtl          = $locale === 'ar';
@@ -158,6 +179,7 @@ class AttendeeTicketPrintService
             't'             => $t,
             'dateFormatted' => $dateFormatted,
             'barcode'       => $barcode,
+            'logo'          => $logo,
             'paperWidth'    => $this->paperWidthDots,
         ])->render();
 

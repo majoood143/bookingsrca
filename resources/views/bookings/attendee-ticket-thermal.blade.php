@@ -111,7 +111,7 @@
 </head>
 <body>
     <div class="center">
-        <img class="logo" src="{{ asset('storage/images/horizontalLogo-02.svg') }}" alt="{{ config('app.name') }}">
+        <img class="logo" src="{{ $logo }}" alt="{{ config('app.name') }}">
         <div><span class="badge" dir="ltr">{{ $attendee->ticket_number }}</span></div>
     </div>
 

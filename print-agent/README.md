@@ -15,6 +15,19 @@ folder you copy onto the PC.
    x64 .zip** (not the installer .msi). Extract it, then copy the extracted
    contents into a `php` subfolder here, so you end up with
    `print-agent/php/php.exe`.
+
+   The zip ships with every extension disabled. In that same `php` folder,
+   copy `php.ini-production` to `php.ini`, open it in a text editor, and
+   remove the leading `;` from these two lines:
+   ```
+   extension=openssl
+   extension=curl
+   ```
+   `openssl` is required for HTTPS requests to the cloud app. `curl` isn't
+   strictly required (the agent falls back to PHP's built-in HTTP support
+   without it), but enable it anyway — it's much more reliable on Windows
+   and gives actual error messages instead of a generic "HTTP request
+   failed!" when something's wrong. Save the file.
 2. Copy `config.example.ini` to `config.ini` and fill in:
    - `CLOUD_BASE_URL` — the app's public URL.
    - `API_TOKEN` — from **Admin → Settings → Printer Settings → Agent
@@ -56,6 +69,16 @@ enough.)
 
 ## Troubleshooting
 
+- **"openssl PHP extension is not enabled" / "Undefined constant" errors**:
+  the portable PHP zip ships with a `php.ini` that doesn't exist yet, or one
+  where every extension is commented out. Make sure `php/php.ini` exists
+  (copied from `php.ini-production`) and that the `extension=openssl` line
+  in it does **not** start with `;`. Restart `run.bat` after editing.
+- **"HTTP request failed!" with no further detail**: this is PHP's built-in
+  HTTP wrapper, which gives frustratingly vague errors on Windows — enable
+  `extension=curl` in `php.ini` too (see step 1) so the agent uses curl
+  instead, which reports the real problem (connection refused, timeout,
+  etc.) instead of this generic message.
 - **401 responses in agent.log**: `API_TOKEN` doesn't match what's saved in
   Printer Settings — re-copy it (tokens are regenerated in full, not
   partially).

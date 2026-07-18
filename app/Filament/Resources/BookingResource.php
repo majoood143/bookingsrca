@@ -38,7 +38,7 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\TimeSlot;
 use App\Models\TicketType;
-use App\Services\Printing\AttendeeTicketPrintService;
+use App\Services\Printing\ThermalPrintService;
 use App\Models\ExtraService;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -726,8 +726,22 @@ class BookingResource extends Resource
                         ->label(__('booking.actions.print_receipt'))
                         ->icon('heroicon-o-printer')
                         ->color('gray')
-                        ->url(fn(Booking $record) => route('bookings.receipt', $record))
-                        ->openUrlInNewTab()
+                        ->action(function (Booking $record) {
+                            try {
+                                app(ThermalPrintService::class)->enqueueReceipt($record);
+
+                                Notification::make()
+                                    ->success()
+                                    ->title(__('booking.notifications.receipt_queued'))
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title(__('booking.notifications.receipt_queue_failed'))
+                                    ->body($e->getMessage())
+                                    ->send();
+                            }
+                        })
                         ->disabled(fn(Booking $record) => $record->status === 'cancelled')
                         ->tooltip(__('booking.tooltips.print_receipt')),
 
@@ -737,7 +751,7 @@ class BookingResource extends Resource
                         ->color('gray')
                         ->action(function (Booking $record) {
                             try {
-                                app(AttendeeTicketPrintService::class)->enqueue($record);
+                                app(ThermalPrintService::class)->enqueueAttendeeTickets($record);
 
                                 Notification::make()
                                     ->success()

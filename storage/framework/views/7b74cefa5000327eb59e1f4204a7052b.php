@@ -111,7 +111,7 @@
 </head>
 <body>
     <div class="center">
-        <img class="logo" src="<?php echo e(asset('storage/images/horizontalLogo-02.svg')); ?>" alt="<?php echo e(config('app.name')); ?>">
+        <img class="logo" src="<?php echo e($logo); ?>" alt="<?php echo e(config('app.name')); ?>">
         <div><span class="badge" dir="ltr"><?php echo e($attendee->ticket_number); ?></span></div>
     </div>
 

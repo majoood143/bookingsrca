@@ -19,7 +19,7 @@ use Spatie\Browsershot\Browsershot;
 // LAN, so this service never talks to the printer directly — it renders the
 // ESC/POS byte stream and queues it as a PrintJob. A separate on-site agent
 // (see print-agent/) polls for pending jobs and delivers them locally.
-class AttendeeTicketPrintService
+class ThermalPrintService
 {
     private bool $enabled;
     private int  $paperWidthDots;
@@ -37,7 +37,7 @@ class AttendeeTicketPrintService
      * on-site print agent to deliver, cutting between each ticket and fully
      * cutting after the last one.
      */
-    public function enqueue(Booking $booking): PrintJob
+    public function enqueueAttendeeTickets(Booking $booking): PrintJob
     {
         if (!$this->enabled) {
             throw new RuntimeException('Thermal printing is currently disabled in Printer Settings.');
@@ -99,6 +99,58 @@ class AttendeeTicketPrintService
         }
 
         return $this->queue($booking, 'attendee_tickets', $bytes);
+    }
+
+    /**
+     * Render the whole-booking summary/payment receipt as a single document
+     * and queue the raw ESC/POS bytes for the on-site print agent to deliver.
+     */
+    public function enqueueReceipt(Booking $booking): PrintJob
+    {
+        if (!$this->enabled) {
+            throw new RuntimeException('Thermal printing is currently disabled in Printer Settings.');
+        }
+
+        $booking->loadMissing(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices', 'payments']);
+
+        $tmpDir = 'printing/tmp';
+        Storage::disk('local')->makeDirectory($tmpDir);
+
+        $connector   = new MemoryPrintConnector();
+        $printer     = new Printer($connector);
+        $currentPath = null;
+        $bytes       = '';
+
+        try {
+            $currentPath = $this->renderReceiptToPng($booking, $tmpDir);
+
+            $image = EscposImage::load(Storage::disk('local')->path($currentPath));
+
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+
+            if ($this->graphicsMode) {
+                $printer->graphics($image);
+            } else {
+                $printer->bitImage($image);
+            }
+
+            Storage::disk('local')->delete($currentPath);
+            $currentPath = null;
+
+            $printer->feed(2);
+            $printer->cut(Printer::CUT_FULL);
+
+            $bytes = $connector->getData();
+        } catch (Throwable $e) {
+            throw new RuntimeException("Could not render receipt — {$e->getMessage()}", previous: $e);
+        } finally {
+            if ($currentPath !== null) {
+                Storage::disk('local')->delete($currentPath);
+            }
+            $printer->close();
+        }
+
+        return $this->queue($booking, 'receipt', $bytes);
     }
 
     /**
@@ -184,6 +236,29 @@ class AttendeeTicketPrintService
         ])->render();
 
         $relativePath = $tmpDir . '/booking-' . $booking->id . '-attendee-' . $attendee->id . '-' . Str::random(8) . '.png';
+        $absolutePath = Storage::disk('local')->path($relativePath);
+
+        Browsershot::html($html)
+            ->windowSize($this->paperWidthDots, 100)
+            ->fullPage()
+            ->save($absolutePath);
+
+        return $relativePath;
+    }
+
+    private function renderReceiptToPng(Booking $booking, string $tmpDir): string
+    {
+        $locale = app()->getLocale();
+        $isRtl  = $locale === 'ar';
+
+        $html = view('bookings.receipt-thermal', [
+            'booking'    => $booking,
+            'locale'     => $locale,
+            'isRtl'      => $isRtl,
+            'paperWidth' => $this->paperWidthDots,
+        ])->render();
+
+        $relativePath = $tmpDir . '/receipt-' . $booking->id . '-' . Str::random(8) . '.png';
         $absolutePath = Storage::disk('local')->path($relativePath);
 
         Browsershot::html($html)

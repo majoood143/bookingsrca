@@ -7,7 +7,7 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use App\Models\BookingSetting;
 use App\Models\PrintJob;
-use App\Services\Printing\AttendeeTicketPrintService;
+use App\Services\Printing\ThermalPrintService;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -156,7 +156,7 @@ class PrinterSettings extends Page implements HasForms
                 ->color('gray')
                 ->action(function () {
                     try {
-                        app(AttendeeTicketPrintService::class)->sendTestPrint();
+                        app(ThermalPrintService::class)->sendTestPrint();
 
                         Notification::make()
                             ->success()

@@ -67,13 +67,6 @@ Route::get('/lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('lang.switch');
 
-// Printable POS receipt for the booking wizard (admin only).
-Route::get('/admin/bookings/{booking}/receipt', function (\App\Models\Booking $booking) {
-    return view('bookings.pos-receipt', [
-        'booking' => $booking->load(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices', 'payments']),
-    ]);
-})->middleware(['auth'])->name('bookings.receipt');
-
 // ── On-site print agent ──────────────────────────────────────────────────────
 // Polled by the on-site print-agent script (see print-agent/README.md) over
 // HTTPS — no browser session, so CSRF is excluded (see bootstrap/app.php) and

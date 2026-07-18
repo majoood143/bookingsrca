@@ -1,13 +1,7 @@
-<?php
-    $locale = app()->getLocale();
-    $isRtl = $locale === 'ar';
-?>
 <!DOCTYPE html>
 <html lang="<?php echo e(str_replace('_', '-', $locale)); ?>" dir="<?php echo e($isRtl ? 'rtl' : 'ltr'); ?>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt - <?php echo e($booking->booking_reference); ?></title>
     <style>
         * {
             margin: 0;
@@ -17,11 +11,11 @@
 
         body {
             font-family: 'DejaVu Sans', 'Courier New', monospace;
-            font-size: 13px;
-            color: #111;
-            width: 320px;
-            margin: 0 auto;
-            padding: 16px;
+            font-size: 22px;
+            color: #000;
+            background: #fff;
+            width: <?php echo e($paperWidth); ?>px;
+            padding: 20px 24px;
         }
 
         .center {
@@ -29,39 +23,41 @@
         }
 
         .title {
-            font-size: 16px;
+            font-size: 28px;
             font-weight: bold;
         }
 
         .muted {
-            color: #555;
-            font-size: 11px;
+            color: #333;
+            font-size: 18px;
         }
 
         .divider {
-            border-top: 1px dashed #999;
-            margin: 10px 0;
+            border-top: 2px dashed #000;
+            margin: 14px 0;
         }
 
         .row {
             display: flex;
             justify-content: space-between;
-            gap: 8px;
-            padding: 2px 0;
+            gap: 10px;
+            padding: 4px 0;
+            font-size: 20px;
         }
 
         .row .label {
-            color: #333;
+            color: #000;
         }
 
         .row .value {
             font-weight: bold;
-            text-align: right;
+            text-align: <?php echo e($isRtl ? 'left' : 'right'); ?>;
         }
 
         .attendee {
-            padding: 4px 0;
-            border-bottom: 1px dotted #ccc;
+            padding: 6px 0;
+            border-bottom: 1px dotted #999;
+            font-size: 20px;
         }
 
         .attendee:last-child {
@@ -69,54 +65,24 @@
         }
 
         .total-row {
-            font-size: 16px;
+            font-size: 24px;
             font-weight: bold;
-            border-top: 1px solid #111;
-            padding-top: 6px;
-            margin-top: 6px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            background: #e5e7eb;
+            border-top: 2px solid #000;
+            padding-top: 8px;
+            margin-top: 8px;
         }
 
         .footer {
             margin-top: 16px;
             text-align: center;
-            font-size: 11px;
-            color: #555;
-        }
-
-        .no-print {
-            text-align: center;
-            margin-top: 16px;
+            font-size: 16px;
         }
 
         <?php if($isRtl): ?>
             body {
                 font-family: 'DejaVu Sans', 'Tahoma', sans-serif;
             }
-
-            .row .value {
-                text-align: left;
-            }
         <?php endif; ?>
-
-        @media print {
-            .no-print {
-                display: none;
-            }
-
-            body {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -186,16 +152,6 @@
         <p><?php echo e(__('booking.receipt.present_note')); ?></p>
         <p><?php echo e(now()->format('Y-m-d H:i')); ?></p>
     </div>
-
-    <div class="no-print">
-        <button onclick="window.print()" style="padding:10px 20px;font-size:14px;">Print</button>
-    </div>
-
-    <script>
-        window.addEventListener('load', function () {
-            window.print();
-        });
-    </script>
 </body>
 </html>
-<?php /**PATH /Users/majidalhajri/Downloads/booking/bookingrca/bookingsrca/resources/views/bookings/pos-receipt.blade.php ENDPATH**/ ?>
+<?php /**PATH /Users/majidalhajri/Downloads/booking/bookingrca/bookingsrca/resources/views/bookings/receipt-thermal.blade.php ENDPATH**/ ?>

@@ -6,7 +6,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use App\Mail\BookingConfirmation;
-use App\Services\Printing\AttendeeTicketPrintService;
+use App\Services\Printing\ThermalPrintService;
 use App\Filament\Resources\BookingResource;
 use App\Filament\Resources\BookingResource\Pages\EditBooking;
 use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
@@ -93,7 +93,7 @@ class ViewBooking extends ViewRecord
                 ->color('gray')
                 ->action(function () {
                     try {
-                        app(AttendeeTicketPrintService::class)->enqueue($this->record);
+                        app(ThermalPrintService::class)->enqueueAttendeeTickets($this->record);
 
                         Notification::make()
                             ->success()

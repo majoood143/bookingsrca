@@ -10,7 +10,7 @@ use App\Models\Event;
 use App\Models\ExtraService;
 use App\Models\TicketType;
 use App\Models\TimeSlot;
-use App\Services\Printing\AttendeeTicketPrintService;
+use App\Services\Printing\ThermalPrintService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
@@ -677,7 +677,7 @@ class BookingWizard extends Page implements HasForms
         }
 
         try {
-            app(AttendeeTicketPrintService::class)->enqueue($this->createdBooking);
+            app(ThermalPrintService::class)->enqueueAttendeeTickets($this->createdBooking);
 
             Notification::make()
                 ->success()
@@ -687,6 +687,28 @@ class BookingWizard extends Page implements HasForms
             Notification::make()
                 ->danger()
                 ->title(__('booking.notifications.tickets_queue_failed'))
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
+
+    public function printReceipt(): void
+    {
+        if (!$this->createdBooking) {
+            return;
+        }
+
+        try {
+            app(ThermalPrintService::class)->enqueueReceipt($this->createdBooking);
+
+            Notification::make()
+                ->success()
+                ->title(__('booking.notifications.receipt_queued'))
+                ->send();
+        } catch (Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title(__('booking.notifications.receipt_queue_failed'))
                 ->body($e->getMessage())
                 ->send();
         }

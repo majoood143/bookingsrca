@@ -41,11 +41,9 @@
             </x-filament::section>
 
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="{{ route('bookings.receipt', $createdBooking) }}" target="_blank" rel="noopener">
-                    <x-filament::button size="xl" icon="heroicon-o-printer" color="primary" tag="span">
-                        {{ __('booking.wizard.print_receipt') }}
-                    </x-filament::button>
-                </a>
+                <x-filament::button size="xl" icon="heroicon-o-printer" color="primary" wire:click="printReceipt">
+                    {{ __('booking.wizard.print_receipt') }}
+                </x-filament::button>
 
                 <x-filament::button size="xl" icon="heroicon-o-ticket" color="warning" wire:click="printAttendeeTickets">
                     {{ __('booking.wizard.print_tickets') }}

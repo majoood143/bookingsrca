@@ -87,20 +87,19 @@
 <?php endif; ?>
 
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="<?php echo e(route('bookings.receipt', $createdBooking)); ?>" target="_blank" rel="noopener">
-                    <?php if (isset($component)) { $__componentOriginal6330f08526bbb3ce2a0da37da512a11f = $component; } ?>
+                <?php if (isset($component)) { $__componentOriginal6330f08526bbb3ce2a0da37da512a11f = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal6330f08526bbb3ce2a0da37da512a11f = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'filament::components.button.index','data' => ['size' => 'xl','icon' => 'heroicon-o-printer','color' => 'primary','tag' => 'span']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'filament::components.button.index','data' => ['size' => 'xl','icon' => 'heroicon-o-printer','color' => 'primary','wire:click' => 'printReceipt']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('filament::button'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['size' => 'xl','icon' => 'heroicon-o-printer','color' => 'primary','tag' => 'span']); ?>
-                        <?php echo e(__('booking.wizard.print_receipt')); ?>
+<?php $component->withAttributes(['size' => 'xl','icon' => 'heroicon-o-printer','color' => 'primary','wire:click' => 'printReceipt']); ?>
+                    <?php echo e(__('booking.wizard.print_receipt')); ?>
 
-                     <?php echo $__env->renderComponent(); ?>
+                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal6330f08526bbb3ce2a0da37da512a11f)): ?>
 <?php $attributes = $__attributesOriginal6330f08526bbb3ce2a0da37da512a11f; ?>
@@ -110,7 +109,6 @@
 <?php $component = $__componentOriginal6330f08526bbb3ce2a0da37da512a11f; ?>
 <?php unset($__componentOriginal6330f08526bbb3ce2a0da37da512a11f); ?>
 <?php endif; ?>
-                </a>
 
                 <?php if (isset($component)) { $__componentOriginal6330f08526bbb3ce2a0da37da512a11f = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal6330f08526bbb3ce2a0da37da512a11f = $attributes; } ?>

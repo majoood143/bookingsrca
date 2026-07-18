@@ -275,7 +275,7 @@ return [
     'tooltips' => [
         'resend_tickets'     => 'Resend all tickets in a single email to the first attendee',
         'download_pdf'       => 'Download booking summary as PDF',
-        'print_receipt'      => 'Open a printable POS receipt for this booking',
+        'print_receipt'      => 'Queue a thermal-printed receipt for this booking — the on-site print agent will print it shortly',
         'print_tickets'      => 'Queue a thermal-printed ticket for every attendee — the on-site print agent will print them shortly',
         'view_gateway_logs'  => 'View raw payment gateway request/response transactions (Super Admin only)',
         'view_agent_details' => 'View the device, browser, and operating system used to make this booking',
@@ -327,6 +327,8 @@ return [
         'tickets_partial_body'=> 'The tickets email could not be sent. Please try again.',
         'tickets_queued'      => 'Attendee tickets queued for printing',
         'tickets_queue_failed' => 'Queuing attendee tickets for printing failed',
+        'receipt_queued'      => 'Receipt queued for printing',
+        'receipt_queue_failed' => 'Queuing the receipt for printing failed',
         'booking_confirmed'   => 'Booking confirmed',
         'booking_confirmed_body' => 'All tickets have been sent to the first attendee in a single email.',
         'booking_cancelled'   => 'Booking cancelled',

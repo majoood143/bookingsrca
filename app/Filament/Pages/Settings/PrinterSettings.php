@@ -61,6 +61,7 @@ class PrinterSettings extends Page implements HasForms
             'agent_token'      => BookingSetting::get('printer.agent_token', ''),
             'paper_width_dots' => (string) BookingSetting::get('printer.paper_width_dots', 576),
             'graphics_mode'    => (bool) BookingSetting::get('printer.graphics_mode', false),
+            'chrome_path'      => BookingSetting::get('printer.chrome_path', ''),
         ]);
     }
 
@@ -88,6 +89,11 @@ class PrinterSettings extends Page implements HasForms
                         Toggle::make('graphics_mode')
                             ->label(__('Use Raster Graphics Mode'))
                             ->helperText(__('Enable if your printer supports GS ( L raster graphics for higher quality output. Leave off to use the more widely compatible bit-image method.')),
+
+                        TextInput::make('chrome_path')
+                            ->label(__('Chrome/Chromium Executable Path (optional)'))
+                            ->helperText(__('Leave blank to let Puppeteer auto-detect a browser. Set this if ticket/receipt rendering fails with a "Could not find chrome-headless-shell" error — point it at an already-installed Chrome, e.g. "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" on Windows or "/usr/bin/google-chrome" on Linux.'))
+                            ->maxLength(500),
                     ]),
 
                 Section::make(__('On-Site Print Agent'))
@@ -180,6 +186,7 @@ class PrinterSettings extends Page implements HasForms
         BookingSetting::set('printer.enabled', !empty($state['enabled']) ? '1' : '0');
         BookingSetting::set('printer.paper_width_dots', $state['paper_width_dots']);
         BookingSetting::set('printer.graphics_mode', !empty($state['graphics_mode']) ? '1' : '0');
+        BookingSetting::set('printer.chrome_path', trim($state['chrome_path'] ?? ''));
 
         Notification::make()
             ->title(__('Printer settings saved.'))

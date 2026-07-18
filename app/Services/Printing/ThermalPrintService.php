@@ -21,15 +21,38 @@ use Spatie\Browsershot\Browsershot;
 // (see print-agent/) polls for pending jobs and delivers them locally.
 class ThermalPrintService
 {
-    private bool $enabled;
-    private int  $paperWidthDots;
-    private bool $graphicsMode;
+    private bool   $enabled;
+    private int    $paperWidthDots;
+    private bool   $graphicsMode;
+    private string $chromePath;
 
     public function __construct()
     {
-        $this->enabled        = (bool) BookingSetting::get('printer.enabled', false);
-        $this->paperWidthDots = (int)  BookingSetting::get('printer.paper_width_dots', 576);
-        $this->graphicsMode   = (bool) BookingSetting::get('printer.graphics_mode', false);
+        $this->enabled        = (bool)   BookingSetting::get('printer.enabled', false);
+        $this->paperWidthDots = (int)    BookingSetting::get('printer.paper_width_dots', 576);
+        $this->graphicsMode   = (bool)   BookingSetting::get('printer.graphics_mode', false);
+        $this->chromePath     = (string) BookingSetting::get('printer.chrome_path', '');
+    }
+
+    /**
+     * Puppeteer's own bundled-browser download/cache lookup is fragile on
+     * locked-down service accounts (e.g. a Windows Apache service running as
+     * Local System, which has its own separate profile/cache directory from
+     * whichever user account Chrome may have been installed for). Pointing
+     * at an already-installed Chrome directly sidesteps that entirely when
+     * configured; otherwise this falls back to Browsershot's own detection.
+     */
+    private function newBrowsershot(string $html): Browsershot
+    {
+        $browsershot = Browsershot::html($html)
+            ->windowSize($this->paperWidthDots, 100)
+            ->fullPage();
+
+        if ($this->chromePath !== '') {
+            $browsershot->setChromePath($this->chromePath);
+        }
+
+        return $browsershot;
     }
 
     /**
@@ -238,10 +261,7 @@ class ThermalPrintService
         $relativePath = $tmpDir . '/booking-' . $booking->id . '-attendee-' . $attendee->id . '-' . Str::random(8) . '.png';
         $absolutePath = Storage::disk('local')->path($relativePath);
 
-        Browsershot::html($html)
-            ->windowSize($this->paperWidthDots, 100)
-            ->fullPage()
-            ->save($absolutePath);
+        $this->newBrowsershot($html)->save($absolutePath);
 
         return $relativePath;
     }
@@ -261,10 +281,7 @@ class ThermalPrintService
         $relativePath = $tmpDir . '/receipt-' . $booking->id . '-' . Str::random(8) . '.png';
         $absolutePath = Storage::disk('local')->path($relativePath);
 
-        Browsershot::html($html)
-            ->windowSize($this->paperWidthDots, 100)
-            ->fullPage()
-            ->save($absolutePath);
+        $this->newBrowsershot($html)->save($absolutePath);
 
         return $relativePath;
     }

@@ -247,9 +247,10 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                 $eventTimeline = $event->getTranslation('timeline', app()->getLocale());
                 $eventFaq      = $event->faq ?? [];
                 $videoEmbedId  = $event->getPromotionalVideoEmbedId();
+                $hasTimeline   = filled(trim(strip_tags($eventTimeline ?? '')));
             ?>
 
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($videoEmbedId || filled($eventTimeline) || !empty($eventFaq)): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($videoEmbedId || $hasTimeline || !empty($eventFaq)): ?>
                 <div class="mb-8 space-y-6">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($videoEmbedId): ?>
                         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -264,7 +265,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(filled($eventTimeline)): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasTimeline): ?>
                         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
                             <h2 class="text-lg font-bold text-gray-900 mb-3"><?php echo e(__('event_booking.details.timeline')); ?></h2>
                             <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">

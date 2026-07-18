@@ -37,23 +37,23 @@
                                     <?php echo e($isSoldOut
                                         ? 'border-gray-100 bg-gray-50 cursor-not-allowed'
                                         : ($selectedDate === $date
-                                            ? 'border-green-600 bg-green-600 shadow-md shadow-green-600'
+                                            ? 'border-green-600 bg-white shadow-md shadow-green-600'
                                             : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm')); ?>">
                                 <div
                                     class="text-xs font-bold uppercase tracking-widest
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover/70' : 'text-gray-400')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-400' : 'text-gray-400')); ?>">
                                     <?php echo e($d->translatedFormat('D')); ?>
 
                                 </div>
                                 <div
                                     class="text-4xl font-black my-1
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-800')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-800' : 'text-gray-800')); ?>">
                                     <?php echo e($d->format('d')); ?>
 
                                 </div>
                                 <div
                                     class="text-sm font-semibold
-                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-500')); ?>">
+                                    <?php echo e($isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-500' : 'text-gray-500')); ?>">
                                     <?php echo e($d->translatedFormat('M Y')); ?>
 
                                 </div>

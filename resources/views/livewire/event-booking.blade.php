@@ -221,9 +221,10 @@
                 $eventTimeline = $event->getTranslation('timeline', app()->getLocale());
                 $eventFaq      = $event->faq ?? [];
                 $videoEmbedId  = $event->getPromotionalVideoEmbedId();
+                $hasTimeline   = filled(trim(strip_tags($eventTimeline ?? '')));
             @endphp
 
-            @if ($videoEmbedId || filled($eventTimeline) || !empty($eventFaq))
+            @if ($videoEmbedId || $hasTimeline || !empty($eventFaq))
                 <div class="mb-8 space-y-6">
                     @if ($videoEmbedId)
                         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -238,7 +239,7 @@
                         </div>
                     @endif
 
-                    @if (filled($eventTimeline))
+                    @if ($hasTimeline)
                         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
                             <h2 class="text-lg font-bold text-gray-900 mb-3">{{ __('event_booking.details.timeline') }}</h2>
                             <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">

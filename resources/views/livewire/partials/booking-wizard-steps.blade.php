@@ -38,21 +38,21 @@
                                     {{ $isSoldOut
                                         ? 'border-gray-100 bg-gray-50 cursor-not-allowed'
                                         : ($selectedDate === $date
-                                            ? 'border-green-600 bg-green-600 shadow-md shadow-green-600'
+                                            ? 'border-green-600 bg-white shadow-md shadow-green-600'
                                             : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm') }}">
                                 <div
                                     class="text-xs font-bold uppercase tracking-widest
-                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover/70' : 'text-gray-400') }}">
+                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-400' : 'text-gray-400') }}">
                                     {{ $d->translatedFormat('D') }}
                                 </div>
                                 <div
                                     class="text-4xl font-black my-1
-                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-800') }}">
+                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-800' : 'text-gray-800') }}">
                                     {{ $d->format('d') }}
                                 </div>
                                 <div
                                     class="text-sm font-semibold
-                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-brand-hover' : 'text-gray-500') }}">
+                                    {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-500' : 'text-gray-500') }}">
                                     {{ $d->translatedFormat('M Y') }}
                                 </div>
                                 @if ($selectedDate === $date && !$isSoldOut)

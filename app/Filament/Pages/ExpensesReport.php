@@ -43,7 +43,21 @@ class ExpensesReport extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return parent::canAccess() && (bool) BookingSetting::get('module_expenses_enabled', true);
+        if (! (bool) BookingSetting::get('module_expenses_enabled', true)) {
+            return false;
+        }
+
+        // Re-implements HasPageShield::canAccess() rather than relying on it: a
+        // canAccess() declared directly in this class always wins over the
+        // trait's version (traits never win over the class body), so calling
+        // parent::canAccess() here would skip the permission check entirely
+        // and fall through to the base Page's "allow any panel user" default.
+        $permission = static::getPagePermission();
+        $user = \Filament\Facades\Filament::auth()?->user();
+
+        return $permission && $user
+            ? $user->can($permission)
+            : parent::canAccess();
     }
 
     public function getTitle(): string

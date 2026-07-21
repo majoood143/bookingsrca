@@ -32,6 +32,11 @@ class BookingPolicy
         return $authUser->can('Update:Booking');
     }
 
+    public function refund(AuthUser $authUser, Booking $booking): bool
+    {
+        return $authUser->can('Refund:Booking');
+    }
+
     public function delete(AuthUser $authUser, Booking $booking): bool
     {
         return $authUser->can('Delete:Booking');

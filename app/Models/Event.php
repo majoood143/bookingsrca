@@ -29,6 +29,9 @@ class Event extends Model
         'status',
         'password',
         'max_attendees',
+        'booking_cutoff_enabled',
+        'booking_cutoff_value',
+        'booking_cutoff_unit',
         'timeline',
         'faq',
         'terms_and_conditions',
@@ -45,6 +48,8 @@ class Event extends Model
         'end_date' => 'date',
         'is_recurring' => 'boolean',
         'faq' => 'array',
+        'booking_cutoff_enabled' => 'boolean',
+        'booking_cutoff_value' => 'integer',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -53,6 +58,7 @@ class Event extends Model
             ->logOnly([
                 'title', 'description', 'location', 'location_link', 'organizer', 'organizer_phone',
                 'status', 'start_date', 'end_date', 'max_attendees',
+                'booking_cutoff_enabled', 'booking_cutoff_value', 'booking_cutoff_unit',
                 'is_recurring', 'recurring_days',
                 'timeline', 'faq', 'terms_and_conditions', 'promotional_video_url',
             ])
@@ -90,6 +96,11 @@ class Event extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
     }
 
     public function signageSetting()
@@ -195,7 +206,8 @@ class Event extends Model
     }
 
     // Dates within getAvailableDates() that also have at least one active,
-    // generated TimeSlot whose start datetime hasn't already passed.
+    // generated TimeSlot whose start datetime hasn't already passed and
+    // whose booking cutoff (if configured) hasn't been reached yet.
     public function getBookableDates()
     {
         $now = now();
@@ -207,7 +219,7 @@ class Event extends Model
                 $slotStart = \Carbon\Carbon::parse(
                     $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
                 );
-                return $slotStart->gt($now);
+                return $slotStart->gt($now) && !$this->isBookingCutoffPassed($slot);
             })
             ->map(fn($slot) => $slot->date->format('Y-m-d'))
             ->unique();
@@ -215,9 +227,9 @@ class Event extends Model
         return array_values(array_intersect($this->getAvailableDates(), $slotDates->all()));
     }
 
-    // Dates whose active, future time slots exist but are all fully booked
-    // (zero remaining capacity) — the date still shows on the calendar, but
-    // there is nothing left to sell for it.
+    // Dates whose active, still-bookable (future, cutoff not reached) time
+    // slots exist but are all fully booked (zero remaining capacity) — the
+    // date still shows on the calendar, but there is nothing left to sell for it.
     public function getSoldOutDates(): array
     {
         $now = now();
@@ -229,7 +241,7 @@ class Event extends Model
                 $slotStart = \Carbon\Carbon::parse(
                     $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
                 );
-                return $slotStart->gt($now);
+                return $slotStart->gt($now) && !$this->isBookingCutoffPassed($slot);
             })
             ->groupBy(fn ($slot) => $slot->date->format('Y-m-d'))
             ->filter(fn ($slots) => $slots->every(fn ($slot) => !$slot->isAvailable()))
@@ -237,9 +249,47 @@ class Event extends Model
             ->all();
     }
 
+    // Total minutes before a time slot's start that bookings close for this
+    // event, or null when no cutoff is configured (bookings stay open until
+    // the slot itself starts).
+    public function getBookingCutoffMinutes(): ?int
+    {
+        if (!$this->booking_cutoff_enabled || !$this->booking_cutoff_value) {
+            return null;
+        }
+
+        return $this->booking_cutoff_unit === 'hours'
+            ? $this->booking_cutoff_value * 60
+            : $this->booking_cutoff_value;
+    }
+
+    // The moment bookings close for the given slot, or null when no cutoff
+    // is configured for this event.
+    public function bookingClosesAt(TimeSlot $slot): ?\Carbon\Carbon
+    {
+        $cutoffMinutes = $this->getBookingCutoffMinutes();
+
+        if ($cutoffMinutes === null) {
+            return null;
+        }
+
+        $slotStart = \Carbon\Carbon::parse(
+            $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
+        );
+
+        return $slotStart->subMinutes($cutoffMinutes);
+    }
+
+    public function isBookingCutoffPassed(TimeSlot $slot): bool
+    {
+        $closesAt = $this->bookingClosesAt($slot);
+
+        return $closesAt !== null && now()->gte($closesAt);
+    }
+
     public function getTotalBookings()
     {
-        return $this->bookings()->where('status', '!=', 'cancelled')->sum('quantity');
+        return $this->bookings()->whereNotIn('status', ['cancelled', 'refunded'])->sum('quantity');
     }
 
     public function getRemainingCapacity()

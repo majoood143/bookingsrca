@@ -45,12 +45,13 @@
 
     </p>
 
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-5">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         <?php
             $stats = [
                 ['label' => __('financial_report.stats.total_revenue'), 'value' => $currency . ' ' . number_format($report['totalRevenue'], 3), 'color' => 'bg-amber-100 dark:bg-amber-900/40', 'text' => 'text-amber-700 dark:text-amber-300'],
                 ['label' => __('financial_report.stats.total_paid'), 'value' => $currency . ' ' . number_format($report['totalPaid'], 3), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
                 ['label' => __('financial_report.stats.balance_due'), 'value' => $currency . ' ' . number_format($report['balanceDue'], 3), 'color' => 'bg-red-100 dark:bg-red-900/40', 'text' => 'text-red-700 dark:text-red-300'],
+                ['label' => __('financial_report.stats.total_refunded'), 'value' => $currency . ' ' . number_format($report['totalRefunded'], 3), 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-600 dark:text-gray-300'],
                 ['label' => __('financial_report.stats.total_bookings'), 'value' => $report['totalBookings'], 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-800 dark:text-gray-100'],
                 ['label' => __('financial_report.stats.avg_booking'), 'value' => $currency . ' ' . number_format($report['avgBooking'], 3), 'color' => 'bg-blue-100 dark:bg-blue-900/40', 'text' => 'text-blue-700 dark:text-blue-300'],
             ];

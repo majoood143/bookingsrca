@@ -4,6 +4,7 @@ namespace App\Filament\Resources\BookingResource\Pages;
 
 use Filament\Actions\EditAction;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use App\Mail\BookingConfirmation;
 use App\Services\Printing\ThermalPrintService;
@@ -64,6 +65,27 @@ class ViewBooking extends ViewRecord
                 })
                 ->requiresConfirmation()
                 ->visible(fn() => in_array($this->record->status, ['pending', 'confirmed'])),
+
+            Action::make('refund')
+                ->label(__('booking.actions.refund_booking'))
+                ->icon('heroicon-o-receipt-refund')
+                ->color('gray')
+                ->schema([
+                    Textarea::make('reason')
+                        ->label(__('booking.modals.refund_reason'))
+                        ->rows(2),
+                ])
+                ->action(function (array $data) {
+                    $this->record->refund($data['reason'] ?? null);
+                    Notification::make()
+                        ->success()
+                        ->title(__('booking.notifications.booking_refunded'))
+                        ->send();
+                })
+                ->requiresConfirmation()
+                ->modalHeading(__('booking.modals.refund_heading'))
+                ->modalDescription(__('booking.modals.refund_description'))
+                ->visible(fn() => $this->record->status === 'confirmed' && (auth()->user()?->can('refund', $this->record) ?? false)),
 
             Action::make('check_in')
                 ->label(__('booking.actions.check_in'))

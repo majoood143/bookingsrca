@@ -19,7 +19,8 @@ class ListBookingAttendees extends ListRecords
         return [
             ExportAction::make()
                 ->exports([
-                    BookingAttendeesExport::make(),
+                    BookingAttendeesExport::make()
+                        ->queue(),
                 ]),
         ];
     }

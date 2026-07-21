@@ -14,6 +14,7 @@ use App\Models\PromoCode;
 use App\Services\PromoCodeService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Livewire\WithFileUploads;
 
 // Domain logic shared by every booking wizard screen (public web + kiosk):
 // ticket/service quantity math, dependency validation, attendee building,
@@ -22,6 +23,9 @@ use Illuminate\Support\Facades\DB;
 // which kiosk hardware) stays in each consuming component.
 trait HandlesEventBookingFlow
 {
+    // Needed for the per-attendee identity card / passport upload fields below.
+    use WithFileUploads;
+
     // Nullable so a kiosk not pinned to one event can leave this unset until
     // the customer picks one (step 0) — Livewire would error dehydrating an
     // uninitialized typed property, so `null` is the safe default everywhere.
@@ -60,6 +64,13 @@ trait HandlesEventBookingFlow
     public int  $maxAttendeeAge  = 75;
     public bool $showSlotEndTime = true;
 
+    // Passport/ID document fields — unlike the fields above, these have no
+    // global BookingSetting default and are hidden unless an event explicitly
+    // turns them on via a per-event/kiosk field-visibility override.
+    public bool $showPassportNumber = false;
+    public bool $showIdentityCardUpload = false;
+    public bool $showPassportUpload = false;
+
     // Whether each shown field is required — independent of visibility so a
     // field can be shown but optional (defaults mirror the previous hardcoded
     // behavior: date of birth and nationality were never required).
@@ -69,6 +80,9 @@ trait HandlesEventBookingFlow
     public bool $requireGender      = true;
     public bool $requireNationality = false;
     public bool $requireIdentityNumber = true;
+    public bool $requirePassportNumber = false;
+    public bool $requireIdentityCardUpload = false;
+    public bool $requirePassportUpload = false;
 
     // Which per-event override scope applies to this component — "event_booking"
     // for the public web flow, "kiosk" for KioskBooking (overridden there). A
@@ -138,6 +152,15 @@ trait HandlesEventBookingFlow
             $rules["attendees.$i.identity_number"] = $this->showIdentityNumber
                 ? ($this->requireIdentityNumber ? 'required' : 'nullable') . '|string|max:50'
                 : 'nullable';
+            $rules["attendees.$i.passport_number"] = $this->showPassportNumber
+                ? ($this->requirePassportNumber ? 'required' : 'nullable') . '|string|max:50'
+                : 'nullable';
+            $rules["attendees.$i.identity_card_upload"] = $this->showIdentityCardUpload
+                ? [$this->requireIdentityCardUpload ? 'required' : 'nullable', 'image', 'max:5120']
+                : 'nullable';
+            $rules["attendees.$i.passport_upload"] = $this->showPassportUpload
+                ? [$this->requirePassportUpload ? 'required' : 'nullable', 'image', 'max:5120']
+                : 'nullable';
         }
 
         return $rules;
@@ -167,6 +190,9 @@ trait HandlesEventBookingFlow
             'attendees.*.gender'          => __('event_booking.step5.gender'),
             'attendees.*.nationality'    => __('event_booking.step5.nationality'),
             'attendees.*.identity_number' => __('event_booking.step5.identity_number'),
+            'attendees.*.passport_number' => __('event_booking.step5.passport_number'),
+            'attendees.*.identity_card_upload' => __('event_booking.step5.identity_card_upload'),
+            'attendees.*.passport_upload' => __('event_booking.step5.passport_upload'),
         ];
     }
 
@@ -203,6 +229,15 @@ trait HandlesEventBookingFlow
         $this->requireNationality    = false;
         $this->requireIdentityNumber = true;
 
+        // Passport/ID document fields have no global default at all — hidden
+        // unless an event's per-flow override explicitly turns them on.
+        $this->showPassportNumber        = false;
+        $this->requirePassportNumber     = false;
+        $this->showIdentityCardUpload    = false;
+        $this->requireIdentityCardUpload = false;
+        $this->showPassportUpload        = false;
+        $this->requirePassportUpload     = false;
+
         // An event-level override for this flow (event booking page vs kiosk)
         // fully replaces the global show/require values above for that flow only.
         $overrides = $this->event?->fieldVisibilityOverridesFor($this->fieldVisibilityScope());
@@ -220,6 +255,12 @@ trait HandlesEventBookingFlow
             $this->requireNationality    = $overrides['require_nationality'];
             $this->showIdentityNumber    = $overrides['show_identity_number'];
             $this->requireIdentityNumber = $overrides['require_identity_number'];
+            $this->showPassportNumber        = $overrides['show_passport_number'];
+            $this->requirePassportNumber     = $overrides['require_passport_number'];
+            $this->showIdentityCardUpload    = $overrides['show_identity_card_upload'];
+            $this->requireIdentityCardUpload = $overrides['require_identity_card_upload'];
+            $this->showPassportUpload        = $overrides['show_passport_upload'];
+            $this->requirePassportUpload     = $overrides['require_passport_upload'];
         }
 
         // An event with its own terms & conditions (in either language)
@@ -259,6 +300,11 @@ trait HandlesEventBookingFlow
             ->where('date', $this->selectedDate)
             ->find($slotId);
 
+        if ($slot && $slot->is_active && $this->event->isBookingCutoffPassed($slot)) {
+            session()->flash('error', $this->bookingCutoffMessage($slot));
+            return;
+        }
+
         if (!$slot || !$this->isSlotBookable($slot)) {
             session()->flash('error', __('That time slot is no longer available. Please choose another.'));
             return;
@@ -280,7 +326,8 @@ trait HandlesEventBookingFlow
         $this->step = 3;
     }
 
-    // A slot is bookable if it's active and its start datetime hasn't passed.
+    // A slot is bookable if it's active, its start datetime hasn't passed,
+    // and the event's booking cutoff window (if configured) hasn't closed it yet.
     protected function isSlotBookable(TimeSlot $slot): bool
     {
         if (!$slot->is_active) {
@@ -291,7 +338,19 @@ trait HandlesEventBookingFlow
             $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
         );
 
-        return $slotStart->isFuture();
+        if (!$slotStart->isFuture()) {
+            return false;
+        }
+
+        return !$this->event->isBookingCutoffPassed($slot);
+    }
+
+    // Friendly "closed N hours ago" message for a slot whose booking cutoff has passed.
+    protected function bookingCutoffMessage(TimeSlot $slot): string
+    {
+        return __('event_booking.step2.booking_closed', [
+            'time' => $this->event->bookingClosesAt($slot)->locale(app()->getLocale())->diffForHumans(),
+        ]);
     }
 
     // ── Quantity helpers ────────────────────────────────────────────────────
@@ -491,11 +550,17 @@ trait HandlesEventBookingFlow
                     'gender'         => null,
                     'nationality'    => '',
                     'identity_number' => '',
+                    'passport_number' => '',
+                    'identity_card_upload' => null,
+                    'passport_upload' => null,
                 ];
             }
         }
 
-        // Preserve data already entered for existing indices
+        // Preserve data already entered for existing indices. Uploaded files
+        // (TemporaryUploadedFile instances) are intentionally preserved the
+        // same way as any other field here — Livewire keeps the temp upload
+        // valid across requests within the same component lifecycle.
         foreach ($newAttendees as $i => &$attendee) {
             if (isset($this->attendees[$i])) {
                 $attendee = array_merge($attendee, array_intersect_key($this->attendees[$i], $attendee));
@@ -644,6 +709,10 @@ trait HandlesEventBookingFlow
                 ->lockForUpdate()
                 ->find($this->selectedSlot);
 
+            if ($timeSlot && $timeSlot->is_active && $this->event->isBookingCutoffPassed($timeSlot)) {
+                throw new Exception($this->bookingCutoffMessage($timeSlot));
+            }
+
             if (!$timeSlot || !$this->isSlotBookable($timeSlot)) {
                 throw new Exception(__('Time slot is no longer available.'));
             }
@@ -728,6 +797,19 @@ trait HandlesEventBookingFlow
             foreach ($this->attendees as $attendeeData) {
                 $ticketType = $ticketTypesById[$attendeeData['ticket_type_id']] ?? null;
 
+                // Document scans go on the private "local" disk, not the public
+                // one used for QR codes/tickets — these are sensitive personal
+                // documents and must never get a guessable public URL.
+                $identityCardPath = null;
+                if ($this->showIdentityCardUpload && !empty($attendeeData['identity_card_upload'])) {
+                    $identityCardPath = $attendeeData['identity_card_upload']->store('attendee-documents', 'local');
+                }
+
+                $passportPath = null;
+                if ($this->showPassportUpload && !empty($attendeeData['passport_upload'])) {
+                    $passportPath = $attendeeData['passport_upload']->store('attendee-documents', 'local');
+                }
+
                 BookingAttendee::create([
                     'booking_id'     => $booking->id,
                     'ticket_type_id' => $attendeeData['ticket_type_id'],
@@ -740,6 +822,9 @@ trait HandlesEventBookingFlow
                     'gender'         => $this->showGender      ? ($attendeeData['gender'] ?? null)       : null,
                     'nationality'    => $this->showNationality ? ($attendeeData['nationality'] ?? null)  : null,
                     'identity_number' => $this->showIdentityNumber ? ($attendeeData['identity_number'] ?? null) : null,
+                    'passport_number' => $this->showPassportNumber ? ($attendeeData['passport_number'] ?? null) : null,
+                    'identity_card_path' => $identityCardPath,
+                    'passport_path'      => $passportPath,
                 ]);
             }
 

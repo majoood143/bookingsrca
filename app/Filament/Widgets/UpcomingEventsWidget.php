@@ -79,7 +79,7 @@ class UpcomingEventsWidget extends BaseWidget
                 TextColumn::make('total_bookings')
                     ->label(__('widgets.upcoming_events.bookings'))
                     ->state(fn (Event $record): int =>
-                        $record->bookings()->whereNotIn('status', ['cancelled'])->count()
+                        $record->bookings()->whereNotIn('status', ['cancelled', 'refunded'])->count()
                     )
                     ->badge()
                     ->color('primary'),
@@ -91,7 +91,7 @@ class UpcomingEventsWidget extends BaseWidget
                             return __('widgets.upcoming_events.unlimited');
                         }
                         $booked = $record->bookings()
-                            ->whereNotIn('status', ['cancelled'])
+                            ->whereNotIn('status', ['cancelled', 'refunded'])
                             ->sum('quantity');
                         $pct = ($booked / $record->max_attendees) * 100;
                         return number_format($pct, 1) . '%';
@@ -101,7 +101,7 @@ class UpcomingEventsWidget extends BaseWidget
                             return 'gray';
                         }
                         $booked = $record->bookings()
-                            ->whereNotIn('status', ['cancelled'])
+                            ->whereNotIn('status', ['cancelled', 'refunded'])
                             ->sum('quantity');
                         $pct = ($booked / $record->max_attendees) * 100;
                         return match (true) {

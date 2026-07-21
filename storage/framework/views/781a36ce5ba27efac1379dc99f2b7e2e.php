@@ -1532,17 +1532,17 @@
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($output): ?>
                     <?php $lineCount = substr_count($output, "\n") + 1; ?>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php for($i = 1; $i <= min($lineCount, 200); $i++): ?>
-                        <span class="font-mono leading-relaxed text-gray-700" style="font-size:11px"><?php echo e($i); ?></span>
+                        <span wire:key="log-gutter-<?php echo e($i); ?>" class="font-mono leading-relaxed text-gray-700" style="font-size:11px"><?php echo e($i); ?></span>
                     <?php endfor; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <?php else: ?>
-                    <span class="font-mono leading-relaxed text-gray-700" style="font-size:11px">1</span>
+                    <span wire:key="log-gutter-empty" class="font-mono leading-relaxed text-gray-700" style="font-size:11px">1</span>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             <div class="flex-1 overflow-x-auto overflow-y-auto max-h-[28rem] p-5" id="terminal-output"
-                wire:key="terminal-output-<?php echo e(strlen($output)); ?>">
+                wire:key="terminal-output-<?php echo e(md5($output)); ?>">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($output): ?>
-                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = explode("\n", $output); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $line): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = explode("\n", $output); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $line): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php
                             $trimmed = ltrim($line);
                             $cls = match(true) {
@@ -1555,10 +1555,10 @@
                                 default => 'text-gray-300'
                             };
                         ?>
-                        <div class="font-mono leading-relaxed <?php echo e($cls); ?>" style="font-size:13px"><?php echo $line !== '' ? e($line) : '&nbsp;'; ?></div>
+                        <div wire:key="log-line-<?php echo e($index); ?>" class="font-mono leading-relaxed <?php echo e($cls); ?>" style="font-size:13px"><?php echo $line !== '' ? e($line) : '&nbsp;'; ?></div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <?php else: ?>
-                    <div class="flex flex-col items-center justify-center h-40 gap-3 select-none">
+                    <div wire:key="log-line-empty" class="flex flex-col items-center justify-center h-40 gap-3 select-none">
                         <?php if (isset($component)) { $__componentOriginalbfc641e0710ce04e5fe02876ffc6f950 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalbfc641e0710ce04e5fe02876ffc6f950 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'filament::components.icon','data' => ['icon' => 'heroicon-o-command-line','class' => 'w-10 h-10 text-gray-700']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>

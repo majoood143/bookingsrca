@@ -66,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->brandLogoHeight('4rem')
+            ->databaseNotifications()
             //->routes(fn() => FilamentMails::routes())
             ->colors([
                 'primary' => $this->panelPrimaryColor(),

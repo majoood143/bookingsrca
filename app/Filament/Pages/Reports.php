@@ -152,6 +152,7 @@ class Reports extends Page implements HasForms
         $pendingCount     = $bookings->where('status', 'pending')->count();
         $cancelledCount   = $bookings->where('status', 'cancelled')->count();
         $checkedInCount   = $bookings->where('status', 'checked_in')->count();
+        $refundedCount    = $bookings->where('status', 'refunded')->count();
         $totalRevenue     = $bookings->whereIn('status', ['confirmed', 'checked_in'])->sum('total_price');
         $totalAttendees   = $bookings->sum('quantity');
 
@@ -164,6 +165,7 @@ class Reports extends Page implements HasForms
                 'pending'    => $group->where('status', 'pending')->count(),
                 'cancelled'  => $group->where('status', 'cancelled')->count(),
                 'checked_in' => $group->where('status', 'checked_in')->count(),
+                'refunded'   => $group->where('status', 'refunded')->count(),
                 'attendees'  => $group->sum('quantity'),
                 'revenue'    => $group->whereIn('status', ['confirmed', 'checked_in'])->sum('total_price'),
             ];
@@ -182,7 +184,7 @@ class Reports extends Page implements HasForms
         return compact(
             'from', 'to',
             'totalBookings', 'confirmedCount', 'pendingCount',
-            'cancelledCount', 'checkedInCount', 'totalRevenue',
+            'cancelledCount', 'checkedInCount', 'refundedCount', 'totalRevenue',
             'totalAttendees', 'byEvent', 'byTicket'
         );
     }

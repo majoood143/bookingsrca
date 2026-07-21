@@ -122,6 +122,18 @@
             letter-spacing: 0.5px;
         }
 
+        .refunded-badge {
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-<?php echo e($isAr ? 'right' : 'left'); ?>: 6px;
+        }
+
         .header-right {
             width: 76px;
             text-align: center;
@@ -394,6 +406,9 @@
                     <div class="event-line"><?php echo e($booking->event->getTranslation('title', 'ar')); ?> &nbsp;·&nbsp; <?php echo e($dateFormatted); ?></div>
                     <div class="event-meta"><?php echo e($t('time')); ?> <span dir="ltr"><?php echo e($booking->timeSlot->getTimeRange()); ?></span> &nbsp;·&nbsp; <?php echo e($t('location')); ?> <?php echo e($booking->event->getTranslation('location', 'ar')); ?></div>
                     <span class="ticket-badge" dir="ltr"><?php echo e($attendee->ticket_number); ?></span>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->status === 'refunded'): ?>
+                        <span class="refunded-badge"><?php echo e(strtoupper($t('refunded'))); ?></span>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </td>
                 <?php else: ?>
                 <td class="header-left">
@@ -402,6 +417,9 @@
                     <div class="event-line"><?php echo e($booking->event->getTranslation('title', 'en')); ?> &nbsp;·&nbsp; <?php echo e($dateFormatted); ?></div>
                     <div class="event-meta"><?php echo e($t('time')); ?> <?php echo e($booking->timeSlot->getTimeRange()); ?> &nbsp;·&nbsp; <?php echo e($t('location')); ?> <?php echo e($booking->event->getTranslation('location', 'en')); ?></div>
                     <span class="ticket-badge"><?php echo e($attendee->ticket_number); ?></span>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->status === 'refunded'): ?>
+                        <span class="refunded-badge"><?php echo e(strtoupper($t('refunded'))); ?></span>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </td>
                 <td class="header-right" width="76">
                     <img src="<?php echo e($qrCode); ?>" width="120" height="120" alt="QR">

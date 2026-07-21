@@ -53,6 +53,7 @@ return [
         'gender'        => 'Select gender',
         'nationality'   => 'Select your country',
         'identity_number' => 'Enter identity number',
+        'passport_number' => 'Enter passport number',
     ],
 
     'columns' => [
@@ -247,11 +248,13 @@ return [
             'confirmed'  => 'Confirmed',
             'cancelled'  => 'Cancelled',
             'checked_in' => 'Checked In',
+            'refunded'   => 'Refunded',
         ],
     ],
 
     'actions' => [
         'new_booking'      => 'New Booking',
+        'export'           => 'Export to Excel',
         'resend_tickets'   => 'Resend Tickets',
         'download_pdf'     => 'Download PDF',
         'print_receipt'    => 'Print Receipt',
@@ -261,6 +264,8 @@ return [
         'view_gateway_logs' => 'Payment Gateway Logs',
         'confirm'          => 'Confirm',
         'cancel'           => 'Cancel',
+        'refund'           => 'Refund',
+        'refund_booking'   => 'Refund Booking',
         'confirm_selected' => 'Confirm Selected',
         'confirm_booking'  => 'Confirm Booking',
         'cancel_booking'   => 'Cancel Booking',
@@ -318,6 +323,9 @@ return [
         'resend_tickets_submit'      => 'Send Tickets',
         'delete_heading'             => 'Delete booking',
         'delete_description'         => 'Are you sure? This will free up capacity.',
+        'refund_heading'             => 'Refund Booking',
+        'refund_description'         => 'This will mark the booking as refunded, exclude it from sales, and return its tickets to stock. This cannot be undone.',
+        'refund_reason'              => 'Reason (optional)',
     ],
 
     'notifications' => [
@@ -332,6 +340,7 @@ return [
         'booking_confirmed'   => 'Booking confirmed',
         'booking_confirmed_body' => 'All tickets have been sent to the first attendee in a single email.',
         'booking_cancelled'   => 'Booking cancelled',
+        'booking_refunded'    => 'Booking refunded',
         'booking_created'     => 'Booking created',
         'booking_created_body'=> 'All tickets have been sent to the first attendee in a single email.',
         'booking_updated'     => 'Booking updated successfully',
@@ -348,6 +357,7 @@ return [
         'confirmed'  => 'Confirmed',
         'checked_in' => 'Checked In',
         'cancelled'  => 'Cancelled',
+        'refunded'   => 'Refunded',
     ],
 
     'ticket_info' => [

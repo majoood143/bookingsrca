@@ -6,9 +6,11 @@ use Filament\Actions\CreateAction;
 use Filament\Schemas\Components\Tabs\Tab;
 use App\Models\Booking;
 use App\Filament\Resources\BookingResource;
+use App\Exports\BookingsExport;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
 
 class ListBookings extends ListRecords
 {
@@ -17,6 +19,15 @@ class ListBookings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            ExportAction::make()
+                ->label(__('booking.actions.export'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->exports([
+                    BookingsExport::make()
+                        ->withFilename(fn () => 'bookings-' . now()->format('Y-m-d'))
+                        ->queue(),
+                ]),
+
             CreateAction::make()
                 ->label(__('booking.actions.new_booking'))
                 ->icon('heroicon-o-plus'),
@@ -48,6 +59,11 @@ class ListBookings extends ListRecords
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'cancelled'))
                 ->badge(fn() => Booking::where('status', 'cancelled')->count())
                 ->badgeColor('danger'),
+
+            'refunded' => Tab::make(__('booking.tabs.refunded'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'refunded'))
+                ->badge(fn() => Booking::where('status', 'refunded')->count())
+                ->badgeColor('gray'),
         ];
     }
 }

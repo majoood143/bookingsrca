@@ -78,6 +78,8 @@ return [
         'module_private_events_enabled_helper' => 'يسمح بإنشاء فعاليات خاصة محمية بكلمة مرور.',
         'module_promo_codes_enabled' => 'وحدة رموز الخصم',
         'module_promo_codes_enabled_helper' => 'يسمح للعملاء بتطبيق رموز الخصم للحصول على خصم عند الدفع.',
+        'module_expenses_enabled' => 'وحدة المصروفات',
+        'module_expenses_enabled_helper' => 'يفعّل تتبع المصروفات وفئات المصروفات، وتبويب المصروفات داخل الحجوزات.',
     ],
 
     'notifications' => [

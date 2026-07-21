@@ -25,6 +25,12 @@ class EventFieldVisibilitySetting extends Model
         'event_booking_require_nationality',
         'event_booking_show_identity_number',
         'event_booking_require_identity_number',
+        'event_booking_show_passport_number',
+        'event_booking_require_passport_number',
+        'event_booking_show_identity_card_upload',
+        'event_booking_require_identity_card_upload',
+        'event_booking_show_passport_upload',
+        'event_booking_require_passport_upload',
 
         'kiosk_override_enabled',
         'kiosk_show_email',
@@ -39,6 +45,12 @@ class EventFieldVisibilitySetting extends Model
         'kiosk_require_nationality',
         'kiosk_show_identity_number',
         'kiosk_require_identity_number',
+        'kiosk_show_passport_number',
+        'kiosk_require_passport_number',
+        'kiosk_show_identity_card_upload',
+        'kiosk_require_identity_card_upload',
+        'kiosk_show_passport_upload',
+        'kiosk_require_passport_upload',
     ];
 
     protected $casts = [
@@ -55,6 +67,12 @@ class EventFieldVisibilitySetting extends Model
         'event_booking_require_nationality'    => 'boolean',
         'event_booking_show_identity_number'   => 'boolean',
         'event_booking_require_identity_number' => 'boolean',
+        'event_booking_show_passport_number'   => 'boolean',
+        'event_booking_require_passport_number' => 'boolean',
+        'event_booking_show_identity_card_upload'   => 'boolean',
+        'event_booking_require_identity_card_upload' => 'boolean',
+        'event_booking_show_passport_upload'   => 'boolean',
+        'event_booking_require_passport_upload' => 'boolean',
 
         'kiosk_override_enabled'       => 'boolean',
         'kiosk_show_email'             => 'boolean',
@@ -69,10 +87,19 @@ class EventFieldVisibilitySetting extends Model
         'kiosk_require_nationality'    => 'boolean',
         'kiosk_show_identity_number'   => 'boolean',
         'kiosk_require_identity_number' => 'boolean',
+        'kiosk_show_passport_number'   => 'boolean',
+        'kiosk_require_passport_number' => 'boolean',
+        'kiosk_show_identity_card_upload'   => 'boolean',
+        'kiosk_require_identity_card_upload' => 'boolean',
+        'kiosk_show_passport_upload'   => 'boolean',
+        'kiosk_require_passport_upload' => 'boolean',
     ];
 
     // The attendee fields governed by this setting, in display order.
-    public const FIELDS = ['email', 'phone', 'date_of_birth', 'gender', 'nationality', 'identity_number'];
+    public const FIELDS = [
+        'email', 'phone', 'date_of_birth', 'gender', 'nationality', 'identity_number',
+        'passport_number', 'identity_card_upload', 'passport_upload',
+    ];
 
     public function event()
     {

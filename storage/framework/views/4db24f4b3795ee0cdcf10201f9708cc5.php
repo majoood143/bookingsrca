@@ -97,6 +97,10 @@
                 <div class="stat-label"><?php echo e(__('financial_report.stats.balance_due', [], $locale)); ?></div>
             </div>
             <div class="stat-card">
+                <div class="stat-value"><?php echo e($fmt($totalRefunded)); ?></div>
+                <div class="stat-label"><?php echo e(__('financial_report.stats.total_refunded', [], $locale)); ?></div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-value"><?php echo e($totalBookings); ?></div>
                 <div class="stat-label"><?php echo e(__('financial_report.stats.total_bookings', [], $locale)); ?></div>
             </div>

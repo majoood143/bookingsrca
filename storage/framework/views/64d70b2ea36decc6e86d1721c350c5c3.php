@@ -97,6 +97,10 @@
                 <div class="stat-value"><?php echo e($checkedInCount); ?></div>
                 <div class="stat-label"><?php echo e(__('reports.stats.checked_in', [], $locale)); ?></div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value"><?php echo e($refundedCount); ?></div>
+                <div class="stat-label"><?php echo e(__('reports.stats.refunded', [], $locale)); ?></div>
+            </div>
         </div>
         <div class="stats-grid">
             <div class="stat-card">
@@ -126,6 +130,7 @@
                     <th class="text-center"><?php echo e(__('reports.columns.pending', [], $locale)); ?></th>
                     <th class="text-center"><?php echo e(__('reports.columns.cancelled', [], $locale)); ?></th>
                     <th class="text-center"><?php echo e(__('reports.columns.checked_in', [], $locale)); ?></th>
+                    <th class="text-center"><?php echo e(__('reports.columns.refunded', [], $locale)); ?></th>
                     <th class="text-center"><?php echo e(__('reports.columns.attendees', [], $locale)); ?></th>
                     <th class="text-end"><?php echo e(__('reports.columns.revenue', [], $locale)); ?></th>
                 </tr>
@@ -139,6 +144,7 @@
                         <td class="text-center"><?php echo e($row['pending']); ?></td>
                         <td class="text-center"><?php echo e($row['cancelled']); ?></td>
                         <td class="text-center"><?php echo e($row['checked_in']); ?></td>
+                        <td class="text-center"><?php echo e($row['refunded']); ?></td>
                         <td class="text-center"><?php echo e($row['attendees']); ?></td>
                         <td class="text-end"><?php echo $fmt($row['revenue']); ?></td>
                     </tr>

@@ -121,6 +121,7 @@ class BookingSetting extends Model
             'module_extra_services_enabled',
             'module_private_events_enabled',
             'module_promo_codes_enabled',
+            'module_expenses_enabled',
         ];
     }
 }

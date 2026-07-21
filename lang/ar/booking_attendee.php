@@ -25,6 +25,9 @@ return [
         'gender'            => 'الجنس',
         'nationality'       => 'الجنسية',
         'identity_number'   => 'رقم الهوية',
+        'passport_number'   => 'رقم جواز السفر',
+        'identity_card_upload' => 'صورة بطاقة الهوية مرفوعة',
+        'passport_upload'   => 'صورة جواز السفر مرفوعة',
         'ticket_number'     => 'رقم التذكرة',
         'ticket_type'       => 'نوع التذكرة',
         'ticket_price'      => 'سعر التذكرة',
@@ -64,6 +67,8 @@ return [
         'resend_ticket'     => 'إعادة إرسال التذكرة',
         'download_ticket'   => 'تحميل التذكرة',
         'print_ticket'      => 'طباعة التذكرة',
+        'download_identity_card' => 'تحميل بطاقة الهوية',
+        'download_passport'      => 'تحميل جواز السفر',
         'check_in'          => 'تسجيل الدخول',
         'undo_check_in'     => 'إلغاء تسجيل الدخول',
         'view_booking'      => 'عرض الحجز',
@@ -114,6 +119,8 @@ return [
     'tooltips' => [
         'resend_ticket'   => 'إعادة إرسال بريد التذكرة لهذا الزائر',
         'download_ticket' => 'تحميل تذكرة PDF',
+        'download_identity_card' => 'تحميل صورة بطاقة الهوية المرفوعة',
+        'download_passport'      => 'تحميل صورة جواز السفر المرفوعة',
         'check_in'        => 'تسجيل دخول الزائر',
     ],
 

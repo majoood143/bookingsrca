@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\KioskCard;
 use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\KioskCard;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class KioskCardPolicy
 {
     use HandlesAuthorization;
-
+    
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:KioskCard');
@@ -71,4 +71,5 @@ class KioskCardPolicy
     {
         return $authUser->can('Reorder:KioskCard');
     }
+
 }

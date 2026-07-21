@@ -174,6 +174,7 @@
         .status-confirmed { background: #d1fae5; color: #065f46; }
         .status-cancelled { background: #fee2e2; color: #991b1b; }
         .status-checked_in { background: #dbeafe; color: #1e40af; }
+        .status-refunded { background: #e5e7eb; color: #374151; }
 
         .attendees-table {
             width: 100%;
@@ -297,7 +298,7 @@
                 <div class="info-label">Status:</div>
                 <div class="info-value">
                     <span class="status-badge status-<?php echo e($booking->status); ?>">
-                        <?php echo e(ucfirst($booking->status)); ?>
+                        <?php echo e(__('booking.options.status.' . $booking->status)); ?>
 
                     </span>
                 </div>

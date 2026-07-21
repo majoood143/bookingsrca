@@ -142,7 +142,23 @@ class AttendeeCheckIn extends Page implements HasForms
 
     protected function loadBooking(Booking $booking): void
     {
-        $this->booking = $booking->load(['event', 'timeSlot', 'ticketType', 'attendees.ticketType']);
+        $booking->load(['event', 'timeSlot', 'ticketType', 'attendees.ticketType']);
+
+        if ($booking->status === 'refunded') {
+            $this->booking = null;
+            $this->candidateBookings = null;
+
+            Notification::make()
+                ->danger()
+                ->title(__('attendee_check_in.notifications.refunded_title'))
+                ->body(__('attendee_check_in.notifications.refunded_body', ['reference' => $booking->booking_reference]))
+                ->persistent()
+                ->send();
+
+            return;
+        }
+
+        $this->booking = $booking;
         $this->candidateBookings = null;
     }
 

@@ -3,8 +3,6 @@
     $switchSeconds = (int) ($signage->language_switch_seconds ?? 0);
 ?>
 
-<style>[x-cloak] { display: none !important; }</style>
-
 <div
     class="min-h-screen w-full relative bg-cover bg-center"
     <?php if($signage->background_image_path): ?>
@@ -14,6 +12,9 @@
     <?php endif; ?>
     wire:poll.30s="refreshData"
 >
+    
+    <style>[x-cloak] { display: none !important; }</style>
+
     
     <div
         class="contents"

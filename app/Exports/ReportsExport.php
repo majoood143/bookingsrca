@@ -67,6 +67,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             __('reports.export.headings.attendees'),
             __('reports.export.headings.confirmed_at'),
             __('reports.export.headings.cancelled_at'),
+            __('reports.export.headings.refunded_at'),
             __('reports.export.headings.created_at'),
         ];
     }
@@ -97,6 +98,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $attendeeNames,
             $booking->confirmed_at?->format('Y-m-d H:i') ?? '',
             $booking->cancelled_at?->format('Y-m-d H:i') ?? '',
+            $booking->refunded_at?->format('Y-m-d H:i') ?? '',
             $booking->created_at?->format('Y-m-d H:i') ?? '',
         ];
     }

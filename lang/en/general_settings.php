@@ -78,6 +78,8 @@ return [
         'module_private_events_enabled_helper' => 'Allows events to be created with private, password-protected access.',
         'module_promo_codes_enabled' => 'Promo Codes Module',
         'module_promo_codes_enabled_helper' => 'Allows customers to apply promo codes for a discount at checkout.',
+        'module_expenses_enabled' => 'Expenses Module',
+        'module_expenses_enabled_helper' => 'Enables expense and expense category tracking, and the Expenses tab on bookings.',
     ],
 
     'notifications' => [

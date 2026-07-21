@@ -642,13 +642,14 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                                     
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showDateOfBirth || $showGender || $showNationality || $showIdentityNumber): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showDateOfBirth || $showGender || $showNationality || $showIdentityNumber || $showPassportNumber): ?>
                                         <?php
                                             $optCount = collect([
                                                 $showDateOfBirth,
                                                 $showGender,
                                                 $showNationality,
                                                 $showIdentityNumber,
+                                                $showPassportNumber,
                                             ])
                                                 ->filter()
                                                 ->count();
@@ -784,6 +785,110 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                                         class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             <?php echo e($errors->has("attendees.$i.identity_number") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
                                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.identity_number"];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                        <p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p>
+                                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                </div>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showPassportNumber): ?>
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        <?php echo e(__('event_booking.step5.passport_number')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requirePassportNumber): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </label>
+                                                    <input type="text"
+                                                        wire:model="attendees.<?php echo e($i); ?>.passport_number"
+                                                        placeholder="<?php echo e(__('booking.placeholders.passport_number')); ?>"
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            <?php echo e($errors->has("attendees.$i.passport_number") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.passport_number"];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                        <p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p>
+                                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                </div>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        </div>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                                    
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showIdentityCardUpload || $showPassportUpload): ?>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showIdentityCardUpload): ?>
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        <?php echo e(__('event_booking.step5.identity_card_upload')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requireIdentityCardUpload): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </label>
+                                                    <input type="file" accept="image/*"
+                                                        wire:model="attendees.<?php echo e($i); ?>.identity_card_upload"
+                                                        class="w-full px-3 py-2 border rounded-xl text-gray-900 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:text-sm file:font-medium file:cursor-pointer hover:file:bg-brand-hover focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            <?php echo e($errors->has("attendees.$i.identity_card_upload") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
+                                                    <div wire:loading wire:target="attendees.<?php echo e($i); ?>.identity_card_upload"
+                                                        class="text-xs text-gray-400 mt-1">
+                                                        <?php echo e(__('event_booking.step5.uploading')); ?>
+
+                                                    </div>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($attendee['identity_card_upload']) && is_object($attendee['identity_card_upload'])): ?>
+                                                        <p class="text-xs text-green-600 mt-1">
+                                                            <?php echo e(__('event_booking.step5.file_selected', ['name' => $attendee['identity_card_upload']->getClientOriginalName()])); ?>
+
+                                                        </p>
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.identity_card_upload"];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                        <p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p>
+                                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                </div>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showPassportUpload): ?>
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        <?php echo e(__('event_booking.step5.passport_upload')); ?>
+
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($requirePassportUpload): ?>
+                                                            <span class="text-red-500">*</span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </label>
+                                                    <input type="file" accept="image/*"
+                                                        wire:model="attendees.<?php echo e($i); ?>.passport_upload"
+                                                        class="w-full px-3 py-2 border rounded-xl text-gray-900 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:text-sm file:font-medium file:cursor-pointer hover:file:bg-brand-hover focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            <?php echo e($errors->has("attendees.$i.passport_upload") ? 'border-red-400 bg-red-50' : 'border-gray-300'); ?>">
+                                                    <div wire:loading wire:target="attendees.<?php echo e($i); ?>.passport_upload"
+                                                        class="text-xs text-gray-400 mt-1">
+                                                        <?php echo e(__('event_booking.step5.uploading')); ?>
+
+                                                    </div>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($attendee['passport_upload']) && is_object($attendee['passport_upload'])): ?>
+                                                        <p class="text-xs text-green-600 mt-1">
+                                                            <?php echo e(__('event_booking.step5.file_selected', ['name' => $attendee['passport_upload']->getClientOriginalName()])); ?>
+
+                                                        </p>
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ["attendees.$i.passport_upload"];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }

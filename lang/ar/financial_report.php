@@ -50,6 +50,7 @@ return [
         'total_revenue'  => 'إجمالي الإيرادات',
         'total_paid'     => 'إجمالي المدفوع',
         'balance_due'    => 'المبلغ المتبقي',
+        'total_refunded' => 'إجمالي المسترد',
         'total_bookings' => 'إجمالي الحجوزات',
         'avg_booking'    => 'متوسط قيمة الحجز',
     ],

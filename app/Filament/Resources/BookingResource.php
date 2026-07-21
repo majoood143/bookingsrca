@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\CheckboxList;
@@ -540,6 +541,7 @@ class BookingResource extends Resource
                         'success' => 'confirmed',
                         'danger'  => 'cancelled',
                         'primary' => 'checked_in',
+                        'gray'    => 'refunded',
                     ]),
 
                 BadgeColumn::make('source')
@@ -719,7 +721,7 @@ class BookingResource extends Resource
                                 'booking-' . $record->booking_reference . '.pdf'
                             );
                         })
-                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
+                        ->disabled(fn(Booking $record) => in_array($record->status, ['cancelled', 'refunded']))
                         ->tooltip(__('booking.tooltips.download_pdf')),
 
                     Action::make('print_receipt')
@@ -742,7 +744,7 @@ class BookingResource extends Resource
                                     ->send();
                             }
                         })
-                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
+                        ->disabled(fn(Booking $record) => in_array($record->status, ['cancelled', 'refunded']))
                         ->tooltip(__('booking.tooltips.print_receipt')),
 
                     Action::make('print_tickets')
@@ -765,7 +767,7 @@ class BookingResource extends Resource
                                     ->send();
                             }
                         })
-                        ->disabled(fn(Booking $record) => $record->status === 'cancelled')
+                        ->disabled(fn(Booking $record) => in_array($record->status, ['cancelled', 'refunded']))
                         ->tooltip(__('booking.tooltips.print_tickets')),
 
                     Action::make('view_attendees')
@@ -843,6 +845,27 @@ class BookingResource extends Resource
                         })
                         ->requiresConfirmation()
                         ->visible(fn(Booking $record) => in_array($record->status, ['pending', 'confirmed'])),
+
+                    Action::make('refund')
+                        ->label(__('booking.actions.refund'))
+                        ->icon('heroicon-o-receipt-refund')
+                        ->color('gray')
+                        ->schema([
+                            Textarea::make('reason')
+                                ->label(__('booking.modals.refund_reason'))
+                                ->rows(2),
+                        ])
+                        ->action(function (Booking $record, array $data) {
+                            $record->refund($data['reason'] ?? null);
+                            Notification::make()
+                                ->success()
+                                ->title(__('booking.notifications.booking_refunded'))
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading(__('booking.modals.refund_heading'))
+                        ->modalDescription(__('booking.modals.refund_description'))
+                        ->visible(fn(Booking $record) => $record->status === 'confirmed' && (auth()->user()?->can('refund', $record) ?? false)),
                 ])
                     ->label(__('booking.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
@@ -887,9 +910,12 @@ class BookingResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
+        return array_filter([
             BookingResource\RelationManagers\PaymentsRelationManager::class,
-        ];
+            (bool) \App\Models\BookingSetting::get('module_expenses_enabled', true)
+                ? BookingResource\RelationManagers\ExpensesRelationManager::class
+                : null,
+        ]);
     }
 
     public static function getNavigationBadge(): ?string

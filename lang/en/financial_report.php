@@ -50,6 +50,7 @@ return [
         'total_revenue'   => 'Total Revenue',
         'total_paid'      => 'Total Paid',
         'balance_due'     => 'Balance Due',
+        'total_refunded'  => 'Total Refunded',
         'total_bookings'  => 'Total Bookings',
         'avg_booking'     => 'Average Booking Value',
     ],

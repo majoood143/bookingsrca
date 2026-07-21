@@ -165,6 +165,14 @@ class FinancialReport extends Page implements HasForms
         $totalBookings = $bookings->count();
         $avgBooking = $totalBookings > 0 ? $totalRevenue / $totalBookings : 0;
 
+        $totalRefunded = (float) Booking::query()
+            ->where('status', 'refunded')
+            ->whereBetween('event_date', [$from->toDateString(), $to->toDateString()])
+            ->when($eventId, fn($q) => $q->where('event_id', $eventId))
+            ->when($eventDate, fn($q) => $q->where('event_date', $eventDate))
+            ->when($timeSlotId, fn($q) => $q->where('time_slot_id', $timeSlotId))
+            ->sum('total_price');
+
         $byTicket = $bookings->groupBy('ticket_type_id')->map(function ($group) use ($locale) {
             $first = $group->first();
             return [
@@ -214,6 +222,7 @@ class FinancialReport extends Page implements HasForms
             'totalRevenue' => $totalRevenue,
             'totalPaid' => $totalPaid,
             'balanceDue' => $balanceDue,
+            'totalRefunded' => $totalRefunded,
             'totalBookings' => $totalBookings,
             'avgBooking' => $avgBooking,
             'byTicket' => $byTicket,
@@ -291,6 +300,7 @@ class FinancialReport extends Page implements HasForms
                         fputcsv($out, [__('financial_report.stats.total_revenue', [], $locale), number_format($report['totalRevenue'], 3) . ' ' . $currency]);
                         fputcsv($out, [__('financial_report.stats.total_paid', [], $locale), number_format($report['totalPaid'], 3) . ' ' . $currency]);
                         fputcsv($out, [__('financial_report.stats.balance_due', [], $locale), number_format($report['balanceDue'], 3) . ' ' . $currency]);
+                        fputcsv($out, [__('financial_report.stats.total_refunded', [], $locale), number_format($report['totalRefunded'], 3) . ' ' . $currency]);
                         fputcsv($out, [__('financial_report.stats.total_bookings', [], $locale), $report['totalBookings']]);
                         fputcsv($out, [__('financial_report.stats.avg_booking', [], $locale), number_format($report['avgBooking'], 3) . ' ' . $currency]);
                         fputcsv($out, []);

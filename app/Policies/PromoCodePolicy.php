@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\PromoCode;
 use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\PromoCode;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PromoCodePolicy
 {
     use HandlesAuthorization;
-
+    
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:PromoCode');
@@ -71,4 +71,5 @@ class PromoCodePolicy
     {
         return $authUser->can('Reorder:PromoCode');
     }
+
 }

@@ -25,6 +25,9 @@ return [
         'gender'            => 'Gender',
         'nationality'       => 'Nationality',
         'identity_number'   => 'Identity Number',
+        'passport_number'   => 'Passport Number',
+        'identity_card_upload' => 'Identity Card Uploaded',
+        'passport_upload'   => 'Passport Uploaded',
         'ticket_number'     => 'Ticket Number',
         'ticket_type'       => 'Ticket Type',
         'ticket_price'      => 'Ticket Price',
@@ -64,6 +67,8 @@ return [
         'resend_ticket'     => 'Resend Ticket',
         'download_ticket'   => 'Download Ticket',
         'print_ticket'      => 'Print Ticket',
+        'download_identity_card' => 'Download Identity Card',
+        'download_passport'      => 'Download Passport',
         'check_in'          => 'Check In',
         'undo_check_in'     => 'Undo Check-In',
         'view_booking'      => 'View Booking',
@@ -114,6 +119,8 @@ return [
     'tooltips' => [
         'resend_ticket'   => 'Resend ticket email to this attendee',
         'download_ticket' => 'Download the PDF ticket',
+        'download_identity_card' => 'Download the uploaded identity card scan',
+        'download_passport'      => 'Download the uploaded passport scan',
         'check_in'        => 'Mark attendee as checked in',
     ],
 

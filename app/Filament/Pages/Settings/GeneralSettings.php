@@ -82,6 +82,7 @@ class GeneralSettings extends Page implements HasForms
             'module_extra_services_enabled' => (bool) BookingSetting::get('module_extra_services_enabled', true),
             'module_private_events_enabled' => (bool) BookingSetting::get('module_private_events_enabled', true),
             'module_promo_codes_enabled' => (bool) BookingSetting::get('module_promo_codes_enabled', true),
+            'module_expenses_enabled' => (bool) BookingSetting::get('module_expenses_enabled', true),
         ]);
     }
 
@@ -318,6 +319,10 @@ class GeneralSettings extends Page implements HasForms
                                         Toggle::make('module_promo_codes_enabled')
                                             ->label(__('general_settings.fields.module_promo_codes_enabled'))
                                             ->helperText(__('general_settings.fields.module_promo_codes_enabled_helper')),
+
+                                        Toggle::make('module_expenses_enabled')
+                                            ->label(__('general_settings.fields.module_expenses_enabled'))
+                                            ->helperText(__('general_settings.fields.module_expenses_enabled_helper')),
                                     ]),
                             ]),
                     ])
@@ -365,6 +370,7 @@ class GeneralSettings extends Page implements HasForms
             'module_extra_services_enabled',
             'module_private_events_enabled',
             'module_promo_codes_enabled',
+            'module_expenses_enabled',
         ] as $key) {
             BookingSetting::set($key, !empty($state[$key]) ? 'true' : 'false');
         }

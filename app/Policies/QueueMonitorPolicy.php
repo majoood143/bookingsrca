@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use Illuminate\Foundation\Auth\User as AuthUser;
+use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class QueueMonitorPolicy
 {
     use HandlesAuthorization;
-
+    
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:QueueMonitor');
@@ -71,4 +71,5 @@ class QueueMonitorPolicy
     {
         return $authUser->can('Reorder:QueueMonitor');
     }
+
 }

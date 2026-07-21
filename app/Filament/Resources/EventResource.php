@@ -214,6 +214,39 @@ class EventResource extends Resource
                                     ->columns(1)
                                     ->collapsible(),
 
+                                Section::make(__('event.sections.booking_cutoff'))
+                                    ->description(__('event.sections.booking_cutoff_desc'))
+                                    ->schema([
+                                        Toggle::make('booking_cutoff_enabled')
+                                            ->label(__('event.fields.booking_cutoff_enabled'))
+                                            ->helperText(__('event.fields.booking_cutoff_enabled_helper'))
+                                            ->default(false)
+                                            ->live()
+                                            ->columnSpanFull(),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('booking_cutoff_value')
+                                                    ->label(__('event.fields.booking_cutoff_value'))
+                                                    ->numeric()
+                                                    ->minValue(1)
+                                                    ->required(fn (Get $get) => $get('booking_cutoff_enabled')),
+
+                                                Select::make('booking_cutoff_unit')
+                                                    ->label(__('event.fields.booking_cutoff_unit'))
+                                                    ->options([
+                                                        'hours'   => __('event.options.booking_cutoff_units.hours'),
+                                                        'minutes' => __('event.options.booking_cutoff_units.minutes'),
+                                                    ])
+                                                    ->default('hours')
+                                                    ->native(false)
+                                                    ->required(fn (Get $get) => $get('booking_cutoff_enabled')),
+                                            ])
+                                            ->visible(fn (Get $get) => $get('booking_cutoff_enabled')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
+
                                 Section::make(__('event.sections.recurring'))
                                     ->description(__('event.sections.recurring_desc'))
                                     ->schema([
@@ -549,12 +582,15 @@ class EventResource extends Resource
     protected static function fieldVisibilityFieldset(string $prefix): array
     {
         $fields = [
-            'email'           => __('event.fields.field_email'),
-            'phone'           => __('event.fields.field_phone'),
-            'date_of_birth'   => __('event.fields.field_date_of_birth'),
-            'gender'          => __('event.fields.field_gender'),
-            'nationality'     => __('event.fields.field_nationality'),
-            'identity_number' => __('event.fields.field_identity_number'),
+            'email'                => __('event.fields.field_email'),
+            'phone'                => __('event.fields.field_phone'),
+            'date_of_birth'        => __('event.fields.field_date_of_birth'),
+            'gender'               => __('event.fields.field_gender'),
+            'nationality'          => __('event.fields.field_nationality'),
+            'identity_number'      => __('event.fields.field_identity_number'),
+            'passport_number'      => __('event.fields.field_passport_number'),
+            'identity_card_upload' => __('event.fields.field_identity_card_upload'),
+            'passport_upload'      => __('event.fields.field_passport_upload'),
         ];
 
         return collect($fields)

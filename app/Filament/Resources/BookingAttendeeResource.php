@@ -33,6 +33,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use App\Exports\BookingAttendeesExport;
 use Mpdf\Tag\Columns;
@@ -102,6 +103,28 @@ class BookingAttendeeResource extends Resource
                         TextEntry::make('identity_number')
                             ->label(__('booking_attendee.fields.identity_number'))
                             ->placeholder('—'),
+
+                        TextEntry::make('passport_number')
+                            ->label(__('booking_attendee.fields.passport_number'))
+                            ->placeholder('—'),
+
+                        IconEntry::make('has_identity_card_upload')
+                            ->label(__('booking_attendee.fields.identity_card_upload'))
+                            ->getStateUsing(fn (BookingAttendee $record) => $record->hasIdentityCardUpload())
+                            ->boolean()
+                            ->trueIcon('heroicon-o-document-check')
+                            ->falseIcon('heroicon-o-document')
+                            ->trueColor('success')
+                            ->falseColor('gray'),
+
+                        IconEntry::make('has_passport_upload')
+                            ->label(__('booking_attendee.fields.passport_upload'))
+                            ->getStateUsing(fn (BookingAttendee $record) => $record->hasPassportUpload())
+                            ->boolean()
+                            ->trueIcon('heroicon-o-document-check')
+                            ->falseIcon('heroicon-o-document')
+                            ->trueColor('success')
+                            ->falseColor('gray'),
                     ]),
 
                 Section::make(__('booking_attendee.sections.ticket_info'))
@@ -496,6 +519,26 @@ class BookingAttendeeResource extends Resource
                         ->visible(fn(BookingAttendee $record) => filled($record->pdf_path))
                         ->tooltip(__('booking_attendee.tooltips.download_ticket')),
 
+                    Action::make('download_identity_card')
+                        ->label(__('booking_attendee.actions.download_identity_card'))
+                        ->icon('heroicon-o-identification')
+                        ->color('info')
+                        ->action(fn (BookingAttendee $record) => response()->download(
+                            Storage::disk('local')->path($record->identity_card_path),
+                        ))
+                        ->visible(fn (BookingAttendee $record) => $record->hasIdentityCardUpload())
+                        ->tooltip(__('booking_attendee.tooltips.download_identity_card')),
+
+                    Action::make('download_passport')
+                        ->label(__('booking_attendee.actions.download_passport'))
+                        ->icon('heroicon-o-globe-alt')
+                        ->color('info')
+                        ->action(fn (BookingAttendee $record) => response()->download(
+                            Storage::disk('local')->path($record->passport_path),
+                        ))
+                        ->visible(fn (BookingAttendee $record) => $record->hasPassportUpload())
+                        ->tooltip(__('booking_attendee.tooltips.download_passport')),
+
                     Action::make('check_in')
                         ->label(fn(BookingAttendee $record) => $record->checked_in
                             ? __('booking_attendee.actions.undo_check_in')
@@ -545,7 +588,8 @@ class BookingAttendeeResource extends Resource
                 BulkActionGroup::make([
                     ExportBulkAction::make()
                         ->exports([
-                            BookingAttendeesExport::make(),
+                            BookingAttendeesExport::make()
+                                ->queue(),
                         ]),
 
                     BulkAction::make('bulk_resend_tickets')

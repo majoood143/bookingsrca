@@ -63,6 +63,7 @@ return [
         'almost_full'     => 'يكاد يمتلئ',
         'available'       => 'متاح',
         'spots_remaining' => 'مقاعد متبقية',
+        'booking_closed'  => 'عذرًا، أُغلق الحجز لهذه الفعالية :time.',
     ],
 
     // ── Step 3 — Tickets ──────────────────────────────────────────────────────
@@ -120,6 +121,11 @@ return [
         'nationality'            => 'الجنسية',
         'nationality_no_results' => 'لم يتم العثور على دول',
         'identity_number'        => 'رقم الهوية',
+        'passport_number'        => 'رقم جواز السفر',
+        'identity_card_upload'   => 'رفع صورة بطاقة الهوية',
+        'passport_upload'        => 'رفع صورة جواز السفر',
+        'uploading'              => 'جارٍ الرفع...',
+        'file_selected'          => 'الملف المحدد: :name',
         'terms_heading'          => 'الشروط والأحكام',
         'terms_agree'            => 'لقد قرأت وأوافق على',
         'terms_required'         => 'يجب الموافقة على الشروط والأحكام للمتابعة.',
@@ -265,6 +271,7 @@ return [
         'booked_on'         => 'تم الحجز في',
         'support_note'      => 'لأي استفسارات، يرجى التواصل مع فريق دعم الفعالية.',
         'all_rights'        => 'جميع الحقوق محفوظة.',
+        'refunded'          => 'مسترد',
     ],
 
 ];

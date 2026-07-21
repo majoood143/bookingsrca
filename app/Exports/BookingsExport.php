@@ -2,87 +2,71 @@
 
 namespace App\Exports;
 
-use App\Models\Booking;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use pxlrbt\FilamentExcel\Columns\Column;
 
-class BookingsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class BookingsExport extends ExcelExport
 {
-    protected $bookingIds;
-
-    public function __construct($bookingIds = null)
+    public function setUp(): void
     {
-        $this->bookingIds = $bookingIds;
-    }
+        $this->useTableQuery();
 
-    public function collection()
-    {
-        $query = Booking::with(['event', 'attendees', 'timeSlot', 'ticketType', 'extraServices']);
-        
-        if ($this->bookingIds) {
-            $query->whereIn('id', $this->bookingIds);
-        }
-        
-        return $query->get();
-    }
+        $this->withColumns([
+            Column::make('booking_reference')
+                ->heading(__('booking.columns.reference')),
 
-    public function headings(): array
-    {
-        return [
-            'Booking Reference',
-            'Status',
-            'Attendee Name',
-            'Email',
-            'Phone',
-            'Event Title',
-            'Event Date',
-            'Time Slot',
-            'Ticket Type',
-            'Quantity',
-            'Ticket Price',
-            'Services Price',
-            'Total Price',
-            'Extra Services',
-            'Booked At',
-            'Confirmed At',
-        ];
-    }
+            Column::make('status')
+                ->heading(__('booking.fields.status'))
+                ->formatStateUsing(fn($state) => __('booking.options.status')[$state] ?? $state),
 
-    public function map($booking): array
-    {
-        $extraServices = $booking->extraServices
-            ->map(fn($service) => $service->getTranslation('name', 'en'))
-            ->join(', ');
+            Column::make('attendee_name')
+                ->heading(__('booking.columns.attendee_phone'))
+                ->getStateUsing(fn($record) => $record->firstAttendee?->getFullName()),
 
-        $attendee = $booking->attendees->first();
+            Column::make('attendee_email')
+                ->heading(__('booking.columns.attendee_email'))
+                ->getStateUsing(fn($record) => $record->firstAttendee?->email),
 
-        return [
-            $booking->booking_reference,
-            ucfirst($booking->status),
-            $attendee?->getFullName(),
-            $attendee?->email,
-            $attendee?->phone,
-            $booking->event->getTranslation('title', 'en'),
-            $booking->event_date->format('Y-m-d'),
-            $booking->timeSlot->getTimeRange(),
-            $booking->ticketType->getTranslation('name', 'en'),
-            $booking->quantity,
-            number_format($booking->ticket_price, 2),
-            number_format($booking->services_price, 2),
-            number_format($booking->total_price, 2),
-            $extraServices ?: 'None',
-            $booking->created_at->format('Y-m-d H:i:s'),
-            $booking->confirmed_at ? $booking->confirmed_at->format('Y-m-d H:i:s') : 'Not confirmed',
-        ];
-    }
+            Column::make('attendee_phone')
+                ->heading(__('booking.fields.phone'))
+                ->getStateUsing(fn($record) => $record->firstAttendee?->phone),
 
-    public function styles(Worksheet $sheet)
-    {
-        return [
-            1 => ['font' => ['bold' => true]],
-        ];
+            Column::make('event')
+                ->heading(__('booking.columns.event'))
+                ->getStateUsing(fn($record) => $record->event?->getTranslation('title', 'en')),
+
+            Column::make('event_date')
+                ->heading(__('booking.columns.date'))
+                ->formatStateUsing(fn($state) => $state?->format('Y-m-d')),
+
+            Column::make('time_slot')
+                ->heading(__('booking.columns.time'))
+                ->getStateUsing(fn($record) => $record->timeSlot?->getTimeRange()),
+
+            Column::make('attendees_count')
+                ->heading(__('booking.columns.attendees'))
+                ->getStateUsing(fn($record) => $record->attendees->count()),
+
+            Column::make('ticket_price')
+                ->heading(__('booking.fields.ticket_price')),
+
+            Column::make('services_price')
+                ->heading(__('booking.fields.services_price')),
+
+            Column::make('total_price')
+                ->heading(__('booking.columns.total')),
+
+            Column::make('source')
+                ->heading(__('booking.columns.source'))
+                ->formatStateUsing(fn($state) => __('booking.options.source')[$state] ?? $state),
+
+            Column::make('created_by')
+                ->heading(__('booking.columns.created_by'))
+                ->getStateUsing(fn($record) => $record->createdBy?->name),
+
+            Column::make('created_at')
+                ->heading(__('booking.columns.booked_at'))
+                ->formatStateUsing(fn($state) => $state?->format('Y-m-d H:i')),
+        ]);
     }
 }

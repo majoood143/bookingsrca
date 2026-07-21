@@ -63,6 +63,7 @@ return [
         'almost_full'      => 'Almost Full',
         'available'        => 'Available',
         'spots_remaining'  => 'spots remaining',
+        'booking_closed'   => 'Sorry, bookings for this event closed :time.',
     ],
 
     // ── Step 3 — Tickets ──────────────────────────────────────────────────────
@@ -120,6 +121,11 @@ return [
         'nationality'          => 'Nationality',
         'nationality_no_results' => 'No countries found',
         'identity_number'      => 'Identity Number',
+        'passport_number'      => 'Passport Number',
+        'identity_card_upload' => 'Identity Card Upload',
+        'passport_upload'      => 'Passport Upload',
+        'uploading'            => 'Uploading...',
+        'file_selected'        => 'Selected: :name',
         'terms_heading'        => 'Terms & Conditions',
         'terms_agree'          => 'I have read and agree to the',
         'terms_required'       => 'You must agree to the terms and conditions to proceed.',
@@ -265,6 +271,7 @@ return [
         'booked_on'         => 'Booked on',
         'support_note'      => 'For questions, please contact event support.',
         'all_rights'        => 'All rights reserved.',
+        'refunded'          => 'Refunded',
     ],
 
 ];

@@ -47,6 +47,7 @@ class FinancialReportExport implements FromArray, WithStyles, WithTitle, ShouldA
         $add([__('financial_report.stats.total_revenue', [], $this->locale), number_format($this->report['totalRevenue'], 3) . ' ' . $this->currency]);
         $add([__('financial_report.stats.total_paid', [], $this->locale), number_format($this->report['totalPaid'], 3) . ' ' . $this->currency]);
         $add([__('financial_report.stats.balance_due', [], $this->locale), number_format($this->report['balanceDue'], 3) . ' ' . $this->currency]);
+        $add([__('financial_report.stats.total_refunded', [], $this->locale), number_format($this->report['totalRefunded'], 3) . ' ' . $this->currency]);
         $add([__('financial_report.stats.total_bookings', [], $this->locale), $this->report['totalBookings']]);
         $add([__('financial_report.stats.avg_booking', [], $this->locale), number_format($this->report['avgBooking'], 3) . ' ' . $this->currency]);
         $add([]);

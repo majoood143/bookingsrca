@@ -113,6 +113,9 @@
     <div class="center">
         <img class="logo" src="<?php echo e($logo); ?>" alt="<?php echo e(config('app.name')); ?>">
         <div><span class="badge" dir="ltr"><?php echo e($attendee->ticket_number); ?></span></div>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($booking->status === 'refunded'): ?>
+            <div><span class="badge" style="background:#000;color:#fff;margin-top:10px;"><?php echo e(strtoupper($t('refunded'))); ?></span></div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
     <div class="event-name"><?php echo e($booking->event->getTranslation('title', $locale)); ?></div>

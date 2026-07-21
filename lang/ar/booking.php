@@ -53,6 +53,7 @@ return [
         'gender'      => 'اختر الجنس',
         'nationality' => 'اختر بلدك',
         'identity_number' => 'أدخل رقم الهوية',
+        'passport_number' => 'أدخل رقم جواز السفر',
     ],
 
     'columns' => [
@@ -247,11 +248,13 @@ return [
             'confirmed'  => 'مؤكد',
             'cancelled'  => 'ملغي',
             'checked_in' => 'تم تسجيل الدخول',
+            'refunded'   => 'مسترد',
         ],
     ],
 
     'actions' => [
         'new_booking'      => 'حجز جديد',
+        'export'           => 'تصدير إلى إكسل',
         'resend_tickets'   => 'إعادة إرسال التذاكر',
         'download_pdf'     => 'تحميل PDF',
         'print_receipt'    => 'طباعة الإيصال',
@@ -261,6 +264,8 @@ return [
         'view_gateway_logs' => 'سجلات بوابة الدفع',
         'confirm'          => 'تأكيد',
         'cancel'           => 'إلغاء',
+        'refund'           => 'استرداد',
+        'refund_booking'   => 'استرداد الحجز',
         'confirm_selected' => 'تأكيد المحدد',
         'confirm_booking'  => 'تأكيد الحجز',
         'cancel_booking'   => 'إلغاء الحجز',
@@ -318,6 +323,9 @@ return [
         'resend_tickets_submit'       => 'إرسال التذاكر',
         'delete_heading'              => 'حذف الحجز',
         'delete_description'          => 'هل أنت متأكد؟ سيتم تحرير الطاقة الاستيعابية.',
+        'refund_heading'              => 'استرداد الحجز',
+        'refund_description'          => 'سيتم تعليم الحجز كمسترد، واستبعاده من المبيعات، وإعادة تذاكره إلى المخزون. لا يمكن التراجع عن هذا الإجراء.',
+        'refund_reason'               => 'السبب (اختياري)',
     ],
 
     'notifications' => [
@@ -332,6 +340,7 @@ return [
         'booking_confirmed'    => 'تم تأكيد الحجز',
         'booking_confirmed_body' => 'تم إرسال جميع التذاكر إلى الحاضر الأول في بريد إلكتروني واحد.',
         'booking_cancelled'    => 'تم إلغاء الحجز',
+        'booking_refunded'     => 'تم استرداد الحجز',
         'booking_created'      => 'تم إنشاء الحجز',
         'booking_created_body' => 'تم إرسال جميع التذاكر إلى الحاضر الأول في بريد إلكتروني واحد.',
         'booking_updated'      => 'تم تحديث الحجز بنجاح',
@@ -348,6 +357,7 @@ return [
         'confirmed'  => 'مؤكدة',
         'checked_in' => 'تم تسجيل الدخول',
         'cancelled'  => 'ملغاة',
+        'refunded'   => 'مستردة',
     ],
 
     'ticket_info' => [

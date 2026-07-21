@@ -46,6 +46,9 @@ class Booking extends Model
         'status',
         'confirmed_at',
         'cancelled_at',
+        'refunded_at',
+        'refunded_by',
+        'refund_reason',
         // Note: attendee_id was removed from bookings table by create_booking_attendees migration
         // Attendee info is stored in booking_attendees table instead
         'payment_method',
@@ -65,6 +68,7 @@ class Booking extends Model
         'discount_amount' => 'decimal:2',
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'refunded_at' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -74,6 +78,7 @@ class Booking extends Model
                 'status', 'payment_status', 'payment_method',
                 'quantity', 'ticket_price', 'services_price', 'total_price',
                 'event_date', 'source', 'locale', 'confirmed_at', 'cancelled_at',
+                'refunded_at', 'refund_reason',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
@@ -128,9 +133,19 @@ class Booking extends Model
         return $this->hasMany(BookingPayment::class);
     }
 
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function refundedBy()
+    {
+        return $this->belongsTo(User::class, 'refunded_by');
     }
 
     public function kiosk()
@@ -245,6 +260,25 @@ class Booking extends Model
         $this->update([
             'status' => 'cancelled',
             'cancelled_at' => now(),
+        ]);
+    }
+
+    public function refund(?string $reason = null): void
+    {
+        if ($this->status === 'confirmed') {
+            $this->timeSlot->decrement('current_bookings', $this->quantity);
+            $this->ticketType->decrement('quantity_sold', $this->quantity);
+
+            foreach ($this->extraServices as $service) {
+                $service->decrement('quantity_used', $service->pivot->quantity);
+            }
+        }
+
+        $this->update([
+            'status' => 'refunded',
+            'refunded_at' => now(),
+            'refunded_by' => auth()->id(),
+            'refund_reason' => $reason,
         ]);
     }
 

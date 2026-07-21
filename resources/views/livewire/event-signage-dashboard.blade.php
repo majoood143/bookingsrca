@@ -3,8 +3,6 @@
     $switchSeconds = (int) ($signage->language_switch_seconds ?? 0);
 @endphp
 
-<style>[x-cloak] { display: none !important; }</style>
-
 <div
     class="min-h-screen w-full relative bg-cover bg-center"
     @if($signage->background_image_path)
@@ -14,6 +12,16 @@
     @endif
     wire:poll.30s="refreshData"
 >
+    {{-- This must be the Blade view's ONLY top-level HTML element: Livewire
+    detects the component root by scanning for the outermost tag, and a
+    <style> tag rendered as a sibling before this div got mistaken for the
+    root instead, so Livewire's wire:id/wire:snapshot ended up on the wrong
+    element. That silently broke $wire lookups from any nested x-data (Alpine
+    walks up the DOM for the nearest [wire:snapshot] element and throws if it
+    can't find one), which in turn broke both wire:poll and the countdown's
+    $wire.refreshData() call below. --}}
+    <style>[x-cloak] { display: none !important; }</style>
+
     {{-- x-data intentionally lives on this inner, non-root node (not the
     Livewire component's outer element) so wire:poll refreshes never
     re-trigger x-init and stack duplicate setInterval timers, which was

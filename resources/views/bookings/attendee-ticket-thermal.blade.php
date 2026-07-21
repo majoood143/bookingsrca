@@ -113,6 +113,9 @@
     <div class="center">
         <img class="logo" src="{{ $logo }}" alt="{{ config('app.name') }}">
         <div><span class="badge" dir="ltr">{{ $attendee->ticket_number }}</span></div>
+        @if($booking->status === 'refunded')
+            <div><span class="badge" style="background:#000;color:#fff;margin-top:10px;">{{ strtoupper($t('refunded')) }}</span></div>
+        @endif
     </div>
 
     <div class="event-name">{{ $booking->event->getTranslation('title', $locale) }}</div>

@@ -33,5 +33,7 @@ return [
         'undo_title' => 'Check-in undone',
         'check_in_all_title' => 'All attendees checked in',
         'check_in_all_body' => ':count attendee(s) checked in',
+        'refunded_title' => 'Booking refunded — do not admit',
+        'refunded_body' => 'Booking :reference has been refunded and cannot be checked in.',
     ],
 ];

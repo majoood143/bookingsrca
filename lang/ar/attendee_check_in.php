@@ -33,5 +33,7 @@ return [
         'undo_title' => 'تم التراجع عن تسجيل الحضور',
         'check_in_all_title' => 'تم تسجيل حضور الجميع',
         'check_in_all_body' => 'تم تسجيل حضور :count مشارك',
+        'refunded_title' => 'الحجز مسترد — لا يسمح بالدخول',
+        'refunded_body' => 'تم استرداد الحجز :reference ولا يمكن تسجيل دخوله.',
     ],
 ];

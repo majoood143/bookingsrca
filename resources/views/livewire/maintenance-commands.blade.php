@@ -634,17 +634,17 @@
                 @if ($output)
                     @php $lineCount = substr_count($output, "\n") + 1; @endphp
                     @for ($i = 1; $i <= min($lineCount, 200); $i++)
-                        <span class="font-mono leading-relaxed text-gray-700" style="font-size:11px">{{ $i }}</span>
+                        <span wire:key="log-gutter-{{ $i }}" class="font-mono leading-relaxed text-gray-700" style="font-size:11px">{{ $i }}</span>
                     @endfor
                 @else
-                    <span class="font-mono leading-relaxed text-gray-700" style="font-size:11px">1</span>
+                    <span wire:key="log-gutter-empty" class="font-mono leading-relaxed text-gray-700" style="font-size:11px">1</span>
                 @endif
             </div>
 
             <div class="flex-1 overflow-x-auto overflow-y-auto max-h-[28rem] p-5" id="terminal-output"
-                wire:key="terminal-output-{{ strlen($output) }}">
+                wire:key="terminal-output-{{ md5($output) }}">
                 @if ($output)
-                    @foreach (explode("\n", $output) as $line)
+                    @foreach (explode("\n", $output) as $index => $line)
                         @php
                             $trimmed = ltrim($line);
                             $cls = match(true) {
@@ -657,10 +657,10 @@
                                 default => 'text-gray-300'
                             };
                         @endphp
-                        <div class="font-mono leading-relaxed {{ $cls }}" style="font-size:13px">{!! $line !== '' ? e($line) : '&nbsp;' !!}</div>
+                        <div wire:key="log-line-{{ $index }}" class="font-mono leading-relaxed {{ $cls }}" style="font-size:13px">{!! $line !== '' ? e($line) : '&nbsp;' !!}</div>
                     @endforeach
                 @else
-                    <div class="flex flex-col items-center justify-center h-40 gap-3 select-none">
+                    <div wire:key="log-line-empty" class="flex flex-col items-center justify-center h-40 gap-3 select-none">
                         <x-filament::icon icon="heroicon-o-command-line" class="w-10 h-10 text-gray-700" />
                         <p class="font-mono text-sm text-gray-600">Run a command above — output will appear here.</p>
                     </div>

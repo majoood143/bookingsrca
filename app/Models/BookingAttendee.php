@@ -37,6 +37,9 @@ class BookingAttendee extends Model
         'gender',
         'nationality',
         'identity_number',
+        'passport_number',
+        'identity_card_path',
+        'passport_path',
         'ticket_number',
         'qr_code',
         'pdf_path',
@@ -210,6 +213,19 @@ class BookingAttendee extends Model
     public function getPdfUrl()
     {
         return $this->pdf_path ? asset('storage/' . $this->pdf_path) : null;
+    }
+
+    // Identity card / passport scans live on the private "local" disk (unlike
+    // the public QR code and PDF ticket above) since they're sensitive personal
+    // documents — never expose a direct asset() URL for these.
+    public function hasIdentityCardUpload(): bool
+    {
+        return filled($this->identity_card_path) && Storage::disk('local')->exists($this->identity_card_path);
+    }
+
+    public function hasPassportUpload(): bool
+    {
+        return filled($this->passport_path) && Storage::disk('local')->exists($this->passport_path);
     }
 
     // Send individual ticket email

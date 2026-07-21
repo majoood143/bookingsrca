@@ -574,13 +574,14 @@
                                     @endif
 
                                     {{-- Optional fields --}}
-                                    @if ($showDateOfBirth || $showGender || $showNationality || $showIdentityNumber)
+                                    @if ($showDateOfBirth || $showGender || $showNationality || $showIdentityNumber || $showPassportNumber)
                                         @php
                                             $optCount = collect([
                                                 $showDateOfBirth,
                                                 $showGender,
                                                 $showNationality,
                                                 $showIdentityNumber,
+                                                $showPassportNumber,
                                             ])
                                                 ->filter()
                                                 ->count();
@@ -688,6 +689,82 @@
                                                         class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
                                                             {{ $errors->has("attendees.$i.identity_number") ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
                                                     @error("attendees.$i.identity_number")
+                                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @endif
+                                            @if ($showPassportNumber)
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        {{ __('event_booking.step5.passport_number') }}
+                                                        @if ($requirePassportNumber)
+                                                            <span class="text-red-500">*</span>
+                                                        @endif
+                                                    </label>
+                                                    <input type="text"
+                                                        wire:model="attendees.{{ $i }}.passport_number"
+                                                        placeholder="{{ __('booking.placeholders.passport_number') }}"
+                                                        class="w-full px-4 py-2.5 border rounded-xl text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            {{ $errors->has("attendees.$i.passport_number") ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
+                                                    @error("attendees.$i.passport_number")
+                                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    {{-- Document uploads --}}
+                                    @if ($showIdentityCardUpload || $showPassportUpload)
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            @if ($showIdentityCardUpload)
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        {{ __('event_booking.step5.identity_card_upload') }}
+                                                        @if ($requireIdentityCardUpload)
+                                                            <span class="text-red-500">*</span>
+                                                        @endif
+                                                    </label>
+                                                    <input type="file" accept="image/*"
+                                                        wire:model="attendees.{{ $i }}.identity_card_upload"
+                                                        class="w-full px-3 py-2 border rounded-xl text-gray-900 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:text-sm file:font-medium file:cursor-pointer hover:file:bg-brand-hover focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            {{ $errors->has("attendees.$i.identity_card_upload") ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
+                                                    <div wire:loading wire:target="attendees.{{ $i }}.identity_card_upload"
+                                                        class="text-xs text-gray-400 mt-1">
+                                                        {{ __('event_booking.step5.uploading') }}
+                                                    </div>
+                                                    @if (!empty($attendee['identity_card_upload']) && is_object($attendee['identity_card_upload']))
+                                                        <p class="text-xs text-green-600 mt-1">
+                                                            {{ __('event_booking.step5.file_selected', ['name' => $attendee['identity_card_upload']->getClientOriginalName()]) }}
+                                                        </p>
+                                                    @endif
+                                                    @error("attendees.$i.identity_card_upload")
+                                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @endif
+                                            @if ($showPassportUpload)
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                        {{ __('event_booking.step5.passport_upload') }}
+                                                        @if ($requirePassportUpload)
+                                                            <span class="text-red-500">*</span>
+                                                        @endif
+                                                    </label>
+                                                    <input type="file" accept="image/*"
+                                                        wire:model="attendees.{{ $i }}.passport_upload"
+                                                        class="w-full px-3 py-2 border rounded-xl text-gray-900 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:text-sm file:font-medium file:cursor-pointer hover:file:bg-brand-hover focus:ring-2 focus:ring-brand-hover focus:border-brand-hover outline-none transition
+                                                            {{ $errors->has("attendees.$i.passport_upload") ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
+                                                    <div wire:loading wire:target="attendees.{{ $i }}.passport_upload"
+                                                        class="text-xs text-gray-400 mt-1">
+                                                        {{ __('event_booking.step5.uploading') }}
+                                                    </div>
+                                                    @if (!empty($attendee['passport_upload']) && is_object($attendee['passport_upload']))
+                                                        <p class="text-xs text-green-600 mt-1">
+                                                            {{ __('event_booking.step5.file_selected', ['name' => $attendee['passport_upload']->getClientOriginalName()]) }}
+                                                        </p>
+                                                    @endif
+                                                    @error("attendees.$i.passport_upload")
                                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                                     @enderror
                                                 </div>

@@ -122,6 +122,18 @@
             letter-spacing: 0.5px;
         }
 
+        .refunded-badge {
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-{{ $isAr ? 'right' : 'left' }}: 6px;
+        }
+
         .header-right {
             width: 76px;
             text-align: center;
@@ -396,6 +408,9 @@
                     <div class="event-line">{{ $booking->event->getTranslation('title', 'ar') }} &nbsp;·&nbsp; {{ $dateFormatted }}</div>
                     <div class="event-meta">{{ $t('time') }} <span dir="ltr">{{ $booking->timeSlot->getTimeRange() }}</span> &nbsp;·&nbsp; {{ $t('location') }} {{ $booking->event->getTranslation('location', 'ar') }}</div>
                     <span class="ticket-badge" dir="ltr">{{ $attendee->ticket_number }}</span>
+                    @if($booking->status === 'refunded')
+                        <span class="refunded-badge">{{ strtoupper($t('refunded')) }}</span>
+                    @endif
                 </td>
                 @else
                 <td class="header-left">
@@ -404,6 +419,9 @@
                     <div class="event-line">{{ $booking->event->getTranslation('title', 'en') }} &nbsp;·&nbsp; {{ $dateFormatted }}</div>
                     <div class="event-meta">{{ $t('time') }} {{ $booking->timeSlot->getTimeRange() }} &nbsp;·&nbsp; {{ $t('location') }} {{ $booking->event->getTranslation('location', 'en') }}</div>
                     <span class="ticket-badge">{{ $attendee->ticket_number }}</span>
+                    @if($booking->status === 'refunded')
+                        <span class="refunded-badge">{{ strtoupper($t('refunded')) }}</span>
+                    @endif
                 </td>
                 <td class="header-right" width="76">
                     <img src="{{ $qrCode }}" width="120" height="120" alt="QR">

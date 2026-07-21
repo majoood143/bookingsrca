@@ -97,6 +97,10 @@
                 <div class="stat-label">{{ __('financial_report.stats.balance_due', [], $locale) }}</div>
             </div>
             <div class="stat-card">
+                <div class="stat-value">{{ $fmt($totalRefunded) }}</div>
+                <div class="stat-label">{{ __('financial_report.stats.total_refunded', [], $locale) }}</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-value">{{ $totalBookings }}</div>
                 <div class="stat-label">{{ __('financial_report.stats.total_bookings', [], $locale) }}</div>
             </div>

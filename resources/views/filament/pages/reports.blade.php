@@ -18,7 +18,7 @@
     </p>
 
     {{-- Summary Stats --}}
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-7">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-8">
 
         @php
             $stats = [
@@ -27,6 +27,7 @@
                 ['label' => __('reports.stats.pending'),         'value' => $report['pendingCount'],   'color' => 'bg-amber-100 dark:bg-amber-900/40',    'text' => 'text-amber-700 dark:text-amber-300'],
                 ['label' => __('reports.stats.cancelled'),       'value' => $report['cancelledCount'], 'color' => 'bg-red-100 dark:bg-red-900/40',        'text' => 'text-red-700 dark:text-red-300'],
                 ['label' => __('reports.stats.checked_in'),      'value' => $report['checkedInCount'], 'color' => 'bg-blue-100 dark:bg-blue-900/40',      'text' => 'text-blue-700 dark:text-blue-300'],
+                ['label' => __('reports.stats.refunded'),        'value' => $report['refundedCount'],  'color' => 'bg-gray-100 dark:bg-gray-800',         'text' => 'text-gray-600 dark:text-gray-300'],
                 ['label' => __('reports.stats.total_attendees'), 'value' => $report['totalAttendees'], 'color' => 'bg-purple-100 dark:bg-purple-900/40',  'text' => 'text-purple-700 dark:text-purple-300'],
                 ['label' => __('reports.stats.total_revenue'),   'value' => view('partials.currency-amount', ['amount' => (float)$report['totalRevenue']])->render(), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300', 'html' => true],
             ];
@@ -61,6 +62,7 @@
                             <th class="py-3 px-4 font-semibold text-amber-600 dark:text-amber-400 text-center">{{ __('reports.columns.pending') }}</th>
                             <th class="py-3 px-4 font-semibold text-red-600 dark:text-red-400 text-center">{{ __('reports.columns.cancelled') }}</th>
                             <th class="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400 text-center">{{ __('reports.columns.checked_in') }}</th>
+                            <th class="py-3 px-4 font-semibold text-gray-600 dark:text-gray-300 text-center">{{ __('reports.columns.refunded') }}</th>
                             <th class="py-3 px-4 font-semibold text-gray-600 dark:text-gray-300 text-center">{{ __('reports.columns.attendees') }}</th>
                             <th class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400 text-right">{{ __('reports.columns.revenue') }}</th>
                         </tr>
@@ -88,6 +90,11 @@
                                 <td class="py-3 px-4 text-center">
                                     <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                                         {{ $row['checked_in'] }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                        {{ $row['refunded'] }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['attendees'] }}</td>

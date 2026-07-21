@@ -102,7 +102,7 @@ class NboService
             'errorURL'     => $responseUrl,
             'udf1'         => str_replace('-', '', (string) $booking->booking_reference),
             'udf2'         => preg_replace('/\D+/', '', (string) ($attendee?->phone ?? '')),
-            'udf3'         => (string) ($attendee?->email ?? ''),
+            //'udf3'         => (string) ($attendee?->email ?? ''),
             'billingInfo'  => $this->billingInfo($booking),
         ];
 

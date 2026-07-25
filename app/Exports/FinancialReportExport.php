@@ -74,6 +74,17 @@ class FinancialReportExport implements FromArray, WithStyles, WithTitle, ShouldA
         }
         $add([]);
 
+        $addBold([__('financial_report.sections.by_source', [], $this->locale)]);
+        $addBold([
+            __('financial_report.columns.booking_source', [], $this->locale),
+            __('financial_report.columns.bookings', [], $this->locale),
+            __('financial_report.columns.revenue', [], $this->locale),
+        ]);
+        foreach ($this->report['bySource'] as $row) {
+            $add([$row['label'], $row['bookings'], number_format($row['revenue'], 3) . ' ' . $this->currency]);
+        }
+        $add([]);
+
         $addBold([__('financial_report.sections.by_payment_method', [], $this->locale)]);
         $addBold([
             __('financial_report.columns.payment_method', [], $this->locale),

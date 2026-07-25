@@ -11,6 +11,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Filament\Widgets\BalanceDueBookingsWidget;
 use App\Filament\Widgets\BookingOverviewWidget;
 use App\Filament\Widgets\LowStockAlertsWidget;
 use App\Filament\Widgets\RecentBookingsWidget;
@@ -84,6 +85,8 @@ class AdminPanelProvider extends PanelProvider
                 TicketStockWidget::class,
                 UpcomingEventsWidget::class,
                 RecentBookingsWidget::class,
+                BalanceDueBookingsWidget::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,

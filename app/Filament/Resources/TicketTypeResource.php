@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Toggle;
@@ -139,6 +140,23 @@ class TicketTypeResource extends Resource
                     ])
                     ->columns(1)
                     ->collapsible(),
+
+                Section::make(__('ticket_type.sections.admission_policies'))
+                    ->description(__('ticket_type.sections.admission_policies_desc'))
+                    ->schema([
+                        RichEditor::make('admission_policies.en')
+                            ->label(__('ticket_type.fields.admission_policies_en'))
+                            ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'undo', 'redo'])
+                            ->helperText(__('ticket_type.fields.admission_policies_helper')),
+
+                        RichEditor::make('admission_policies.ar')
+                            ->label(__('ticket_type.fields.admission_policies_ar'))
+                            ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'undo', 'redo'])
+                            ->helperText(__('ticket_type.fields.admission_policies_helper')),
+                    ])
+                    ->columns(1)
+                    ->collapsible()
+                    ->collapsed(),
 
                 Section::make(__('ticket_type.sections.pricing'))
                     ->description(__('ticket_type.sections.pricing_desc'))

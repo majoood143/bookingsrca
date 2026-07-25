@@ -16,6 +16,7 @@ class TicketType extends Model
         'event_id',
         'name',
         'description',
+        'admission_policies',
         'price',
         'quantity_available',
         'quantity_sold',
@@ -24,12 +25,12 @@ class TicketType extends Model
         'is_active',
     ];
 
-    protected $translatable = ['name', 'description'];
+    protected $translatable = ['name', 'description', 'admission_policies'];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['event_id', 'name', 'price', 'quantity_available', 'sale_start_date', 'sale_end_date', 'is_active'])
+            ->logOnly(['event_id', 'name', 'admission_policies', 'price', 'quantity_available', 'sale_start_date', 'sale_end_date', 'is_active'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

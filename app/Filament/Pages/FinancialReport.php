@@ -191,6 +191,16 @@ class FinancialReport extends Page implements HasForms
             ];
         })->sortByDesc('revenue')->values();
 
+        $bySource = $bookings->groupBy(fn($b) => $b->source ?: 'online')->map(function ($group, $source) use ($locale) {
+            return [
+                'label' => __('financial_report.sources.' . $source, [], $locale) !== 'financial_report.sources.' . $source
+                    ? __('financial_report.sources.' . $source, [], $locale)
+                    : ucfirst($source),
+                'bookings' => $group->count(),
+                'revenue' => (float) $group->sum('total_price'),
+            ];
+        })->sortByDesc('revenue')->values();
+
         $paymentMethodTotals = [];
         foreach ($bookings as $booking) {
             foreach ($booking->payments as $payment) {
@@ -227,6 +237,7 @@ class FinancialReport extends Page implements HasForms
             'avgBooking' => $avgBooking,
             'byTicket' => $byTicket,
             'byEvent' => $byEvent,
+            'bySource' => $bySource,
             'byPaymentMethod' => $byPaymentMethod,
             'revenueTrend' => $revenueTrend,
         ];
@@ -315,6 +326,13 @@ class FinancialReport extends Page implements HasForms
                         fputcsv($out, [__('financial_report.sections.by_event', [], $locale)]);
                         fputcsv($out, [__('financial_report.columns.event', [], $locale), __('financial_report.columns.bookings', [], $locale), __('financial_report.columns.revenue', [], $locale)]);
                         foreach ($report['byEvent'] as $row) {
+                            fputcsv($out, [$row['label'], $row['bookings'], number_format($row['revenue'], 3) . ' ' . $currency]);
+                        }
+                        fputcsv($out, []);
+
+                        fputcsv($out, [__('financial_report.sections.by_source', [], $locale)]);
+                        fputcsv($out, [__('financial_report.columns.booking_source', [], $locale), __('financial_report.columns.bookings', [], $locale), __('financial_report.columns.revenue', [], $locale)]);
+                        foreach ($report['bySource'] as $row) {
                             fputcsv($out, [$row['label'], $row['bookings'], number_format($row['revenue'], 3) . ' ' . $currency]);
                         }
                         fputcsv($out, []);

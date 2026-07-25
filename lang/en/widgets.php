@@ -79,6 +79,19 @@ return [
         'confirmed_msg'  => 'Booking confirmed',
     ],
 
+    'balance_due_bookings' => [
+        'heading'        => 'Bookings with Balance Due',
+        'reference'      => 'Reference',
+        'event'          => 'Event',
+        'event_date'     => 'Event Date',
+        'total'          => 'Total',
+        'paid'           => 'Paid',
+        'balance_due'    => 'Balance Due',
+        'status'         => 'Status',
+        'action_view'    => 'View',
+        'empty_heading'  => 'No bookings with an outstanding balance',
+    ],
+
     'low_stock_alerts' => [
         'heading'           => 'Ticket Stock Alerts',
         'sold_out'          => 'Sold Out Ticket Types',
@@ -111,6 +124,21 @@ return [
         'trend_heading'             => 'Bookings & Revenue Trend (Last 30 Days)',
         'ticket_breakdown_heading'  => 'Ticket Type Breakdown',
         'remaining_stock'          => 'Remaining Stock',
+    ],
+
+    'user_insights' => [
+        'total_bookings'           => 'Bookings Created',
+        'attendees'                => ':count attendees',
+        'revenue'                  => 'Revenue Generated',
+        'avg_ticket_price'         => 'Avg. ticket: :amount',
+        'ticket_types'             => 'Ticket Types Sold',
+        'ticket_types_desc'        => 'Distinct types booked',
+        'confirmed'                => 'Confirmed',
+        'pending_desc'             => 'Pending: :count',
+        'checked_in'               => 'Checked-in',
+        'cancelled_desc'           => 'Cancelled: :count',
+        'ticket_breakdown_heading' => 'Ticket Type Breakdown (Last 30 Days)',
+        'no_bookings'              => 'No bookings in the last 30 days',
     ],
 
 ];

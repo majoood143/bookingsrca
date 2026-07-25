@@ -6,6 +6,8 @@ use Filament\Actions\EditAction;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages\ListUserActivities;
+use App\Filament\Resources\UserResource\Widgets\UserStatsOverview;
+use App\Filament\Resources\UserResource\Widgets\UserTicketBreakdown;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -31,6 +33,14 @@ class ViewUser extends ViewRecord
     {
         return [
             EditAction::make(),
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            UserStatsOverview::class,
+            UserTicketBreakdown::class,
         ];
     }
 }

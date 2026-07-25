@@ -13,7 +13,7 @@
         body {
             font-family: 'Almarai', 'DejaVu Sans', sans-serif;
             font-size: 12px;
-            line-height: 1.6;
+            line-height: 1.5;
             color: #333;
         }
 
@@ -23,7 +23,7 @@
             background-repeat: no-repeat;
             background-position: center top;
             border-radius: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 14px;
         }
 
         .header-table {
@@ -72,9 +72,8 @@
         }
 
         .qr-cell img {
-            width: 60px;
-            height: 60px;
-            /* background: #fff; */
+            width: 40px;
+            height: 40px;
             padding: 4px;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
@@ -90,7 +89,7 @@
 
         .stats-strip {
             width: 100%;
-            margin-bottom: 25px;
+            margin-bottom: 14px;
         }
 
         .stats-strip td {
@@ -101,7 +100,7 @@
             background: #f9fafb;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 12px;
+            padding: 10px;
             text-align: center;
         }
 
@@ -110,9 +109,9 @@
         }
 
         .stat-value {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: bold;
-            color: #667eea;
+            color: #14532d;
         }
 
         .stat-label {
@@ -124,41 +123,42 @@
         }
 
         .section {
-            margin-bottom: 22px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
         }
 
         .section-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             color: #14532d;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
             border-bottom: 2px solid #14532d;
         }
 
-        .info-grid {
-            display: table;
+        /* Real tables (not CSS display:table) so labels and values always
+           stay on the same line — mPDF does not reliably lay out
+           display:table/table-row/table-cell divs as columns. */
+        .info-table {
             width: 100%;
-            margin-bottom: 12px;
+            border-collapse: collapse;
         }
 
-        .info-row {
-            display: table-row;
+        .info-table td {
+            padding: 4px 8px 4px 0;
+            vertical-align: top;
+            font-size: 12px;
         }
 
-        .info-label {
-            display: table-cell;
+        .info-table td.lbl {
             font-weight: bold;
-            padding: 6px 15px 6px 0;
-            width: 35%;
-            color: #666;
+            color: #6b7280;
+            white-space: nowrap;
         }
 
-        .info-value {
-            display: table-cell;
-            padding: 6px 0;
+        .info-table td.val {
             color: #333;
+            padding-right: 18px;
         }
 
         .status-badge {
@@ -179,12 +179,12 @@
         .attendees-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 12px;
+            margin-top: 8px;
         }
 
         .attendees-table th {
             background: #f3f4f6;
-            padding: 10px 8px;
+            padding: 8px;
             text-align: left;
             font-weight: bold;
             font-size: 11px;
@@ -192,7 +192,7 @@
         }
 
         .attendees-table td {
-            padding: 8px;
+            padding: 6px 8px;
             border-bottom: 1px solid #e5e7eb;
         }
 
@@ -209,7 +209,7 @@
         }
 
         .services-list li {
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px dashed #e5e7eb;
         }
 
@@ -225,9 +225,9 @@
         .price-summary {
             background: #f9fafb;
             border: 1px solid #e5e7eb;
-            padding: 18px;
+            padding: 12px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin-top: 8px;
         }
 
         .price-table {
@@ -235,7 +235,7 @@
         }
 
         .price-table td {
-            padding: 6px 0;
+            padding: 5px 0;
             font-size: 12px;
         }
 
@@ -248,12 +248,12 @@
             font-weight: bold;
             color: #059669;
             border-top: 2px solid #d1d5db;
-            padding-top: 10px;
+            padding-top: 8px;
         }
 
         .footer {
-            margin-top: 30px;
-            padding-top: 15px;
+            margin-top: 16px;
+            padding-top: 10px;
             border-top: 2px dashed #d1d5db;
             text-align: center;
             color: #6b7280;
@@ -266,7 +266,45 @@
 
         .divider {
             border-top: 2px dashed #d1d5db;
-            margin: 20px 0;
+            margin: 12px 0;
+        }
+
+        .policies-block {
+            margin-top: 10px;
+        }
+
+        .policies-block:first-of-type {
+            margin-top: 0;
+        }
+
+        .policies-lang-label {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .policies-block ul,
+        .policies-block ol {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .policies-block li {
+            padding: 3px 0;
+            font-size: 11px;
+        }
+
+        .policies-block.policies-rtl {
+            text-align: right;
+        }
+
+        .policies-block.policies-rtl ul,
+        .policies-block.policies-rtl ol {
+            padding-left: 0;
+            padding-right: 18px;
         }
     </style>
 </head>
@@ -280,7 +318,7 @@
                     <div class="booking-ref">{{ $booking->booking_reference }}</div>
                 </td>
                 <td class="qr-cell">
-                    <img src="{{ $qrCode }}" alt="QR code">
+                    <img src="{{ $qrCode }}" alt="QR code" width="160" height="160">
                     <div class="qr-caption">Scan to verify</div>
                 </td>
             </tr>
@@ -288,7 +326,7 @@
     </div>
 
     <!-- Quick Stats -->
-    {{-- <table class="stats-strip">
+    <table class="stats-strip">
         <tr>
             <td class="stat-box">
                 <div class="stat-value">{{ $booking->quantity }}</div>
@@ -301,35 +339,48 @@
             </td>
             <td class="stat-gap"></td>
             <td class="stat-box">
-                <div class="stat-value">OMR {{ number_format($booking->total_price, 3) }}</div>
+                <div class="stat-value">@include('partials.currency-amount', ['amount' => $booking->total_price])</div>
                 <div class="stat-label">Total Paid</div>
             </td>
         </tr>
-    </table> --}}
+    </table>
 
     <!-- Booking Status -->
     <div class="section">
         <div class="section-title">Booking Status</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Status:</div>
-                <div class="info-value">
+        <table class="info-table">
+            <colgroup>
+                <col style="width: 16%"><col style="width: 34%"><col style="width: 16%"><col style="width: 34%">
+            </colgroup>
+            <tr>
+                <td class="lbl">Status:</td>
+                <td class="val">
                     <span class="status-badge status-{{ $booking->status }}">
                         {{ __('booking.options.status.' . $booking->status) }}
                     </span>
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Booked On:</div>
-                <div class="info-value">{{ $booking->created_at->format('l, F j, Y \a\t H:i') }}</div>
-            </div>
-            @if($booking->confirmed_at)
-            <div class="info-row">
-                <div class="info-label">Confirmed On:</div>
-                <div class="info-value">{{ $booking->confirmed_at->format('l, F j, Y \a\t H:i') }}</div>
-            </div>
+                </td>
+                <td class="lbl">Booked On:</td>
+                <td class="val">{{ $booking->created_at->format('M j, Y - H:i') }}</td>
+            </tr>
+            @if($booking->confirmed_at || $booking->cancelled_at)
+            <tr>
+                @if($booking->confirmed_at)
+                    <td class="lbl">Confirmed On:</td>
+                    <td class="val">{{ $booking->confirmed_at->format('M j, Y - H:i') }}</td>
+                @endif
+                @if($booking->cancelled_at)
+                    <td class="lbl">Cancelled On:</td>
+                    <td class="val">{{ $booking->cancelled_at->format('M j, Y - H:i') }}</td>
+                @endif
+            </tr>
             @endif
-        </div>
+            @if($booking->refunded_at)
+            <tr>
+                <td class="lbl">Refunded On:</td>
+                <td class="val" colspan="3">{{ $booking->refunded_at->format('M j, Y - H:i') }}</td>
+            </tr>
+            @endif
+        </table>
     </div>
 
     <div class="divider"></div>
@@ -337,28 +388,27 @@
     <!-- Event Details -->
     <div class="section">
         <div class="section-title">Event Details</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Event Name:</div>
-                <div class="info-value">{{ $booking->event->getTranslation('title', 'en') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Date:</div>
-                <div class="info-value">{{ $booking->event_date->format('l, F j, Y') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Time:</div>
-                <div class="info-value">{{ $booking->timeSlot->getTimeRange() }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Location:</div>
-                <div class="info-value">{{ $booking->event->getTranslation('location', 'en') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Organizer:</div>
-                <div class="info-value">{{ $booking->event->organizer }}</div>
-            </div>
-        </div>
+        <table class="info-table">
+            <colgroup>
+                <col style="width: 16%"><col style="width: 34%"><col style="width: 16%"><col style="width: 34%">
+            </colgroup>
+            <tr>
+                <td class="lbl">Event Name:</td>
+                <td class="val">{{ $booking->event->getTranslation('title', 'en') }}</td>
+                <td class="lbl">Date:</td>
+                <td class="val">{{ $booking->event_date->format('M j, Y') }}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Time:</td>
+                <td class="val">{{ $booking->timeSlot->getTimeRange() }}</td>
+                <td class="lbl">Location:</td>
+                <td class="val">{{ $booking->event->getTranslation('location', 'en') }}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Organizer:</td>
+                <td class="val" colspan="3">{{ $booking->event->organizer }}</td>
+            </tr>
+        </table>
     </div>
 
     <div class="divider"></div>
@@ -366,20 +416,21 @@
     <!-- Ticket Information -->
     <div class="section">
         <div class="section-title">Ticket Information</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Ticket Type:</div>
-                <div class="info-value">{{ $booking->ticketType->getTranslation('name', 'en') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Quantity:</div>
-                <div class="info-value">{{ $booking->quantity }} ticket(s)</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Price per Ticket:</div>
-                <div class="info-value">@include('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity])</div>
-            </div>
-        </div>
+        <table class="info-table">
+            <colgroup>
+                <col style="width: 16%"><col style="width: 34%"><col style="width: 16%"><col style="width: 34%">
+            </colgroup>
+            <tr>
+                <td class="lbl">Ticket Type:</td>
+                <td class="val">{{ $booking->ticketType->getTranslation('name', 'en') }}</td>
+                <td class="lbl">Quantity:</td>
+                <td class="val">{{ $booking->quantity }} ticket(s)</td>
+            </tr>
+            <tr>
+                <td class="lbl">Price per Ticket:</td>
+                <td class="val" colspan="3">@include('partials.currency-amount', ['amount' => $booking->ticket_price / $booking->quantity])</td>
+            </tr>
+        </table>
     </div>
 
     <div class="divider"></div>
@@ -391,11 +442,13 @@
         <table class="attendees-table">
             <thead>
                 <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 30%;">Name</th>
-                    <th style="width: 30%;">Email</th>
-                    <th style="width: 20%;">Ticket Number</th>
-                    <th style="width: 15%;">Status</th>
+                    <th style="width: 4%;">#</th>
+                    <th style="width: 20%;">Name</th>
+                    <th style="width: 22%;">Email</th>
+                    <th style="width: 15%;">Ticket Number</th>
+                    <th style="width: 15%;">Ticket Type</th>
+                    <th style="width: 12%;">Price</th>
+                    <th style="width: 12%;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -405,6 +458,8 @@
                     <td>{{ $attendee->getFullName() }}</td>
                     <td>{{ $attendee->email }}</td>
                     <td style="font-family: monospace; font-size: 10px;">{{ $attendee->ticket_number }}</td>
+                    <td>{{ ($attendee->ticketType ?? $booking->ticketType)?->getTranslation('name', 'en') }}</td>
+                    <td>@include('partials.currency-amount', ['amount' => $attendee->ticket_price ?? ($booking->ticket_price / $booking->quantity)])</td>
                     <td>
                         @if($attendee->checked_in)
                             <span class="checked-in">&#10003; Checked In</span>
@@ -465,11 +520,38 @@
         </div>
     </div>
 
+    @php
+        $admissionPoliciesEn = $booking->event->getTranslation('admission_policies', 'en', false);
+        $admissionPoliciesAr = $booking->event->getTranslation('admission_policies', 'ar', false);
+    @endphp
+    @if($admissionPoliciesEn || $admissionPoliciesAr)
+    <div class="divider"></div>
+
+    <!-- Admission & Visiting Policies -->
+    <div class="section">
+        <div class="section-title">Admission &amp; Visiting Policies</div>
+
+        @if($admissionPoliciesEn)
+        <div class="policies-block">
+            <div class="policies-lang-label">English</div>
+            {!! $admissionPoliciesEn !!}
+        </div>
+        @endif
+
+        @if($admissionPoliciesAr)
+        <div class="policies-block policies-rtl" dir="rtl">
+            <div class="policies-lang-label">العربية</div>
+            {!! $admissionPoliciesAr !!}
+        </div>
+        @endif
+    </div>
+    @endif
+
     <!-- Footer -->
     <div class="footer">
         <p><strong>Important:</strong> Each attendee will receive their individual ticket with a unique QR code.</p>
         <p>Please present the QR code at the event entrance for check-in.</p>
-        <p style="margin-top: 12px;">Generated on {{ now()->format('F j, Y \a\t H:i') }}</p>
+        <p style="margin-top: 8px;">Generated on {{ now()->format('F j, Y \a\t H:i') }}</p>
         <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </div>
 </body>

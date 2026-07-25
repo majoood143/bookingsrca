@@ -362,6 +362,26 @@ class EventResource extends Resource
                                     ->collapsed(),
                             ]),
 
+                        Tab::make(__('event.tabs.admission_policies'))
+                            ->icon('heroicon-o-clipboard-document-list')
+                            ->schema([
+                                Section::make(__('event.sections.admission_policies'))
+                                    ->description(__('event.sections.admission_policies_desc'))
+                                    ->schema([
+                                        RichEditor::make('admission_policies.en')
+                                            ->label(__('event.fields.admission_policies_en'))
+                                            //->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'undo', 'redo'])
+                                            ->helperText(__('event.fields.admission_policies_helper')),
+
+                                        RichEditor::make('admission_policies.ar')
+                                            ->label(__('event.fields.admission_policies_ar'))
+                                            //->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'undo', 'redo'])
+                                            ->helperText(__('event.fields.admission_policies_helper')),
+                                    ])
+                                    ->columns(1)
+                                    ->collapsible(),
+                            ]),
+
                         Tab::make(__('event.tabs.media_status'))
                             ->icon('heroicon-o-photo')
                             ->schema([

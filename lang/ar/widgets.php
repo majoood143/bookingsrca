@@ -79,6 +79,19 @@ return [
         'confirmed_msg'  => 'تم تأكيد الحجز',
     ],
 
+    'balance_due_bookings' => [
+        'heading'        => 'الحجوزات ذات المبالغ المستحقة',
+        'reference'      => 'المرجع',
+        'event'          => 'الفعالية',
+        'event_date'     => 'تاريخ الفعالية',
+        'total'          => 'الإجمالي',
+        'paid'           => 'المدفوع',
+        'balance_due'    => 'المبلغ المستحق',
+        'status'         => 'الحالة',
+        'action_view'    => 'عرض',
+        'empty_heading'  => 'لا توجد حجوزات بها مبالغ مستحقة',
+    ],
+
     'low_stock_alerts' => [
         'heading'           => 'تنبيهات مخزون التذاكر',
         'sold_out'          => 'أنواع تذاكر نفد مخزونها',
@@ -111,6 +124,21 @@ return [
         'trend_heading'             => 'اتجاه الحجوزات والإيرادات (آخر 30 يومًا)',
         'ticket_breakdown_heading'  => 'تفصيل أنواع التذاكر',
         'remaining_stock'          => 'المخزون المتبقي',
+    ],
+
+    'user_insights' => [
+        'total_bookings'           => 'الحجوزات المنشأة',
+        'attendees'                => ':count زائر',
+        'revenue'                  => 'الإيرادات المحققة',
+        'avg_ticket_price'         => 'متوسط سعر التذكرة: :amount',
+        'ticket_types'             => 'أنواع التذاكر المباعة',
+        'ticket_types_desc'        => 'أنواع مختلفة تم حجزها',
+        'confirmed'                => 'مؤكدة',
+        'pending_desc'             => 'قيد الانتظار: :count',
+        'checked_in'               => 'تم تسجيل الدخول',
+        'cancelled_desc'           => 'ملغاة: :count',
+        'ticket_breakdown_heading' => 'تفصيل أنواع التذاكر (آخر 30 يومًا)',
+        'no_bookings'              => 'لا توجد حجوزات خلال آخر 30 يومًا',
     ],
 
 ];

@@ -16,6 +16,10 @@
     $methodData = $byPaymentMethod->pluck('amount')->values();
     $methodColors = ['#059669', '#0891b2', '#f59e0b', '#9ca3af', '#7c3aed'];
 
+    $sourceLabels = $bySource->pluck('label')->values();
+    $sourceData = $bySource->pluck('revenue')->values();
+    $sourceColors = ['#0891b2', '#b45309', '#059669', '#9ca3af', '#7c3aed'];
+
     $fmt = fn($n) => number_format((float) $n, 3) . ' ' . $currency;
 @endphp
 <!DOCTYPE html>
@@ -167,6 +171,29 @@
     </div>
 
     <div class="section page-break">
+        <div class="section-title">{{ __('financial_report.sections.by_source', [], $locale) }}</div>
+        <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('financial_report.columns.booking_source', [], $locale) }}</th>
+                    <th class="text-center">{{ __('financial_report.columns.bookings', [], $locale) }}</th>
+                    <th class="text-end">{{ __('financial_report.columns.revenue', [], $locale) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($bySource as $row)
+                    <tr>
+                        <td>{{ $row['label'] }}</td>
+                        <td class="text-center">{{ $row['bookings'] }}</td>
+                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section page-break">
         <div class="section-title">{{ __('financial_report.sections.by_payment_method', [], $locale) }}</div>
         <div class="chart-wrap"><canvas id="methodChart"></canvas></div>
         <table>
@@ -234,6 +261,15 @@
         data: {
             labels: {!! json_encode($methodLabels) !!},
             datasets: [{ data: {!! json_encode($methodData) !!}, backgroundColor: {!! json_encode($methodColors) !!} }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    new Chart(document.getElementById('sourceChart'), {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($sourceLabels) !!},
+            datasets: [{ data: {!! json_encode($sourceData) !!}, backgroundColor: {!! json_encode($sourceColors) !!} }]
         },
         options: { plugins: { legend: { position: 'bottom' } } }
     });

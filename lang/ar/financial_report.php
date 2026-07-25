@@ -43,6 +43,7 @@ return [
         'revenue_trend'     => 'اتجاه الإيرادات',
         'by_ticket'         => 'الإيرادات حسب نوع التذكرة',
         'by_event'          => 'الإيرادات حسب الفعالية',
+        'by_source'         => 'الإيرادات حسب مصدر الحجز',
         'by_payment_method' => 'الإيرادات حسب طريقة الدفع',
     ],
 
@@ -61,11 +62,18 @@ return [
         'partial'      => 'دفعة جزئية',
     ],
 
+    'sources' => [
+        'online' => 'عبر الإنترنت',
+        'admin'  => 'الإدارة',
+        'kiosk'  => 'كشك',
+    ],
+
     'columns' => [
         'date'           => 'التاريخ',
         'ticket_type'    => 'نوع التذكرة',
         'event'          => 'الفعالية',
         'payment_method' => 'طريقة الدفع',
+        'booking_source' => 'مصدر الحجز',
         'bookings'       => 'الحجوزات',
         'revenue'        => 'الإيرادات',
         'percentage'     => 'النسبة',

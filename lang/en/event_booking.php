@@ -266,6 +266,7 @@ return [
         'quantity'          => 'Quantity',
         'entry_pass'        => 'Entry Pass',
         'present_qr'        => 'Present this QR code at the event entrance for check-in.',
+        'admission_policies' => 'Admission & Visiting Policies',
         'present_barcode'   => 'Present this barcode at the event entrance for check-in.',
         'booking_reference' => 'Booking Reference',
         'booked_on'         => 'Booked on',

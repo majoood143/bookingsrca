@@ -89,6 +89,33 @@
         @endif
     </x-filament::section>
 
+    <x-filament::section :heading="__('financial_report.sections.by_source')">
+        @if ($report['bySource']->isEmpty())
+            <p class="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">{{ __('financial_report.no_data') }}</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">{{ __('financial_report.columns.booking_source') }}</th>
+                            <th class="py-3 px-4 font-semibold text-gray-600 dark:text-gray-300 text-center">{{ __('financial_report.columns.bookings') }}</th>
+                            <th class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400 text-right">{{ __('financial_report.columns.revenue') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @foreach ($report['bySource'] as $row)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{{ $row['label'] }}</td>
+                                <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['bookings'] }}</td>
+                                <td class="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">{{ $currency }} {{ number_format($row['revenue'], 3) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </x-filament::section>
+
     <x-filament::section :heading="__('financial_report.sections.by_payment_method')">
         @if ($report['byPaymentMethod']->isEmpty())
             <p class="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">{{ __('financial_report.no_data') }}</p>

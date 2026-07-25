@@ -356,6 +356,25 @@
             line-height: 1.4;
         }
 
+        /* ── ADMISSION & VISITING POLICIES ── */
+        .policies-block {
+            margin-top: 14px;
+        }
+
+        .policies-content ul,
+        .policies-content ol {
+            margin: 0;
+            padding-{{ $isAr ? 'right' : 'left' }}: 18px;
+            padding-{{ $isAr ? 'left' : 'right' }}: 0;
+        }
+
+        .policies-content li {
+            padding: 3px 0;
+            font-size: 10px;
+            color: #4b5563;
+            text-align: {{ $isAr ? 'right' : 'left' }};
+        }
+
         /* ── FOOTER ── */
         .ticket-footer {
             background: #f9fafb;
@@ -525,7 +544,22 @@
             @endif
         </div>
 
+        {{-- Admission & Visiting Policies (per ticket type, only if configured) --}}
+        @php
+            $admissionPolicies = $booking->ticketType->getTranslation('admission_policies', $lang, false);
+        @endphp
+        @if($admissionPolicies)
+        <div class="policies-block">
+            <div class="section-label">{{ $t('admission_policies') }}</div>
+            <div class="policies-content">
+                {!! $admissionPolicies !!}
+            </div>
+        </div>
+        @endif
+
     </div>{{-- /ticket-body --}}
+
+    
 
     {{-- ── FOOTER ── --}}
     <div class="ticket-footer">

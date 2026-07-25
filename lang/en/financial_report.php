@@ -43,6 +43,7 @@ return [
         'revenue_trend'     => 'Revenue Trend',
         'by_ticket'         => 'Revenue by Ticket Type',
         'by_event'          => 'Revenue by Event',
+        'by_source'         => 'Revenue by Source',
         'by_payment_method' => 'Revenue by Payment Method',
     ],
 
@@ -61,11 +62,18 @@ return [
         'partial'     => 'Partial Payment',
     ],
 
+    'sources' => [
+        'online' => 'Online',
+        'admin'  => 'Admin',
+        'kiosk'  => 'Kiosk',
+    ],
+
     'columns' => [
         'date'           => 'Date',
         'ticket_type'    => 'Ticket Type',
         'event'          => 'Event',
         'payment_method' => 'Payment Method',
+        'booking_source' => 'Booking Source',
         'bookings'       => 'Bookings',
         'revenue'        => 'Revenue',
         'percentage'     => 'Percentage',

@@ -12,6 +12,7 @@ return [
         'general'           => 'General',
         'location_schedule' => 'Location & Schedule',
         'content'           => 'Additional Content',
+        'admission_policies' => 'Admission & Visiting Policies',
         'media_status'      => 'Media & Status',
         'signage'           => 'Digital Signage',
         'field_visibility'  => 'Field Visibility',
@@ -36,6 +37,8 @@ return [
         'faq_desc'                => 'Optional Q&A list shown on the public booking page',
         'terms'                   => 'Terms & Conditions',
         'terms_desc'              => 'Optional event-specific terms. When filled, this replaces the general terms & conditions for this event only',
+        'admission_policies'      => 'Admission & Visiting Policies',
+        'admission_policies_desc' => 'Optional list of admission/visiting rules for this event. When filled, it is printed as a bulleted list on the booking summary PDF, in both English and Arabic',
         'promotional_video'       => 'Promotional Video',
         'promotional_video_desc'  => 'Optional YouTube link shown on the public booking page',
         'field_visibility'                    => 'Attendee Field Visibility',
@@ -111,6 +114,10 @@ return [
 
         'terms_en'                => 'Terms & Conditions (English)',
         'terms_ar'                => 'Terms & Conditions (Arabic)',
+
+        'admission_policies_en'      => 'Admission & Visiting Policies (English)',
+        'admission_policies_ar'      => 'Admission & Visiting Policies (Arabic)',
+        'admission_policies_helper'  => 'Use the bulleted list button in the toolbar to format each policy as a list item',
 
         'promotional_video'        => 'Promotional Video (YouTube Link)',
         'promotional_video_helper' => 'Optional. Paste a YouTube video URL to embed it on the booking page',

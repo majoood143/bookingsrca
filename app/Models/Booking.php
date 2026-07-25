@@ -372,7 +372,7 @@ class Booking extends Model
     public function generateSummaryPdf(): ?string
     {
         try {
-            $booking = $this->load(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices']);
+            $booking = $this->load(['event', 'timeSlot', 'ticketType', 'attendees.ticketType', 'extraServices']);
 
             $html = view('bookings.summary-pdf', [
                 'booking' => $booking,
@@ -389,9 +389,15 @@ class Booking extends Model
                 'margin_bottom' => 15,
                 'default_font' => 'almarai',
             ], MpdfAlmarai::config()));
-            $mpdf->WriteHTML($html);
 
-            return $mpdf->Output('booking-' . $this->booking_reference . '.pdf', Destination::STRING_RETURN);
+            // mPDF's line-box layout code emits benign "Undefined array key"
+            // PHP warnings for certain content combinations (e.g. list/dottab
+            // markers) even though rendering completes successfully. Laravel
+            // promotes uncaught warnings to ErrorException, which would abort
+            // generation here, so they're suppressed around the mPDF calls.
+            @$mpdf->WriteHTML($html);
+
+            return @$mpdf->Output('booking-' . $this->booking_reference . '.pdf', Destination::STRING_RETURN);
         } catch (Exception $e) {
             Log::error('PDF Generation Failed', [
                 'booking_id' => $this->id,

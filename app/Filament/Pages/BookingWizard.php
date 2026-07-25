@@ -236,6 +236,7 @@ class BookingWizard extends Page implements HasForms
                                             TextInput::make('email')
                                                 ->label(__('booking.fields.email'))
                                                 ->email()
+                                                ->default('booking@razatfarm.gov.om')
                                                 //->required()
                                                 ->maxLength(255)
                                                 ->extraInputAttributes(['class' => 'text-lg'])
@@ -611,6 +612,9 @@ class BookingWizard extends Page implements HasForms
                 ]);
 
                 foreach ($attendeesData as $attendee) {
+                    if (empty($attendee['email'])) {
+                        $attendee['email'] = 'booking@razatfarm.gov.om';
+                    }
                     $booking->attendees()->create($attendee);
                 }
 

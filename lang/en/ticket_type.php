@@ -11,6 +11,8 @@ return [
     'sections' => [
         'information'      => 'Ticket Type Information',
         'information_desc' => 'Define ticket types for events (Standard, VIP, Student, etc.)',
+        'admission_policies'      => 'Admission & Visiting Policies',
+        'admission_policies_desc' => 'Optional list of admission/visiting rules for this ticket type. When filled, it is printed as a bulleted list under the Entry Pass on the attendee\'s individual ticket',
         'pricing'          => 'Pricing & Capacity',
         'pricing_desc'     => 'Set price and available quantity',
         'sale_period'      => 'Sale Period',
@@ -31,6 +33,9 @@ return [
         'name_ar_helper'             => 'Enter the ticket type name in Arabic',
         'description_en'             => 'Description (English)',
         'description_ar'             => 'Description (Arabic)',
+        'admission_policies_en'      => 'Admission & Visiting Policies (English)',
+        'admission_policies_ar'      => 'Admission & Visiting Policies (Arabic)',
+        'admission_policies_helper'  => 'Use the bulleted list button in the toolbar to format each policy as a list item',
         'price'                      => 'Price',
         'price_helper'               => 'Set ticket price in OMR',
         'quantity_available'         => 'Quantity Available',

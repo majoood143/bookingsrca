@@ -468,6 +468,14 @@ class EventResource extends Resource
                                                     ->helperText(__('event.fields.signage_qr_helper')),
                                             ]),
 
+                                        TextInput::make('signage_video_url')
+                                            ->label(__('event.fields.signage_video'))
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->prefixIcon('heroicon-o-play-circle')
+                                            ->placeholder('https://www.youtube.com/watch?v=...')
+                                            ->helperText(__('event.fields.signage_video_helper')),
+
                                         TextInput::make('contact_phone')
                                             ->label(__('event.fields.signage_phone'))
                                             ->tel()

@@ -474,6 +474,7 @@ class BookingResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
+                    ->toggleable()
                     ->copyable(),
 
                 TextColumn::make('attendees_count')
@@ -481,6 +482,7 @@ class BookingResource extends Resource
                     ->label(__('booking.columns.attendees'))
                     ->badge()
                     ->color('primary')
+                    ->toggleable()
                     ->summarize(Sum::make()),
 
                 TextColumn::make('firstAttendee.phone')
@@ -497,7 +499,7 @@ class BookingResource extends Resource
                     ->placeholder('—')
                     ->searchable()
                     ->toggleable()
-                    ->visible(fn () => (bool) BookingSetting::get('show_identity_number', true)),
+                    ->visible(fn() => (bool) BookingSetting::get('show_identity_number', true)),
 
                 TextColumn::make('firstAttendee.email')
                     ->label(__('booking.columns.attendee_email'))
@@ -509,18 +511,21 @@ class BookingResource extends Resource
                     ->label(__('booking.columns.event'))
                     ->getStateUsing(fn($record) => $record->event->getTranslation('title', app()->getLocale()))
                     ->searchable()
+                    ->toggleable()
                     ->wrap()
                     ->limit(30),
 
                 TextColumn::make('event_date')
                     ->label(__('booking.columns.date'))
                     ->date('M d, Y')
+                    ->toggleable()
                     ->sortable(),
 
                 TextColumn::make('timeSlot.time_range')
                     ->label(__('booking.columns.time'))
                     ->getStateUsing(fn($record) => $record->timeSlot->getTimeRange())
                     ->badge()
+                    ->toggleable()
                     ->color('info'),
 
                 // TextColumn::make('quantity')
@@ -532,10 +537,12 @@ class BookingResource extends Resource
                     ->money('OMR')
                     ->weight('bold')
                     ->color('success')
+                    ->toggleable()
                     ->summarize(Sum::make()),
 
                 BadgeColumn::make('status')
                     ->label(__('booking.columns.status'))
+                    ->toggleable()
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'confirmed',
@@ -547,6 +554,7 @@ class BookingResource extends Resource
                 BadgeColumn::make('source')
                     ->label(__('booking.columns.source'))
                     ->formatStateUsing(fn($state) => __('booking.options.source')[$state] ?? $state)
+                    ->toggleable()
                     ->colors([
                         'info'    => 'online',
                         'gray'    => 'admin',

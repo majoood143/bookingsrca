@@ -88,6 +88,8 @@ return [
         'signage_background_helper' => 'صورة خلفية بملء الشاشة لشاشة العرض',
         'signage_qr'                => 'صورة رمز QR',
         'signage_qr_helper'         => 'ارفع صورة رمز QR لعرضها (مثلاً رابط لخريطة أو صفحة معلومات)',
+        'signage_video'             => 'فيديو شاشة العرض (رابط يوتيوب)',
+        'signage_video_helper'      => 'يتكرر تلقائيًا وبدون صوت في خلفية شاشة العرض. اتركه فارغًا لعرض صورة الفعالية بدلاً من ذلك.',
         'signage_phone'             => 'رقم التواصل',
         'signage_meeting_point_en'  => 'نقطة التجمع (إنجليزي)',
         'signage_meeting_point_ar'  => 'نقطة التجمع (عربي)',

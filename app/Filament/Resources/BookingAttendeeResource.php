@@ -110,7 +110,7 @@ class BookingAttendeeResource extends Resource
 
                         IconEntry::make('has_identity_card_upload')
                             ->label(__('booking_attendee.fields.identity_card_upload'))
-                            ->getStateUsing(fn (BookingAttendee $record) => $record->hasIdentityCardUpload())
+                            ->getStateUsing(fn(BookingAttendee $record) => $record->hasIdentityCardUpload())
                             ->boolean()
                             ->trueIcon('heroicon-o-document-check')
                             ->falseIcon('heroicon-o-document')
@@ -119,7 +119,7 @@ class BookingAttendeeResource extends Resource
 
                         IconEntry::make('has_passport_upload')
                             ->label(__('booking_attendee.fields.passport_upload'))
-                            ->getStateUsing(fn (BookingAttendee $record) => $record->hasPassportUpload())
+                            ->getStateUsing(fn(BookingAttendee $record) => $record->hasPassportUpload())
                             ->boolean()
                             ->trueIcon('heroicon-o-document-check')
                             ->falseIcon('heroicon-o-document')
@@ -257,6 +257,7 @@ class BookingAttendeeResource extends Resource
                     ->getStateUsing(fn($record) => $record->getFullName())
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(['first_name'])
+                    ->toggleable()
                     ->weight('semibold'),
 
                 TextColumn::make('phone')
@@ -264,6 +265,7 @@ class BookingAttendeeResource extends Resource
                     ->description(fn($record) => $record->email)
                     ->searchable()
                     ->copyable()
+                    ->toggleable()
                     ->icon('heroicon-o-envelope'),
 
                 TextColumn::make('ticket_number')
@@ -272,6 +274,7 @@ class BookingAttendeeResource extends Resource
                     ->copyable()
                     ->fontFamily('mono')
                     ->badge()
+                    ->toggleable()
                     ->color('primary'),
 
                 TextColumn::make('booking.booking_reference')
@@ -280,6 +283,7 @@ class BookingAttendeeResource extends Resource
                     ->copyable()
                     ->fontFamily('mono')
                     ->badge()
+                    ->toggleable()
                     ->color('gray'),
 
                 TextColumn::make('booking.event.title')
@@ -287,18 +291,21 @@ class BookingAttendeeResource extends Resource
                     ->getStateUsing(fn($record) => $record->booking->event->getTranslation('title', app()->getLocale()))
                     ->searchable()
                     ->wrap()
+                    ->toggleable()
                     ->limit(30),
 
                 TextColumn::make('booking.event_date')
                     ->label(__('booking_attendee.columns.event_date'))
                     ->date('M d, Y')
                     ->searchable()
+                    ->toggleable()
                     ->sortable(),
 
                 TextColumn::make('booking.timeSlot.time_range')
                     ->label(__('booking_attendee.columns.time'))
                     ->getStateUsing(fn($record) => $record->booking->timeSlot?->getTimeRange())
                     ->badge()
+                    ->toggleable()
                     //->searchable()
                     ->color('info'),
 
@@ -308,6 +315,7 @@ class BookingAttendeeResource extends Resource
                         ? $record->ticketType->getTranslation('name', app()->getLocale())
                         : '—')
                     ->badge()
+                    ->toggleable()
                     ->color('info'),
 
                 IconColumn::make('email_sent')
@@ -317,6 +325,7 @@ class BookingAttendeeResource extends Resource
                     ->falseIcon('heroicon-o-clock')
                     ->trueColor('success')
                     ->falseColor('warning')
+                    ->toggleable()
                     ->alignCenter(),
 
                 IconColumn::make('checked_in')
@@ -326,6 +335,7 @@ class BookingAttendeeResource extends Resource
                     ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('gray')
+                    ->toggleable()
                     ->alignCenter(),
 
                 TextColumn::make('booking.booking_reference')
@@ -406,7 +416,7 @@ class BookingAttendeeResource extends Resource
                         return $indicators;
                     }),
 
-                    
+
 
                 SelectFilter::make('time_slot')
                     ->label(__('booking_attendee.filters.time_slot'))
@@ -523,20 +533,20 @@ class BookingAttendeeResource extends Resource
                         ->label(__('booking_attendee.actions.download_identity_card'))
                         ->icon('heroicon-o-identification')
                         ->color('info')
-                        ->action(fn (BookingAttendee $record) => response()->download(
+                        ->action(fn(BookingAttendee $record) => response()->download(
                             Storage::disk('local')->path($record->identity_card_path),
                         ))
-                        ->visible(fn (BookingAttendee $record) => $record->hasIdentityCardUpload())
+                        ->visible(fn(BookingAttendee $record) => $record->hasIdentityCardUpload())
                         ->tooltip(__('booking_attendee.tooltips.download_identity_card')),
 
                     Action::make('download_passport')
                         ->label(__('booking_attendee.actions.download_passport'))
                         ->icon('heroicon-o-globe-alt')
                         ->color('info')
-                        ->action(fn (BookingAttendee $record) => response()->download(
+                        ->action(fn(BookingAttendee $record) => response()->download(
                             Storage::disk('local')->path($record->passport_path),
                         ))
-                        ->visible(fn (BookingAttendee $record) => $record->hasPassportUpload())
+                        ->visible(fn(BookingAttendee $record) => $record->hasPassportUpload())
                         ->tooltip(__('booking_attendee.tooltips.download_passport')),
 
                     Action::make('check_in')

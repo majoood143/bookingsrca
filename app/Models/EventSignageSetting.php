@@ -15,6 +15,7 @@ class EventSignageSetting extends Model
         'logo_path',
         'background_image_path',
         'qr_code_image_path',
+        'signage_video_url',
         'contact_phone',
         'meeting_point',
         'welcome_message',
@@ -42,5 +43,20 @@ class EventSignageSetting extends Model
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    // Extracts the video ID from a youtube.com/youtu.be URL so the signage
+    // screen can loop it, or null if the URL doesn't look like YouTube.
+    public function getVideoEmbedId(): ?string
+    {
+        if (blank($this->signage_video_url)) {
+            return null;
+        }
+
+        if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/', $this->signage_video_url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

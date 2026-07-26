@@ -88,6 +88,8 @@ return [
         'signage_background_helper' => 'Full-screen background image for the signage screen',
         'signage_qr'                => 'QR Code Image',
         'signage_qr_helper'         => 'Upload a QR code image to display (e.g. linking to a map or info page)',
+        'signage_video'             => 'Signage Video (YouTube Link)',
+        'signage_video_helper'      => 'Loops muted in the background of the signage screen. Leave empty to show the event image instead.',
         'signage_phone'             => 'Contact Phone',
         'signage_meeting_point_en'  => 'Meeting Point (English)',
         'signage_meeting_point_ar'  => 'Meeting Point (Arabic)',

@@ -30,58 +30,57 @@
         </div>
     </header>
 
-    {{-- Next trip: full-width hero bar so the countdown is readable across the room --}}
-    <div class="bg-black/30 backdrop-blur rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-white/10 shrink-0">
-        <span class="inline-flex items-center gap-2 bg-amber-400 text-emerald-950 font-bold text-xs sm:text-sm px-3 py-1 rounded-full">
-            {{ $t('next_trip') }}
-        </span>
-
+    {{-- Next trip: compact strip — keeps the countdown clear without competing with the video --}}
+    <div class="bg-black/30 backdrop-blur rounded-2xl p-2.5 sm:p-3 border border-white/10 shrink-0">
         @if($nextTrip)
-            <div class="flex flex-wrap items-center justify-between gap-2 mt-2 sm:mt-3">
-                <h2 class="text-white/85 text-lg sm:text-2xl xl:text-3xl font-extrabold truncate">{{ $eventTitle }}</h2>
-                <div class="flex items-center gap-2 text-xs sm:text-base xl:text-lg font-semibold">
-                    <span class="bg-white/15 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg">🕐 {{ $nextTrip['time_range'] }}</span>
-                    <span class="bg-white/15 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg">🚌 {{ $nextTrip['label'][$lang] }}</span>
-                </div>
-            </div>
+            <div class="flex flex-wrap items-center gap-3 sm:gap-5">
+                <span class="inline-flex items-center gap-1.5 bg-amber-400 text-emerald-950 font-bold text-[11px] sm:text-xs px-2.5 py-1 rounded-full shrink-0">
+                    {{ $t('next_trip') }}
+                </span>
 
-            <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-14 py-2 sm:py-3">
-                <div class="flex flex-col items-center justify-center h-14 w-14 sm:h-20 sm:w-20 xl:h-24 xl:w-24 rounded-full bg-white/10 border border-white/25 text-center px-2 shrink-0">
-                    <span class="text-white/80 text-base sm:text-2xl xl:text-3xl font-extrabold">{{ $nextTrip['booked_count'] }}</span>
-                    <span class="text-[9px] sm:text-[11px] xl:text-xs text-white/70 mt-0.5 leading-tight">{{ $t('bookings_count') }}</span>
+                <div class="min-w-0">
+                    <p class="text-white/85 font-extrabold text-sm sm:text-lg xl:text-xl truncate">{{ $eventTitle }}</p>
+                    <p class="text-white/60 text-[11px] sm:text-xs xl:text-sm truncate">🕐 {{ $nextTrip['time_range'] }} &middot; 🚌 {{ $nextTrip['label'][$lang] }}</p>
                 </div>
 
-                <div class="text-center">
-                    <div class="text-white/85 text-4xl sm:text-7xl xl:text-8xl tabular-nums tracking-wider" x-text="countdownText">--:--</div>
-                    <div class="flex justify-center gap-8 sm:gap-14 text-[11px] sm:text-sm xl:text-base text-white/70 mt-0.5 sm:mt-1">
-                        <span>{{ $t('minutes_label') }}</span>
-                        <span>{{ $t('seconds_label') }}</span>
+                <div class="flex items-center gap-2 sm:gap-3 ms-auto shrink-0">
+                    <div class="text-center px-1">
+                        <div class="text-white/80 font-extrabold text-sm sm:text-lg xl:text-xl">{{ $nextTrip['booked_count'] }}</div>
+                        <div class="text-[8px] sm:text-[9px] text-white/60 leading-tight">{{ $t('bookings_count') }}</div>
+                    </div>
+
+                    <div class="bg-white/10 border border-white/25 rounded-xl px-3 py-1 sm:px-4 sm:py-1.5 text-center">
+                        <div class="text-white/90 text-xl sm:text-3xl xl:text-4xl font-extrabold tabular-nums leading-none" x-text="countdownText">--:--</div>
+                        <div class="text-[8px] sm:text-[9px] text-white/60 mt-0.5">{{ $t('minutes_label') }} : {{ $t('seconds_label') }}</div>
+                    </div>
+
+                    <div class="text-center px-1">
+                        <div class="text-white/80 font-extrabold text-sm sm:text-lg xl:text-xl">{{ $nextTrip['remaining_seats'] }}</div>
+                        <div class="text-[8px] sm:text-[9px] text-white/60 leading-tight">{{ $t('remaining_seats') }}</div>
                     </div>
                 </div>
 
-                <div class="flex flex-col items-center justify-center h-14 w-14 sm:h-20 sm:w-20 xl:h-24 xl:w-24 rounded-full bg-white/10 border border-white/25 text-center px-2 shrink-0">
-                    <span class="text-white/80 text-base sm:text-2xl xl:text-3xl font-extrabold">{{ $nextTrip['remaining_seats'] }}</span>
-                    <span class="text-[9px] sm:text-[11px] xl:text-xs text-white/70 mt-0.5 leading-tight">{{ $t('remaining_seats') }}</span>
-                </div>
-            </div>
-
-            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <div class="flex items-center gap-2 bg-amber-400/15 border border-amber-300/40 text-amber-200 rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-base xl:text-lg font-semibold">
-                    🔊 {{ $t('ready_alert', ['label' => $nextTrip['label'][$lang]]) }}
-                </div>
-                <div class="flex items-center gap-2 bg-amber-500/90 text-emerald-950 rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-base xl:text-lg font-bold">
-                    ⚠️ {{ $t('gathering_alert', ['minutes' => $signage->gathering_alert_minutes]) }}
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
+                    <span class="inline-flex items-center gap-1 bg-amber-400/15 border border-amber-300/40 text-amber-200 rounded-lg px-2.5 py-1 text-[11px] sm:text-xs xl:text-sm font-semibold">
+                        🔊 {{ $t('ready_alert', ['label' => $nextTrip['label'][$lang]]) }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 bg-amber-500/90 text-emerald-950 rounded-lg px-2.5 py-1 text-[11px] sm:text-xs xl:text-sm font-bold">
+                        ⚠️ {{ $t('gathering_alert', ['minutes' => $signage->gathering_alert_minutes]) }}
+                    </span>
                 </div>
             </div>
         @else
-            <div class="flex items-center justify-center text-white/70 text-base sm:text-xl xl:text-2xl font-semibold text-center py-4 sm:py-6">
-                {{ $t('no_next_trip') }}
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 bg-amber-400 text-emerald-950 font-bold text-[11px] sm:text-xs px-2.5 py-1 rounded-full shrink-0">
+                    {{ $t('next_trip') }}
+                </span>
+                <span class="text-white/70 text-sm sm:text-base font-semibold">{{ $t('no_next_trip') }}</span>
             </div>
         @endif
     </div>
 
-    {{-- Main grid: looping promo video + upcoming trips --}}
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[62%_38%] gap-3 sm:gap-4 min-h-0">
+    {{-- Main grid: video is the primary focal point, upcoming trips as a companion list --}}
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[72%_28%] gap-3 sm:gap-4 min-h-0">
 
         {{-- Promo video --}}
         <div class="relative bg-black rounded-2xl sm:rounded-3xl border border-white/10 overflow-hidden aspect-video lg:aspect-auto min-h-0">

@@ -598,8 +598,13 @@ class BookingAttendeeResource extends Resource
                 BulkActionGroup::make([
                     ExportBulkAction::make()
                         ->exports([
-                            BookingAttendeesExport::make()
-                                ->queue(),
+                            BookingAttendeesExport::make(
+                                visibleTableColumns: collect($table->getColumns())
+                                    ->reject(fn($column) => $column->isToggledHidden())
+                                    ->map(fn($column) => $column->getName())
+                                    ->values()
+                                    ->all()
+                            )->queue(),
                         ]),
 
                     BulkAction::make('bulk_resend_tickets')

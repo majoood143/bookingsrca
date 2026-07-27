@@ -83,7 +83,7 @@ class EventSignageDashboard extends Component
                 'en' => $slot->displayLabel($ordinal, 'en'),
                 'ar' => $slot->displayLabel($ordinal, 'ar'),
             ],
-            'time_range' => $slot->getTimeRange(),
+            'time_range' => $slot->start_time->format('H:i'),
             'starts_at' => $startsAt->toIso8601String(),
             'booked_count' => $slot->getActiveBookedQuantity(),
             'remaining_seats' => $slot->getRemainingCapacity(),

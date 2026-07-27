@@ -68,7 +68,7 @@
             window.addEventListener('resize', setRealVh);
             window.addEventListener('orientationchange', setRealVh);
         })();
-    </script>
+    </script>f
 
     {{-- x-data intentionally lives on this inner, non-root node (not the
     Livewire component's outer element) so wire:poll refreshes never

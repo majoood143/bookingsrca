@@ -682,9 +682,9 @@ class BookingWizard extends Page implements HasForms
         $totalTickets = collect($get('ticket_quantities') ?? [])->sum();
 
         $rows = [
-            ['label' => __('booking.express_summary.total_tickets'), 'value' => (string) $totalTickets],
-            ['label' => __('booking.express_summary.subtotal'), 'value' => 'OMR '.number_format((float) ($get('ticket_price') ?: 0), 3)],
-            ['label' => __('booking.express_summary.services'), 'value' => 'OMR '.number_format((float) ($get('services_price') ?: 0), 3)],
+            ['label' => __('booking.wizard.express_summary.total_tickets'), 'value' => (string) $totalTickets],
+            ['label' => __('booking.wizard.express_summary.subtotal'), 'value' => 'OMR '.number_format((float) ($get('ticket_price') ?: 0), 3)],
+            ['label' => __('booking.wizard.express_summary.services'), 'value' => 'OMR '.number_format((float) ($get('services_price') ?: 0), 3)],
         ];
 
         $html = '<div class="grid grid-cols-1 gap-1 text-sm">';
@@ -695,7 +695,7 @@ class BookingWizard extends Page implements HasForms
                 .'</div>';
         }
         $html .= '<div class="flex justify-between gap-4 pt-2 mt-1">'
-            .'<span class="font-bold">'.e(__('booking.express_summary.total')).'</span>'
+            .'<span class="font-bold">'.e(__('booking.wizard.express_summary.total')).'</span>'
             .'<span class="text-lg font-bold">OMR '.number_format((float) ($get('total_price') ?: 0), 3).'</span>'
             .'</div>';
         $html .= '</div>';

@@ -231,6 +231,8 @@ class EventBooking extends Component
             'availableDates'  => $availableDates,
             'soldOutDates'    => $soldOutDates,
             'timeSlots'       => $timeSlots,
+            'enforceCapacity' => $this->enforcesCapacity(),
+            'kioskMode'       => false,
             'ticketTypes'     => $this->loadedTicketTypes(),
             'extraServices'   => $this->loadedExtraServices(),
             'showEmail'       => $this->showEmail,

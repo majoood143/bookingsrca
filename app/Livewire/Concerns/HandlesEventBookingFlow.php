@@ -93,6 +93,16 @@ trait HandlesEventBookingFlow
         return 'event_booking';
     }
 
+    // Whether remaining stock (slot capacity, ticket type quantity, extra
+    // service quantity) blocks selection/booking. True everywhere except the
+    // kiosk (overridden there): walk-in guests are never turned away by the
+    // kiosk for lack of remaining spots — staff sees the resulting booking in
+    // the admin panel and decides whether to accept the overbooking.
+    protected function enforcesCapacity(): bool
+    {
+        return true;
+    }
+
     // Terms and conditions
     public string $termsEn       = '';
     public string $termsAr       = '';
@@ -284,7 +294,7 @@ trait HandlesEventBookingFlow
             return;
         }
 
-        if (in_array($date, $this->event->getSoldOutDates())) {
+        if ($this->enforcesCapacity() && in_array($date, $this->event->getSoldOutDates())) {
             session()->flash('error', __('event_booking.step1.sold_out_error'));
             return;
         }
@@ -361,10 +371,14 @@ trait HandlesEventBookingFlow
         $total     = array_sum($this->ticketQuantities);
         $remaining = $this->ticketTypeRemaining[$typeId] ?? 0;
 
+        // maxTickets/minTickets are a business policy (per-booking limit) and
+        // stay enforced everywhere; remaining stock is real-world capacity,
+        // which the kiosk deliberately ignores (see enforcesCapacity()).
+        $withinStock = !$this->enforcesCapacity() || ($current < $remaining && $total < $this->slotRemainingCapacity);
+
         if ($current < $this->maxTickets
             && $total < $this->maxTickets
-            && $current < $remaining
-            && $total < $this->slotRemainingCapacity
+            && $withinStock
         ) {
             $this->ticketQuantities[$typeId] = $current + 1;
             $this->calculateTotal();
@@ -717,7 +731,7 @@ trait HandlesEventBookingFlow
                 throw new Exception(__('Time slot is no longer available.'));
             }
 
-            if (!$timeSlot->isAvailable($totalQty)) {
+            if ($this->enforcesCapacity() && !$timeSlot->isAvailable($totalQty)) {
                 throw new Exception(__('Time slot is not available for the requested quantity.'));
             }
 
@@ -728,7 +742,7 @@ trait HandlesEventBookingFlow
                 if ($qty <= 0) continue;
 
                 $ticketType = TicketType::where('id', $typeId)->lockForUpdate()->first();
-                if (!$ticketType->isAvailable($qty)) {
+                if ($this->enforcesCapacity() && !$ticketType->isAvailable($qty)) {
                     throw new Exception(__('Ticket type :name is not available.', [
                         'name' => $ticketType->getTranslation('name', app()->getLocale()),
                     ]));
@@ -742,12 +756,12 @@ trait HandlesEventBookingFlow
                         if ($count <= 0) continue;
 
                         $service = $services[$serviceId] ?? null;
-                        if (!$service || !$service->isAvailable($count)) {
+                        if ($this->enforcesCapacity() && (!$service || !$service->isAvailable($count))) {
                             throw new Exception(__('Service :name is not available.', [
                                 'name' => $service?->getTranslation('name', app()->getLocale()) ?? '',
                             ]));
                         }
-                        $servicesPrice += $service->price * $count;
+                        $servicesPrice += ($service->price ?? 0) * $count;
                     }
                 }
             }

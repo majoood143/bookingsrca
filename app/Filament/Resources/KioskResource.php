@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
@@ -136,6 +137,27 @@ class KioskResource extends Resource
                                     ->label(__('kiosk.fields.receipt_footer_ar'))
                                     ->rows(2),
                             ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make(__('kiosk.sections.slideshow'))
+                    ->description(__('kiosk.sections.slideshow_desc'))
+                    ->schema([
+                        FileUpload::make('slideshow_images')
+                            ->label(__('kiosk.fields.slideshow_images'))
+                            ->helperText(__('kiosk.fields.slideshow_images_helper'))
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(5)
+                            ->reorderable()
+                            ->appendFiles()
+                            ->disk('public')
+                            ->directory('kiosks/slideshow')
+                            ->visibility('public')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9'])
+                            ->maxSize(4096)
+                            ->columnSpanFull(),
                     ])
                     ->collapsible(),
 

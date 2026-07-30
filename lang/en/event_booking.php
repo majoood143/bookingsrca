@@ -83,6 +83,7 @@ return [
         'requires_parent'     => 'Requires :parent',
         'add_parent_first'    => 'Add :parent first',
         'slot_limit_reached'  => 'This time slot has no more remaining capacity for additional tickets.',
+        'overbooking'         => 'Overbooking',
     ],
 
     // ── Step 4 — Extra Services ───────────────────────────────────────────────
@@ -134,6 +135,14 @@ return [
         'booking_summary'      => 'Booking Summary',
         'email_label'          => 'Email',
         'phone_label'          => 'phone',
+
+        // Kiosk progressive attendee flow
+        'reuse_prompt_heading' => "Use :name's details for everyone?",
+        'reuse_prompt_body'    => "Skip typing the same details again — we'll copy them to the other :n guest(s). You can still edit any of them after.",
+        'reuse_yes'            => 'Yes, use for everyone',
+        'reuse_no'             => "No, I'll enter each guest",
+        'continue_to_terms'    => 'Continue',
+        'edit'                 => 'Edit',
     ],
 
     // ── Step 6 — Payment ──────────────────────────────────────────────────────

@@ -17,6 +17,8 @@ return [
         'hardware_desc'     => 'Reported automatically by the kiosk app via its heartbeat — read only.',
         'receipt'           => 'Receipt',
         'receipt_desc'      => 'Footer text printed on the customer receipt.',
+        'slideshow'         => 'Welcome Screen Slideshow',
+        'slideshow_desc'    => 'Background images that fade through on the "tap to start" screen while the kiosk sits idle.',
     ],
 
     'fields' => [
@@ -32,6 +34,8 @@ return [
         'enabled_payment_methods' => 'Enabled Payment Methods',
         'receipt_footer_en'       => 'Receipt Footer (English)',
         'receipt_footer_ar'       => 'Receipt Footer (Arabic)',
+        'slideshow_images'        => 'Slideshow Images',
+        'slideshow_images_helper' => 'Up to 5 images, shown in this order. Landscape (16:9) photos work best. Leave empty to use the plain background instead.',
     ],
 
     'payment_methods' => [

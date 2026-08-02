@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,5 +20,18 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'm.m.h.89@hotmail.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => bcrypt('admin'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $superAdmin->syncRoles([$superAdminRole]);
     }
 }

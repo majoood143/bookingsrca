@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Exception;
+use App\Jobs\GenerateAttendeeTicketAssets;
 use App\Mail\IndividualTicket;
 use App\Support\MpdfAlmarai;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -77,8 +78,10 @@ class BookingAttendee extends Model
         });
 
         static::created(function ($attendee) {
-            $attendee->generateQrCode();
-            $attendee->generatePdfTicket();
+            // QR/PDF generation is slow (mPDF Arabic shaping in particular) and was
+            // previously blocking the booking request — and the DB row locks it
+            // holds — until it finished. Push it to the queue instead.
+            GenerateAttendeeTicketAssets::dispatch($attendee->id)->afterCommit();
         });
     }
 

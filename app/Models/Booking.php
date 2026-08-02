@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Exception;
+use App\Jobs\GenerateAttendeeTicketAssets;
+use App\Jobs\SendBookingTickets;
 use App\Mail\AllTickets;
 use App\Mail\BookingConfirmation;
 use App\Support\MpdfAlmarai;
@@ -14,6 +16,8 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -205,13 +209,21 @@ class Booking extends Model
             app(\App\Services\PromoCodeService::class)->recordUsage($this);
         }
 
-        $this->sendAllTickets();
-
         // Send booking confirmation to the primary attendee
         $primary = $this->attendees->first();
         if ($primary && !empty($primary->email)) {
             Mail::to($primary->email)->send(new BookingConfirmation($this));
         }
+
+        // Ticket assets are generated asynchronously (see BookingAttendee::boot())
+        // and may not be ready yet, so chain the generation jobs ahead of the send —
+        // each generation step is a no-op if its asset already exists.
+        $jobs = $this->attendees
+            ->map(fn (BookingAttendee $attendee) => new GenerateAttendeeTicketAssets($attendee->id))
+            ->push(new SendBookingTickets($this->id))
+            ->all();
+
+        DB::afterCommit(fn () => Bus::chain($jobs)->dispatch());
     }
 
     // Send every attendee's PDF ticket and QR code in a single email to the

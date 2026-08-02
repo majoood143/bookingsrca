@@ -259,7 +259,18 @@
              STEP 6 — Payment Method
         ════════════════════════════ --}}
         @if ($step === 6)
-            <div class="max-w-2xl mx-auto" x-data x-init="$nextTick(() => window.gsap && gsap.from('.kiosk-pay-option', { opacity: 0, y: 20, duration: 0.5, stagger: 0.12, ease: 'power2.out' }))">
+            <div class="max-w-2xl mx-auto"
+                x-data="{
+                    pressAnimate(el) {
+                        if (!window.gsap) return;
+                        gsap.killTweensOf(el);
+                        gsap.timeline()
+                            .to(el, { scale: 0.94, duration: 0.1, ease: 'power2.out' })
+                            .to(el, { scale: 1.015, duration: 0.18, ease: 'power2.out' })
+                            .to(el, { scale: 1, duration: 0.12, ease: 'power2.out' });
+                    },
+                }"
+                x-init="$nextTick(() => window.gsap && gsap.from('.kiosk-pay-option', { opacity: 0, y: 20, duration: 0.5, stagger: 0.12, ease: 'power2.out' }))">
                 <h2 class="text-3xl font-bold text-gray-900 mb-1 text-center">{{ __('kiosk_booking.step6.heading') }}</h2>
                 <p class="text-gray-500 text-lg mb-8 text-center">{{ __('kiosk_booking.step6.subheading') }}</p>
 
@@ -297,7 +308,16 @@
                         @if (in_array('wallet', $kiosk->enabled_payment_methods ?? []))
                             @if ($kiosk->reader_connected)
                                 <button wire:click="selectWalletPayment"
-                                    class="kiosk-pay-option w-full p-6 border-2 border-gray-200 bg-white rounded-2xl flex items-center gap-5 hover:border-blue-400 hover:shadow-md transition-all">
+                                    wire:loading.attr="disabled" wire:target="selectWalletPayment"
+                                    @click="pressAnimate($el)"
+                                    class="kiosk-pay-option w-full p-6 border-2 border-gray-200 bg-white rounded-2xl flex items-center gap-5 hover:border-blue-400 hover:shadow-md transition-[border-color,box-shadow] duration-300 will-change-transform relative overflow-hidden disabled:cursor-wait">
+                                    <div wire:loading wire:target="selectWalletPayment"
+                                        class="absolute inset-0 bg-white/85 flex items-center justify-center rounded-2xl">
+                                        <svg class="animate-spin h-9 w-9 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                    </div>
                                     <div class="text-5xl">💳</div>
                                     <div class="text-start">
                                         <p class="text-xl font-bold text-gray-900">{{ __('kiosk_booking.step6.wallet_title') }}</p>
@@ -318,7 +338,16 @@
                         @if (in_array('pay_at_counter', $kiosk->enabled_payment_methods ?? []))
                             <button wire:click="payAtCounter"
                                 wire:loading.attr="disabled" wire:target="payAtCounter"
-                                class="kiosk-pay-option kiosk-pay-cta w-full p-8 border-2 border-brand bg-brand/5 rounded-3xl flex items-center gap-6 hover:shadow-lg hover:shadow-brand/20 transition-all disabled:opacity-60">
+                                @click="pressAnimate($el)"
+                                class="kiosk-pay-option kiosk-pay-cta w-full p-8 border-2 border-brand bg-brand/5 rounded-3xl flex items-center gap-6 hover:shadow-lg hover:shadow-brand/20 transition-[border-color,box-shadow] duration-300 will-change-transform relative overflow-hidden disabled:opacity-60 disabled:cursor-wait">
+                                <div wire:loading wire:target="payAtCounter"
+                                    class="absolute inset-0 bg-brand/10 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2 rounded-3xl">
+                                    <svg class="animate-spin h-10 w-10 text-brand" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    <p class="text-brand font-bold text-sm">{{ __('kiosk_booking.step6.processing') }}</p>
+                                </div>
                                 <div class="text-6xl shrink-0">🧾</div>
                                 <div class="text-start">
                                     <p class="text-2xl sm:text-3xl font-black text-gray-900">{{ __('kiosk_booking.step6.counter_title') }}</p>

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
+use App\Models\BookingSetting;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -123,6 +125,61 @@ class KioskResource extends Resource
                             ->required(),
                     ])
                     ->columns(1),
+
+                Section::make(__('kiosk.sections.booking_rules'))
+                    ->description(__('kiosk.sections.booking_rules_desc'))
+                    ->schema([
+                        Toggle::make('override_booking_rules')
+                            ->label(__('kiosk.fields.override_booking_rules'))
+                            ->helperText(__('kiosk.fields.override_booking_rules_helper'))
+                            ->default(false)
+                            ->live()
+                            ->inline(false),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('min_tickets_per_booking')
+                                    ->label(__('kiosk.fields.min_tickets_per_booking'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(fn () => BookingSetting::get('min_tickets_per_booking', 1))
+                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+
+                                TextInput::make('max_tickets_per_booking')
+                                    ->label(__('kiosk.fields.max_tickets_per_booking'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(1000)
+                                    ->default(fn () => BookingSetting::get('max_tickets_per_booking', 10))
+                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+
+                                TextInput::make('max_attendee_age_years')
+                                    ->label(__('kiosk.fields.max_attendee_age_years'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(120)
+                                    ->default(fn () => BookingSetting::get('max_attendee_age_years', 75))
+                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+
+                                TextInput::make('pending_booking_expiry_minutes')
+                                    ->label(__('kiosk.fields.pending_booking_expiry_minutes'))
+                                    ->helperText(__('kiosk.fields.pending_booking_expiry_minutes_helper'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(fn () => BookingSetting::get('pending_booking_expiry_minutes', 15))
+                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+                            ])
+                            ->visible(fn (Get $get) => (bool) $get('override_booking_rules')),
+
+                        Toggle::make('show_slot_end_time')
+                            ->label(__('kiosk.fields.show_slot_end_time'))
+                            ->helperText(__('kiosk.fields.show_slot_end_time_helper'))
+                            ->default(fn () => (bool) BookingSetting::get('show_slot_end_time', true))
+                            ->inline(false)
+                            ->visible(fn (Get $get) => (bool) $get('override_booking_rules')),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
 
                 Section::make(__('kiosk.sections.receipt'))
                     ->description(__('kiosk.sections.receipt_desc'))

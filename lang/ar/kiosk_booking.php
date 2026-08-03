@@ -57,7 +57,7 @@ return [
         'wallet_cancel'   => 'إلغاء',
         'wallet_unavailable' => 'قارئ البطاقات غير متاح حاليًا',
 
-        'counter_title'    => 'ادفع عند الكاونتر للتأكيد',
+        'counter_title'    => 'الدفع عند الكاونتر ',
         'counter_subtitle' => 'احصل على مرجع وادفع لأحد الموظفين',
         'counter_button'   => 'احصل على مرجعي',
 

@@ -93,6 +93,15 @@ trait HandlesEventBookingFlow
         return 'event_booking';
     }
 
+    // Per-kiosk replacement for the global BookingSetting booking-rule values
+    // (min/max tickets, max attendee age, pending expiry, slot end time).
+    // Null everywhere except KioskBooking (overridden there), which returns
+    // Kiosk::bookingRuleOverrides() when that kiosk has overrides enabled.
+    protected function bookingRuleOverrides(): ?array
+    {
+        return null;
+    }
+
     // Whether remaining stock (slot capacity, ticket type quantity, extra
     // service quantity) blocks selection/booking. True everywhere except the
     // kiosk (overridden there): walk-in guests are never turned away by the
@@ -227,6 +236,17 @@ trait HandlesEventBookingFlow
         $this->showIdentityNumber = (bool) BookingSetting::get('show_identity_number', true);
         $this->maxAttendeeAge  = (int) BookingSetting::get('max_attendee_age_years', 75);
         $this->showSlotEndTime = (bool) BookingSetting::get('show_slot_end_time', true);
+
+        // A kiosk with its own booking rules fully replaces the global
+        // min/max tickets, max attendee age, and slot-end-time values above
+        // for bookings made on that device (pending_booking_expiry_minutes
+        // is applied separately by CancelExpiredBookings, per booking).
+        if ($ruleOverrides = $this->bookingRuleOverrides()) {
+            $this->minTickets     = $ruleOverrides['min_tickets_per_booking'];
+            $this->maxTickets     = $ruleOverrides['max_tickets_per_booking'];
+            $this->maxAttendeeAge = $ruleOverrides['max_attendee_age_years'];
+            $this->showSlotEndTime = $ruleOverrides['show_slot_end_time'];
+        }
 
         // "Required" has no global setting today — showing a field implied
         // requiring it everywhere except date of birth and nationality.

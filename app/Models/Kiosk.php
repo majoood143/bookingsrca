@@ -26,6 +26,12 @@ class Kiosk extends Model
         'printer_connected',
         'printer_last_seen_at',
         'app_version',
+        'override_booking_rules',
+        'min_tickets_per_booking',
+        'max_tickets_per_booking',
+        'max_attendee_age_years',
+        'pending_booking_expiry_minutes',
+        'show_slot_end_time',
     ];
 
     protected $translatable = ['receipt_footer_text'];
@@ -39,12 +45,18 @@ class Kiosk extends Model
         'reader_last_seen_at' => 'datetime',
         'printer_connected' => 'boolean',
         'printer_last_seen_at' => 'datetime',
+        'override_booking_rules' => 'boolean',
+        'min_tickets_per_booking' => 'integer',
+        'max_tickets_per_booking' => 'integer',
+        'max_attendee_age_years' => 'integer',
+        'pending_booking_expiry_minutes' => 'integer',
+        'show_slot_end_time' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'code', 'event_id', 'is_active', 'idle_timeout_seconds', 'enabled_payment_methods'])
+            ->logOnly(['name', 'code', 'event_id', 'is_active', 'idle_timeout_seconds', 'enabled_payment_methods', 'override_booking_rules', 'min_tickets_per_booking', 'max_tickets_per_booking', 'max_attendee_age_years', 'pending_booking_expiry_minutes', 'show_slot_end_time'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -74,6 +86,25 @@ class Kiosk extends Model
     public function supportsPaymentMethod(string $method): bool
     {
         return in_array($method, $this->enabled_payment_methods ?? [], true);
+    }
+
+    // Per-kiosk replacement for the general settings "Booking Rules" — mirrors
+    // Event::fieldVisibilityOverridesFor(): null means "use the global
+    // BookingSetting values", a non-null array fully replaces them so this
+    // kiosk's bookings are governed by its own rules instead.
+    public function bookingRuleOverrides(): ?array
+    {
+        if (!$this->override_booking_rules) {
+            return null;
+        }
+
+        return [
+            'min_tickets_per_booking' => $this->min_tickets_per_booking,
+            'max_tickets_per_booking' => $this->max_tickets_per_booking,
+            'max_attendee_age_years' => $this->max_attendee_age_years,
+            'pending_booking_expiry_minutes' => $this->pending_booking_expiry_minutes,
+            'show_slot_end_time' => $this->show_slot_end_time,
+        ];
     }
 
     public function recordHeartbeat(bool $readerConnected, bool $printerConnected, ?string $appVersion = null): void

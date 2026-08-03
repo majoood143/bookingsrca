@@ -360,6 +360,14 @@ class KioskBooking extends Component
         return 'kiosk';
     }
 
+    // This kiosk's own booking rules (if enabled) replace the global
+    // BookingSetting values for min/max tickets, max attendee age, and
+    // slot end time — see Kiosk::bookingRuleOverrides().
+    protected function bookingRuleOverrides(): ?array
+    {
+        return $this->kiosk->bookingRuleOverrides();
+    }
+
     protected function showConfirmation(Booking $booking): void
     {
         $this->confirmedBooking = $booking->load(['event', 'timeSlot', 'attendees', 'extraServices']);

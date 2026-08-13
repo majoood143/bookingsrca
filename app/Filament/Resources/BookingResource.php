@@ -155,9 +155,10 @@ class BookingResource extends Resource
                             ->afterStateUpdated(fn(Set $set, Get $get) => self::calculateTotal($set, $get))
                             ->visible(fn(Get $get) => filled($get('event_id'))),
                     ])
-                    ->visible(fn(Get $get) => filled($get('event_id')))
+                    ->visible(fn(Get $get) => BookingSetting::get('module_extra_services_enabled', true) && filled($get('event_id')))
                     ->collapsible()
                     ->collapsed(),
+
 
                 Section::make(__('booking.sections.attendee_details'))
                     ->description(fn(Get $get) => __('booking.attendee_details_description', ['count' => (int) $get('quantity') ?: 1]))
@@ -205,13 +206,15 @@ class BookingResource extends Resource
                                             ->native(false)
                                             ->maxDate(now())
                                             ->minDate(fn() => now()->subYears((int) BookingSetting::get('max_attendee_age_years', 75)))
-                                            ->placeholder(__('booking.placeholders.date')),
+                                            ->placeholder(__('booking.placeholders.date'))
+                                            ->visible(fn() => (bool) BookingSetting::get('show_date_of_birth', true)),
 
                                         Select::make('gender')
                                             ->label(__('booking.fields.gender'))
                                             ->options(__('booking.options.gender'))
                                             ->native(false)
-                                            ->placeholder(__('booking.placeholders.gender')),
+                                            ->placeholder(__('booking.placeholders.gender'))
+                                            ->visible(fn() => (bool) BookingSetting::get('show_gender', true)),
 
                                         Select::make('nationality')
                                             ->label(__('booking.fields.nationality'))
@@ -219,7 +222,8 @@ class BookingResource extends Resource
                                             ->searchable()
                                             ->native(false)
                                             ->options(__('booking.options.nationality'))
-                                            ->placeholder(__('booking.placeholders.nationality')),
+                                            ->placeholder(__('booking.placeholders.nationality'))
+                                            ->visible(fn() => (bool) BookingSetting::get('show_nationality', true)),
                                     ]),
 
                                 Grid::make(2)
@@ -262,12 +266,13 @@ class BookingResource extends Resource
 
                                         TextInput::make('ticket_price')
                                             ->label(__('booking.fields.ticket_price'))
-                                            ->numeric()
+                                            //->numeric()
                                             ->prefix('OMR')
                                             ->disabled()
                                             ->dehydrated(true)
                                             ->default(0)
                                             ->live()
+                                            ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 3, '.', ''))
                                             ->visible(fn(Get $get) => filled($get('ticket_type_id'))),
                                     ]),
 
@@ -335,30 +340,36 @@ class BookingResource extends Resource
                     ->schema([
                         TextInput::make('ticket_price')
                             ->label(__('booking.fields.ticket_price'))
-                            ->numeric()
+                            //->numeric()
+                            ->step(0.001)
                             ->prefix('OMR')
                             ->disabled()
                             ->dehydrated()
                             ->live()
-                            ->default(0),
+                            ->default(0)
+                            ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 3, '.', '')),
 
                         TextInput::make('services_price')
                             ->label(__('booking.fields.services_price'))
-                            ->numeric()
+                            //->numeric()
+                            ->step(0.001)
                             ->prefix('OMR')
                             ->disabled()
                             ->dehydrated()
                             ->live()
-                            ->default(0),
+                            ->default(0)
+                            ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 3, '.', '')),
 
                         TextInput::make('total_price')
                             ->label(__('booking.fields.total_price'))
-                            ->numeric()
+                            //->numeric()
+                            ->step(0.001)
                             ->prefix('OMR')
                             ->disabled()
                             ->dehydrated()
                             ->live()
-                            ->default(0),
+                            ->default(0)
+                            ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 3, '.', '')),
                     ])
                     ->columns(3)
                     ->collapsible(),
@@ -405,14 +416,14 @@ class BookingResource extends Resource
                             ->prefix('OMR')
                             ->disabled()
                             ->dehydrated(false)
-                            ->formatStateUsing(fn($record) => number_format($record?->total_paid ?? 0, 2)),
+                            ->formatStateUsing(fn($record) => number_format($record?->total_paid ?? 0, 3)),
 
                         TextInput::make('balance_due')
                             ->label(__('booking.payments.summary.balance_due'))
                             ->prefix('OMR')
                             ->disabled()
                             ->dehydrated(false)
-                            ->formatStateUsing(fn($record) => number_format($record?->balance_due ?? 0, 2)),
+                            ->formatStateUsing(fn($record) => number_format($record?->balance_due ?? 0, 3)),
                     ])
                     ->columns(2)
                     ->visible(fn($record) => $record !== null)
@@ -460,9 +471,9 @@ class BookingResource extends Resource
             }
         }
 
-        $set($prefix . 'ticket_price', number_format($ticketPrice, 2, '.', ''));
-        $set($prefix . 'services_price', number_format($servicesPrice, 2, '.', ''));
-        $set($prefix . 'total_price', number_format($ticketPrice + $servicesPrice, 2, '.', ''));
+        $set($prefix . 'ticket_price', number_format($ticketPrice, 3, '.', ''));
+        $set($prefix . 'services_price', number_format($servicesPrice, 3, '.', ''));
+        $set($prefix . 'total_price', number_format($ticketPrice + $servicesPrice, 3, '.', ''));
     }
 
     public static function table(Table $table): Table
@@ -829,8 +840,41 @@ class BookingResource extends Resource
                         ->label(__('booking.actions.confirm'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(function (Booking $record) {
-                            $record->confirm();
+                        ->schema([
+                            Grid::make(2)->schema([
+                                Select::make('payment_method')
+                                    ->label(__('booking.payments.fields.method'))
+                                    ->options([
+                                        'cash' => __('booking.payments.methods.cash'),
+                                        'credit_debit' => __('booking.payments.methods.credit_debit'),
+                                        'partial' => __('booking.payments.methods.partial'),
+                                    ])
+                                    ->default('cash')
+                                    ->required()
+                                    ->native(false)
+                                    ->live(),
+
+                                TextInput::make('amount')
+                                    ->label(__('booking.payments.fields.amount'))
+                                    ->numeric()
+                                    ->prefix('OMR')
+                                    ->minValue(0)
+                                    ->required()
+                                    ->default(fn(Booking $record) => round($record->balance_due, 2))
+                                    ->helperText(fn(Booking $record) => __('booking.payments.summary.balance_due') . ': OMR ' . number_format($record->balance_due, 2)),
+                            ]),
+
+                            TextInput::make('reference')
+                                ->label(__('booking.payments.fields.reference'))
+                                ->required(fn(Get $get) => $get('payment_method') === 'credit_debit')
+                                ->maxLength(255),
+
+                            Textarea::make('notes')
+                                ->label(__('booking.payments.fields.notes'))
+                                ->rows(2),
+                        ])
+                        ->action(function (Booking $record, array $data) {
+                            $record->recordPaymentAndConfirm($data);
                             Notification::make()
                                 ->success()
                                 ->title(__('booking.notifications.booking_confirmed'))
@@ -838,6 +882,9 @@ class BookingResource extends Resource
                                 ->send();
                         })
                         ->requiresConfirmation()
+                        ->modalHeading(__('booking.modals.confirm_payment_heading'))
+                        ->modalDescription(fn(Booking $record) => __('booking.modals.confirm_payment_description', ['amount' => number_format($record->balance_due, 2)]))
+                        ->modalSubmitActionLabel(__('booking.modals.confirm_payment_submit'))
                         ->visible(fn(Booking $record) => $record->status === 'pending'),
 
                     Action::make('cancel')
@@ -918,11 +965,20 @@ class BookingResource extends Resource
 
     public static function getRelations(): array
     {
+        // Filament resolves getRelations() while booting the panel (to register
+        // relation-manager Livewire components), not lazily per-request. Guard
+        // against a not-yet-migrated settings table the same way
+        // AppServiceProvider does, so a fresh install/test database can boot at
+        // all before its first migration runs.
+        try {
+            $expensesEnabled = (bool) \App\Models\BookingSetting::get('module_expenses_enabled', true);
+        } catch (\Throwable $e) {
+            $expensesEnabled = true;
+        }
+
         return array_filter([
             BookingResource\RelationManagers\PaymentsRelationManager::class,
-            (bool) \App\Models\BookingSetting::get('module_expenses_enabled', true)
-                ? BookingResource\RelationManagers\ExpensesRelationManager::class
-                : null,
+            $expensesEnabled ? BookingResource\RelationManagers\ExpensesRelationManager::class : null,
         ]);
     }
 

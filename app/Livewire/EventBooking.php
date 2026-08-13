@@ -217,8 +217,11 @@ class EventBooking extends Component
 
     public function render()
     {
+        $siteName  = BookingSetting::get('site_name_' . app()->getLocale(), config('app.name', 'Bookings'));
+        $pageTitle = $this->event->getTranslation('title', app()->getLocale()) . ' | ' . $siteName;
+
         if ($this->passwordRequired) {
-            return view('livewire.event-booking');
+            return view('livewire.event-booking')->title($pageTitle);
         }
 
         $availableDates = collect($this->event->getBookableDates());
@@ -256,6 +259,6 @@ class EventBooking extends Component
             'showSlotEndTime' => $this->showSlotEndTime,
             'minBirthDate'    => $this->minBirthDate(),
             'maxBirthDate'    => now()->format('Y-m-d'),
-        ]);
+        ])->title($pageTitle);
     }
 }

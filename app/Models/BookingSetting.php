@@ -100,9 +100,14 @@ class BookingSetting extends Model
             'show_nationality',
             'show_identity_number',
             'show_slot_end_time',
+            'checkin_date_restriction_enabled',
+            'checkin_date_restriction_mode',
+            'checkin_date_grace_days',
             'max_attendee_age_years',
             'terms_en',
             'terms_ar',
+            'terms_url_en',
+            'terms_url_ar',
             'active_gateway',
             'pending_booking_expiry_minutes',
             'site_name_en',
@@ -122,6 +127,7 @@ class BookingSetting extends Model
             'module_private_events_enabled',
             'module_promo_codes_enabled',
             'module_expenses_enabled',
+            'module_commission_enabled',
         ];
     }
 }

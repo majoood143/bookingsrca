@@ -1,12 +1,25 @@
 @php
     use App\Models\BookingSetting;
+    use Illuminate\Support\Str;
 
+    $siteName = BookingSetting::get('site_name_' . app()->getLocale(), config('app.name', 'Bookings'));
+    $siteLogo = BookingSetting::get('site_logo');
+    $siteLogoUrl = $siteLogo ? asset('storage/' . $siteLogo) : asset('storage/images/horizontalLogo-03.svg');
     $primaryColor = BookingSetting::get('primary_color', '#05602b');
     $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+
+    $eventTitle = $event->getTranslation('title', app()->getLocale());
+    $eventDescription = (string) Str::of(strip_tags((string) $event->getTranslation('description', app()->getLocale())))->squish()->limit(160);
+    $canonicalUrl = route('event.booking', $event->slug);
+    $ogImage = $event->image ? asset('storage/' . $event->image) : $siteLogoUrl;
+    $ogLocale = app()->getLocale() === 'ar' ? 'ar_OM' : 'en_US';
 @endphp
 <div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
     style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};">
 @if (in_array($event->status, ['draft', 'cancelled']))
+    @push('meta')
+        <meta name="robots" content="noindex, nofollow">
+    @endpush
     {{-- ── Maintenance / Unavailable View ── --}}
     <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div class="max-w-lg w-full text-center py-12">
@@ -24,7 +37,7 @@
                 @endif
             </div>
 
-            <img src="{{ asset('storage/images/horizontalLogo-03.svg') }}" alt="Logo"
+            <img src="{{ $siteLogoUrl }}" alt="{{ $siteName }}"
                 class="h-20 w-auto mx-auto mb-8">
 
             <div class="text-6xl mb-4">🛠️</div>
@@ -64,7 +77,7 @@
                 @endif
             </div>
 
-            <img src="{{ asset('storage/images/horizontalLogo-03.svg') }}" alt="Logo"
+            <img src="{{ $siteLogoUrl }}" alt="{{ $siteName }}"
                 class="h-20 w-auto mx-auto mb-8">
 
             <div class="text-6xl mb-4">🔒</div>
@@ -107,6 +120,62 @@
         </div>
     </div>
 @else
+    @push('meta')
+        <meta name="description" content="{{ $eventDescription }}">
+        <meta name="robots" content="index, follow">
+        <link rel="canonical" href="{{ $canonicalUrl }}">
+        <link rel="alternate" hreflang="en" href="{{ $canonicalUrl }}">
+        <link rel="alternate" hreflang="ar" href="{{ $canonicalUrl }}">
+        <link rel="alternate" hreflang="x-default" href="{{ $canonicalUrl }}">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="{{ $eventTitle }} | {{ $siteName }}">
+        <meta property="og:description" content="{{ $eventDescription }}">
+        <meta property="og:url" content="{{ $canonicalUrl }}">
+        <meta property="og:site_name" content="{{ $siteName }}">
+        <meta property="og:image" content="{{ $ogImage }}">
+        <meta property="og:locale" content="{{ $ogLocale }}">
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $eventTitle }} | {{ $siteName }}">
+        <meta name="twitter:description" content="{{ $eventDescription }}">
+        <meta name="twitter:image" content="{{ $ogImage }}">
+
+        @php
+            $eventJsonLd = array_filter([
+                '@context' => 'https://schema.org',
+                '@type' => 'Event',
+                'name' => $eventTitle,
+                'description' => $eventDescription,
+                'startDate' => $event->start_date?->format('Y-m-d'),
+                'endDate' => $event->end_date?->format('Y-m-d'),
+                'eventStatus' => 'https://schema.org/EventScheduled',
+                'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+                'url' => $canonicalUrl,
+                'image' => [$ogImage],
+                'location' => array_filter([
+                    '@type' => 'Place',
+                    'name' => $event->getTranslation('location', app()->getLocale()),
+                    'url' => $event->location_link ?: null,
+                ]),
+                'organizer' => $event->organizer ? array_filter([
+                    '@type' => 'Organization',
+                    'name' => $event->organizer,
+                    'telephone' => $event->organizer_phone ?: null,
+                ]) : null,
+                'offers' => $ticketTypes->map(fn ($ticketType) => [
+                    '@type' => 'Offer',
+                    'name' => $ticketType->getTranslation('name', app()->getLocale()),
+                    'price' => (string) $ticketType->price,
+                    'priceCurrency' => BookingSetting::get('currency_code', 'OMR'),
+                    'availability' => 'https://schema.org/InStock',
+                    'url' => $canonicalUrl,
+                ])->all(),
+            ]);
+        @endphp
+        <script type="application/ld+json">{!! json_encode($eventJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endpush
+
     <div class="min-h-screen bg-gray-50">
 
     {{-- ── Event Hero ── --}}
@@ -131,7 +200,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold leading-tight">
                     {{ $event->getTranslation('title', app()->getLocale()) }}
                 </h1>
-                <img src="{{ asset('storage/images/horizontalLogo-03.svg') }}" alt="Logo"
+                <img src="{{ $siteLogoUrl }}" alt="{{ $siteName }}"
                     class="h-40 sm:h-40 w-auto shrink-0">
             </div>
             <p class="mt-2 text-blue-100 text-base sm:text-lg line-clamp-4">

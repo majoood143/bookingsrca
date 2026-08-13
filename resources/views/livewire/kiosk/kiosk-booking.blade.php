@@ -2,6 +2,9 @@
     use App\Models\BookingSetting;
     use Illuminate\Support\Facades\Storage;
 
+    $siteName = BookingSetting::get('site_name_' . app()->getLocale(), config('app.name', 'Bookings'));
+    $siteLogo = BookingSetting::get('site_logo');
+    $siteLogoUrl = $siteLogo ? asset('storage/' . $siteLogo) : asset('storage/images/horizontalLogo-03.svg');
     $primaryColor = BookingSetting::get('primary_color', '#05602b');
     $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
 
@@ -114,7 +117,7 @@
         @endif
 
         <div class="relative z-10 text-center">
-            <img src="{{ asset('storage/images/horizontalLogo-03.svg') }}" alt="Logo" class="h-20 sm:h-40 w-auto mx-auto mb-5">
+            <img src="{{ $siteLogoUrl }}" alt="{{ $siteName }}" class="h-20 sm:h-40 w-auto mx-auto mb-5">
             <p class="uppercase tracking-[0.3em] text-xs font-bold {{ $slideshowImages->isNotEmpty() ? 'text-white/70' : 'text-gray-400' }}">{{ __('kiosk_booking.welcome.kiosk_tag') }}</p>
         </div>
 
@@ -137,7 +140,7 @@
     {{-- ── Header ── --}}
     <div class="bg-gradient-to-r from-brand to-brand-hover text-white">
         <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
-            <img src="{{ asset('storage/images/horizontalLogo-03.svg') }}" alt="Logo" class="h-20 sm:h-24 w-auto shrink-0">
+            <img src="{{ $siteLogoUrl }}" alt="{{ $siteName }}" class="h-20 sm:h-24 w-auto shrink-0">
 
             <div class="flex items-center gap-3">
                 @if (app()->getLocale() === 'ar')

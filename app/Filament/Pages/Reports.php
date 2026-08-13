@@ -140,6 +140,7 @@ class Reports extends Page implements HasForms
         $bookings = Booking::query()
             ->with(['event', 'ticketType', 'attendees'])
             ->whereBetween('created_at', [$from, $to])
+            ->whereIn('status', ['confirmed', 'checked_in'])
             ->when($eventId, fn($q) => $q->where('event_id', $eventId))
             ->when($eventDate, fn($q) => $q->where('event_date', $eventDate))
             ->when($timeSlotId, fn($q) => $q->where('time_slot_id', $timeSlotId))
@@ -149,11 +150,8 @@ class Reports extends Page implements HasForms
 
         $totalBookings    = $bookings->count();
         $confirmedCount   = $bookings->where('status', 'confirmed')->count();
-        $pendingCount     = $bookings->where('status', 'pending')->count();
-        $cancelledCount   = $bookings->where('status', 'cancelled')->count();
         $checkedInCount   = $bookings->where('status', 'checked_in')->count();
-        $refundedCount    = $bookings->where('status', 'refunded')->count();
-        $totalRevenue     = $bookings->whereIn('status', ['confirmed', 'checked_in'])->sum('total_price');
+        $totalRevenue     = $bookings->sum('total_price');
         $totalAttendees   = $bookings->sum('quantity');
 
         $byEvent = $bookings->groupBy('event_id')->map(function ($group) use ($locale) {
@@ -162,12 +160,9 @@ class Reports extends Page implements HasForms
                 'event'      => $first->event?->getTranslation('title', $locale) ?? '—',
                 'total'      => $group->count(),
                 'confirmed'  => $group->where('status', 'confirmed')->count(),
-                'pending'    => $group->where('status', 'pending')->count(),
-                'cancelled'  => $group->where('status', 'cancelled')->count(),
                 'checked_in' => $group->where('status', 'checked_in')->count(),
-                'refunded'   => $group->where('status', 'refunded')->count(),
                 'attendees'  => $group->sum('quantity'),
-                'revenue'    => $group->whereIn('status', ['confirmed', 'checked_in'])->sum('total_price'),
+                'revenue'    => $group->sum('total_price'),
             ];
         })->values();
 
@@ -177,14 +172,13 @@ class Reports extends Page implements HasForms
                 'ticket_type' => $first->ticketType?->getTranslation('name', $locale) ?? '—',
                 'bookings'    => $group->count(),
                 'attendees'   => $group->sum('quantity'),
-                'revenue'     => $group->whereIn('status', ['confirmed', 'checked_in'])->sum('total_price'),
+                'revenue'     => $group->sum('total_price'),
             ];
         })->values();
 
         return compact(
             'from', 'to',
-            'totalBookings', 'confirmedCount', 'pendingCount',
-            'cancelledCount', 'checkedInCount', 'refundedCount', 'totalRevenue',
+            'totalBookings', 'confirmedCount', 'checkedInCount', 'totalRevenue',
             'totalAttendees', 'byEvent', 'byTicket'
         );
     }

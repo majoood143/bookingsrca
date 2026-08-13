@@ -72,6 +72,7 @@ return [
         'check_in'          => 'Check In',
         'undo_check_in'     => 'Undo Check-In',
         'view_booking'      => 'View Booking',
+        'more_actions'        => 'More Actions',
     ],
 
     'tabs' => [

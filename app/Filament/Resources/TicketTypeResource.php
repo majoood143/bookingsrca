@@ -649,7 +649,7 @@ class TicketTypeResource extends Resource
                             }
                         }),
                 ])
-                    ->label('More actions')
+                    ->label(__('ticket_type.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(Size::Small)
                     ->color('primary')

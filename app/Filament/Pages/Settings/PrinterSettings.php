@@ -37,12 +37,12 @@ class PrinterSettings extends Page implements HasForms
 
     public function getTitle(): string
     {
-        return __('Printer Settings');
+        return __('printer_settings.title');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('Printer Settings');
+        return __('printer_settings.title');
     }
 
     public function mount(): void
@@ -69,49 +69,49 @@ class PrinterSettings extends Page implements HasForms
     {
         return $schema
             ->components([
-                Section::make(__('Thermal Printer'))
-                    ->description(__('The app is hosted online and cannot reach a printer on your on-site network directly. Attendee tickets are rendered here and queued; an on-site print agent (see print-agent/README.md) polls this app and delivers them to the printer over your local network.'))
+                Section::make(__('printer_settings.sections.thermal_printer'))
+                    ->description(__('printer_settings.sections.thermal_printer_desc'))
                     ->schema([
                         Toggle::make('enabled')
-                            ->label(__('Enable Thermal Printing'))
-                            ->helperText(__('When disabled, printing attendee tickets will show an error instead of queuing a job.'))
+                            ->label(__('printer_settings.fields.enabled'))
+                            ->helperText(__('printer_settings.fields.enabled_helper'))
                             ->live(),
 
                         Select::make('paper_width_dots')
-                            ->label(__('Paper Width'))
+                            ->label(__('printer_settings.fields.paper_width'))
                             ->options([
-                                '384' => __('58mm (384 dots)'),
-                                '576' => __('80mm (576 dots)'),
+                                '384' => __('printer_settings.fields.paper_width_384'),
+                                '576' => __('printer_settings.fields.paper_width_576'),
                             ])
                             ->required()
                             ->native(false),
 
                         Toggle::make('graphics_mode')
-                            ->label(__('Use Raster Graphics Mode'))
-                            ->helperText(__('Enable if your printer supports GS ( L raster graphics for higher quality output. Leave off to use the more widely compatible bit-image method.')),
+                            ->label(__('printer_settings.fields.graphics_mode'))
+                            ->helperText(__('printer_settings.fields.graphics_mode_helper')),
 
                         TextInput::make('chrome_path')
-                            ->label(__('Chrome/Chromium Executable Path (optional)'))
-                            ->helperText(__('Leave blank to let Puppeteer auto-detect a browser. Set this if ticket/receipt rendering fails with a "Could not find chrome-headless-shell" error — point it at an already-installed Chrome, e.g. "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" on Windows or "/usr/bin/google-chrome" on Linux.'))
+                            ->label(__('printer_settings.fields.chrome_path'))
+                            ->helperText(__('printer_settings.fields.chrome_path_helper'))
                             ->maxLength(500),
                     ]),
 
-                Section::make(__('On-Site Print Agent'))
-                    ->description(__('This token authenticates the on-site agent script when it polls this app for print jobs. Copy it into the agent\'s config.ini.'))
+                Section::make(__('printer_settings.sections.print_agent'))
+                    ->description(__('printer_settings.sections.print_agent_desc'))
                     ->schema([
                         TextInput::make('agent_token')
-                            ->label(__('Agent Token'))
+                            ->label(__('printer_settings.fields.agent_token'))
                             ->password()
                             ->revealable()
                             ->readOnly()
                             ->maxLength(255),
 
                         Placeholder::make('agent_last_seen_at')
-                            ->label(__('Agent Last Seen'))
+                            ->label(__('printer_settings.fields.agent_last_seen'))
                             ->content(fn () => $this->formatLastSeen()),
 
                         Placeholder::make('pending_jobs')
-                            ->label(__('Pending / Failed Jobs'))
+                            ->label(__('printer_settings.fields.pending_jobs'))
                             ->content(fn () => $this->formatJobCounts()),
                     ]),
             ])
@@ -123,7 +123,7 @@ class PrinterSettings extends Page implements HasForms
         $lastSeen = BookingSetting::get('printer.agent_last_seen_at');
 
         if (!$lastSeen) {
-            return __('Never — the on-site agent has not polled this app yet.');
+            return __('printer_settings.messages.agent_never_seen');
         }
 
         return \Illuminate\Support\Carbon::parse($lastSeen)->diffForHumans();
@@ -134,30 +134,30 @@ class PrinterSettings extends Page implements HasForms
         $pending = PrintJob::whereIn('status', ['pending', 'claimed'])->count();
         $failed  = PrintJob::where('status', 'failed')->count();
 
-        return __(':pending pending, :failed failed', ['pending' => $pending, 'failed' => $failed]);
+        return __('printer_settings.messages.job_counts', ['pending' => $pending, 'failed' => $failed]);
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('regenerate_token')
-                ->label(__('Regenerate Agent Token'))
+                ->label(__('printer_settings.actions.regenerate_token'))
                 ->icon('heroicon-o-key')
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription(__('The current token will stop working immediately — update the on-site agent\'s config.ini with the new value right after.'))
+                ->modalDescription(__('printer_settings.actions.regenerate_token_confirm'))
                 ->action(function () {
                     BookingSetting::set('printer.agent_token', Str::random(40));
                     $this->fillForm();
 
                     Notification::make()
                         ->success()
-                        ->title(__('Agent token regenerated.'))
+                        ->title(__('printer_settings.notifications.token_regenerated'))
                         ->send();
                 }),
 
             Action::make('send_test_print')
-                ->label(__('Send Test Print'))
+                ->label(__('printer_settings.actions.send_test_print'))
                 ->icon('heroicon-o-signal')
                 ->color('gray')
                 ->action(function () {
@@ -166,12 +166,12 @@ class PrinterSettings extends Page implements HasForms
 
                         Notification::make()
                             ->success()
-                            ->title(__('Test print queued — it will print once the on-site agent picks it up.'))
+                            ->title(__('printer_settings.notifications.test_print_queued'))
                             ->send();
                     } catch (Throwable $e) {
                         Notification::make()
                             ->danger()
-                            ->title(__('Test print failed.'))
+                            ->title(__('printer_settings.notifications.test_print_failed'))
                             ->body($e->getMessage())
                             ->send();
                     }
@@ -189,7 +189,7 @@ class PrinterSettings extends Page implements HasForms
         BookingSetting::set('printer.chrome_path', trim($state['chrome_path'] ?? ''));
 
         Notification::make()
-            ->title(__('Printer settings saved.'))
+            ->title(__('printer_settings.notifications.saved'))
             ->success()
             ->send();
     }

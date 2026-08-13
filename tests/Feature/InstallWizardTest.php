@@ -1,0 +1,166 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Livewire\Installer\InstallWizard;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
+use Livewire\Livewire;
+use PDO;
+use Tests\TestCase;
+
+/**
+ * This app's migrations use MySQL-only syntax (e.g. `ALTER TABLE ... MODIFY`),
+ * so — unlike the rest of the suite, which runs against sqlite per phpunit.xml —
+ * these tests point at a real, disposable MySQL database to match production.
+ */
+class InstallWizardTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected const TEST_DB = 'installer_wizard_test';
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        $pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '');
+        $pdo->exec('CREATE DATABASE IF NOT EXISTS `' . self::TEST_DB . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+
+        foreach ([
+            'DB_CONNECTION' => 'mysql',
+            'DB_HOST' => '127.0.0.1',
+            'DB_PORT' => '3306',
+            'DB_DATABASE' => self::TEST_DB,
+            'DB_USERNAME' => 'root',
+            'DB_PASSWORD' => '',
+        ] as $key => $value) {
+            putenv("{$key}={$value}");
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+        }
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        $pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '');
+        $pdo->exec('DROP DATABASE IF EXISTS `' . self::TEST_DB . '`');
+
+        foreach (['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'] as $key) {
+            putenv($key);
+            unset($_ENV[$key], $_SERVER[$key]);
+        }
+
+        parent::tearDownAfterClass();
+    }
+
+    protected function tearDown(): void
+    {
+        File::delete(storage_path('installed'));
+
+        parent::tearDown();
+    }
+
+    public function test_requirements_step_passes_and_advances(): void
+    {
+        Livewire::test(InstallWizard::class)
+            ->assertSet('step', 1)
+            ->call('continueFromRequirements')
+            ->assertSet('step', 2);
+    }
+
+    public function test_migrate_step_runs_migrations_and_shield_permissions(): void
+    {
+        Livewire::test(InstallWizard::class)
+            ->set('step', 4)
+            ->call('runMigrations')
+            ->assertSet('migrateSuccess', true)
+            ->call('continueFromMigrate')
+            ->assertSet('step', 5);
+
+        $this->assertGreaterThan(0, \Spatie\Permission\Models\Permission::count());
+    }
+
+    public function test_admin_account_is_created_with_super_admin_role_and_logged_in(): void
+    {
+        Livewire::test(InstallWizard::class)
+            ->set('step', 4)
+            ->call('runMigrations')
+            ->set('step', 5)
+            ->set('admin_name', 'Test Admin')
+            ->set('admin_email', 'admin@example.com')
+            ->set('admin_password', 'password123')
+            ->set('admin_password_confirmation', 'password123')
+            ->call('createAdmin')
+            ->assertSet('step', 6);
+
+        $admin = User::where('email', 'admin@example.com')->first();
+
+        $this->assertNotNull($admin);
+        $this->assertTrue($admin->hasRole('super_admin'));
+        $this->assertTrue($admin->is_active);
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_existing_admin_is_detected_and_create_form_is_skipped(): void
+    {
+        Livewire::test(InstallWizard::class)
+            ->set('step', 4)
+            ->call('runMigrations')
+            ->set('step', 5)
+            ->set('admin_name', 'Test Admin')
+            ->set('admin_email', 'admin@example.com')
+            ->set('admin_password', 'password123')
+            ->set('admin_password_confirmation', 'password123')
+            ->call('createAdmin');
+
+        Livewire::test(InstallWizard::class)
+            ->set('step', 5)
+            ->assertSee('admin@example.com');
+    }
+
+    public function test_finish_writes_lock_file_and_blocks_reaccess(): void
+    {
+        $this->assertFileDoesNotExist(storage_path('installed'));
+
+        Livewire::test(InstallWizard::class)
+            ->set('step', 6)
+            ->call('finish');
+
+        $this->assertFileExists(storage_path('installed'));
+
+        // mount() should now bounce anyone hitting /install straight to login.
+        Livewire::test(InstallWizard::class)
+            ->assertRedirect('/admin/login');
+    }
+
+    public function test_migrated_tables_without_populated_permissions_do_not_unlock_admin_step(): void
+    {
+        // Regression test: migrate table structure exists but shield:generate
+        // never ran (e.g. it failed silently) — this used to still let the
+        // wizard through to admin creation, producing a "super admin" with
+        // zero real permissions.
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+
+        Livewire::test(InstallWizard::class)
+            ->set('step', 4)
+            ->assertSet('isMigrated', false)
+            ->call('continueFromMigrate')
+            ->assertSet('step', 4);
+    }
+
+    public function test_admin_password_validation_requires_confirmation_and_minimum_length(): void
+    {
+        Livewire::test(InstallWizard::class)
+            ->set('step', 4)
+            ->call('runMigrations')
+            ->set('step', 5)
+            ->set('admin_name', 'Test Admin')
+            ->set('admin_email', 'admin@example.com')
+            ->set('admin_password', 'short')
+            ->set('admin_password_confirmation', 'short')
+            ->call('createAdmin')
+            ->assertHasErrors(['admin_password']);
+    }
+}

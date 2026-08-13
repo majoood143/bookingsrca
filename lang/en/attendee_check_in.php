@@ -9,6 +9,12 @@ return [
 
     'summary' => ':checked_in of :total checked in',
 
+    'event_progress' => [
+        'label' => 'Event Check-In Progress',
+        'summary' => ':checked_in of :total attendees checked in',
+        'complete' => 'All attendees checked in',
+    ],
+
     'search' => [
         'label' => 'Scan or Enter Code',
         'placeholder' => 'Booking reference, ticket number, or phone number',
@@ -35,5 +41,10 @@ return [
         'check_in_all_body' => ':count attendee(s) checked in',
         'refunded_title' => 'Booking refunded — do not admit',
         'refunded_body' => 'Booking :reference has been refunded and cannot be checked in.',
+        'date_restricted_title' => 'Check-in blocked — wrong event date',
+        'date_restricted_warning_title' => 'Event date mismatch',
+        'date_restricted_body_future' => 'This booking is for :date, a future date. Check-in for this event is not open yet.',
+        'date_restricted_body_past' => 'This booking was for :date, a past date. Check-in for this event has closed.',
+        'date_restricted_override_note' => 'You may still check in this attendee — please confirm this is intentional.',
     ],
 ];

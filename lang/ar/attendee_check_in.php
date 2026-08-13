@@ -9,6 +9,12 @@ return [
 
     'summary' => ':checked_in من :total تم تسجيل حضورهم',
 
+    'event_progress' => [
+        'label' => 'تقدم تسجيل حضور الفعالية',
+        'summary' => ':checked_in من :total تم تسجيل حضورهم',
+        'complete' => 'تم تسجيل حضور جميع المشاركين',
+    ],
+
     'search' => [
         'label' => 'امسح الرمز أو أدخله',
         'placeholder' => 'رقم الحجز، رقم التذكرة، أو رقم الهاتف',
@@ -35,5 +41,10 @@ return [
         'check_in_all_body' => 'تم تسجيل حضور :count مشارك',
         'refunded_title' => 'الحجز مسترد — لا يسمح بالدخول',
         'refunded_body' => 'تم استرداد الحجز :reference ولا يمكن تسجيل دخوله.',
+        'date_restricted_title' => 'تم منع تسجيل الحضور — تاريخ الفعالية غير مطابق',
+        'date_restricted_warning_title' => 'عدم تطابق تاريخ الفعالية',
+        'date_restricted_body_future' => 'هذا الحجز مخصص لتاريخ :date، وهو تاريخ مستقبلي. تسجيل الحضور لهذه الفعالية لم يفتح بعد.',
+        'date_restricted_body_past' => 'كان هذا الحجز لتاريخ :date، وهو تاريخ سابق. تسجيل الحضور لهذه الفعالية قد أُغلق.',
+        'date_restricted_override_note' => 'لا يزال بإمكانك تسجيل حضور هذا المشارك — يُرجى التأكد من أن ذلك مقصود.',
     ],
 ];

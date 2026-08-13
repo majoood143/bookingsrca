@@ -89,6 +89,7 @@ class AdminPanelProvider extends PanelProvider
 
             ])
             ->middleware([
+                \App\Http\Middleware\EnsureAppIsInstalled::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

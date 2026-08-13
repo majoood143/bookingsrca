@@ -88,6 +88,7 @@ return [
         'paid'           => 'المدفوع',
         'balance_due'    => 'المبلغ المستحق',
         'status'         => 'الحالة',
+        'source'         => 'المصدر',
         'action_view'    => 'عرض',
         'empty_heading'  => 'لا توجد حجوزات بها مبالغ مستحقة',
     ],

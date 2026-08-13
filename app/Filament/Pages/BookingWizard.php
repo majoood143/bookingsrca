@@ -261,30 +261,36 @@ class BookingWizard extends Page implements HasForms
                                 ->schema([
                                     TextInput::make('ticket_price')
                                         ->label(__('booking.fields.ticket_price'))
-                                        ->numeric()
-                                        ->prefix('OMR')
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->live()
-                                        ->default(0),
-
-                                    TextInput::make('services_price')
-                                        ->label(__('booking.fields.services_price'))
-                                        ->numeric()
-                                        ->prefix('OMR')
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->live()
-                                        ->default(0),
-
-                                    TextInput::make('total_price')
-                                        ->label(__('booking.fields.total_price'))
-                                        ->numeric()
+                                        //->numeric()
+                                        ->step(0.001)
                                         ->prefix('OMR')
                                         ->disabled()
                                         ->dehydrated()
                                         ->live()
                                         ->default(0)
+                                        ->formatStateUsing(fn ($state) => number_format((float) ($state ?? 0), 3, '.', '')),
+
+                                    TextInput::make('services_price')
+                                        ->label(__('booking.fields.services_price'))
+                                        //->numeric()
+                                        ->step(0.001)
+                                        ->prefix('OMR')
+                                        ->disabled()
+                                        ->dehydrated()
+                                        ->live()
+                                        ->default(0)
+                                        ->formatStateUsing(fn ($state) => number_format((float) ($state ?? 0), 3, '.', '')),
+
+                                    TextInput::make('total_price')
+                                        ->label(__('booking.fields.total_price'))
+                                        //->numeric()
+                                        ->step(0.001)
+                                        ->prefix('OMR')
+                                        ->disabled()
+                                        ->dehydrated()
+                                        ->live()
+                                        ->default(0)
+                                        ->formatStateUsing(fn ($state) => number_format((float) ($state ?? 0), 3, '.', ''))
                                         ->extraInputAttributes(['class' => 'text-lg font-bold']),
                                 ])
                                 ->columns(3),
@@ -299,12 +305,17 @@ class BookingWizard extends Page implements HasForms
                                         ->native(false)
                                         ->extraInputAttributes(['class' => 'text-lg']),
 
+                                    Hidden::make('payment_amount_is_manual')
+                                        ->default(false)
+                                        ->dehydrated(false),
+
                                     TextInput::make('payment_amount')
                                         ->label(__('booking.wizard.amount_received'))
-                                        ->numeric()
+                                        //->numeric()
                                         ->prefix('OMR')
-                                        ->default(fn (Get $get) => $get('total_price') ?: 0)
+                                        ->default(0)
                                         ->live(onBlur: true)
+                                        ->afterStateUpdated(fn (Set $set) => $set('payment_amount_is_manual', true))
                                         ->extraInputAttributes(['class' => 'text-lg']),
 
                                     TextInput::make('payment_reference')
@@ -660,9 +671,13 @@ class BookingWizard extends Page implements HasForms
             }
         }
 
-        $set($prefix.'ticket_price', number_format($ticketPrice, 2, '.', ''));
-        $set($prefix.'services_price', number_format($servicesPrice, 2, '.', ''));
-        $set($prefix.'total_price', number_format($ticketPrice + $servicesPrice, 2, '.', ''));
+        $set($prefix.'ticket_price', number_format($ticketPrice, 3, '.', ''));
+        $set($prefix.'services_price', number_format($servicesPrice, 3, '.', ''));
+        $set($prefix.'total_price', number_format($ticketPrice + $servicesPrice, 3, '.', ''));
+
+        if (! $get($prefix.'payment_amount_is_manual')) {
+            $set($prefix.'payment_amount', number_format($ticketPrice + $servicesPrice, 3, '.', ''));
+        }
     }
 
     protected static function renderTicketsRunningTotal(Get $get): HtmlString

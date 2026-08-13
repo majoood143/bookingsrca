@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\EventBooking;
 use App\Livewire\EventSignageDashboard;
+use App\Livewire\Installer\InstallWizard;
 use App\Livewire\Kiosk\KioskBooking;
 use App\Models\Event;
 use App\Http\Controllers\ThawaniCallbackController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\CCAvenueRedirectController;
 use App\Http\Controllers\CCAvenueCallbackController;
 use App\Http\Controllers\KioskHeartbeatController;
 use App\Http\Controllers\PrintAgentController;
+
+Route::get('/install', InstallWizard::class)->name('install');
 
 Route::get('/', function () {
     $events = Event::published()

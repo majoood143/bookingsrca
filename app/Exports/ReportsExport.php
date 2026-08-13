@@ -34,6 +34,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
         $query = Booking::query()
             ->with(['event', 'timeSlot', 'ticketType', 'attendees', 'extraServices'])
             ->whereBetween('created_at', [$this->from, $this->to])
+            ->whereIn('status', ['confirmed', 'checked_in'])
             ->orderBy('created_at', 'desc');
 
         if ($this->eventId) {

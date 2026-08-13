@@ -138,6 +138,7 @@ return [
         'activate_selected'   => 'Activate Selected',
         'deactivate_selected' => 'Deactivate Selected',
         'create_first'        => 'Create first ticket type',
+        'more_actions'         => 'More Actions',
     ],
 
     'modals' => [

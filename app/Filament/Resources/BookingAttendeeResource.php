@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use App\Exports\BookingAttendeesExport;
+use App\Models\BookingSetting;
 use Mpdf\Tag\Columns;
 
 class BookingAttendeeResource extends Resource
@@ -90,23 +91,28 @@ class BookingAttendeeResource extends Resource
                         TextEntry::make('date_of_birth')
                             ->label(__('booking_attendee.fields.date_of_birth'))
                             ->date('M d, Y')
-                            ->placeholder('—'),
+                            ->placeholder('—')
+                            ->visible(fn() => (bool) BookingSetting::get('show_date_of_birth', true)),
 
                         TextEntry::make('gender')
                             ->label(__('booking_attendee.fields.gender'))
-                            ->formatStateUsing(fn($state) => $state ? ucfirst($state) : '—'),
+                            ->formatStateUsing(fn($state) => $state ? ucfirst($state) : '—')
+                            ->visible(fn() => (bool) BookingSetting::get('show_gender', true)),
 
                         TextEntry::make('nationality')
                             ->label(__('booking_attendee.fields.nationality'))
-                            ->placeholder('—'),
+                            ->placeholder('—')
+                            ->visible(fn() => (bool) BookingSetting::get('show_nationality', true)),
 
                         TextEntry::make('identity_number')
                             ->label(__('booking_attendee.fields.identity_number'))
-                            ->placeholder('—'),
+                            ->placeholder('—')
+                            ->visible(fn() => (bool) BookingSetting::get('show_identity_number', true)),
 
                         TextEntry::make('passport_number')
                             ->label(__('booking_attendee.fields.passport_number'))
-                            ->placeholder('—'),
+                            ->placeholder('—')
+                            ->visible(fn() => (bool) BookingSetting::get('show_passport_number', true)),
 
                         IconEntry::make('has_identity_card_upload')
                             ->label(__('booking_attendee.fields.identity_card_upload'))
@@ -588,7 +594,7 @@ class BookingAttendeeResource extends Resource
                         ->url(fn(BookingAttendee $record) => BookingResource::getUrl('view', ['record' => $record->booking_id]))
                         ->openUrlInNewTab(),
                 ])
-                    ->label('Actions')
+                    ->label(__('booking_attendee.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(Size::Small)
                     ->color('primary')

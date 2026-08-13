@@ -42,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Email::class, EmailPolicy::class);
         Gate::policy(QueueMonitor::class, QueueMonitorPolicy::class);
 
+        // shuvroroy/filament-spatie-laravel-backup checks this ability to show
+        // the "Create Backup" button; tie it to the same permission that already
+        // gates access to the Backups page.
+        Gate::define('create-backup', fn ($user) => $user->can('View:Backups'));
+
         // Force HTTPS if you are on production SSL
         // if (config('app.env') === 'production' || str_contains(config('app.url'), 'https://')) {
         //     URL::forceScheme('https');
@@ -71,14 +76,16 @@ class AppServiceProvider extends ServiceProvider
             return Route::post('/events/livewire/update', $handle)->middleware('web');
         });
 
-        // Livewire::setScriptRoute(function ($handle) {
-        //     return Route::get('/events/livewire/livewire.js', $handle);
-        // });
+        // Livewire's own package provider boots after this one and unconditionally
+        // re-registers its default (non-aliased) script route, silently overwriting
+        // this override if set here directly. Registering it once every provider has
+        // booted guarantees this one is the one Livewire actually keeps.
+        $this->app->booted(function () {
+            Livewire::setScriptRoute(function ($handle) {
+                $filename = config('app.debug') ? 'livewire.js' : 'livewire.min.js';
 
-        Livewire::setScriptRoute(function ($handle) {
-            $filename = config('app.debug') ? 'livewire.js' : 'livewire.min.js';
-
-            return Route::get("/events/livewire/{$filename}", $handle);
+                return Route::get("/events/livewire/{$filename}", $handle);
+            });
         });
 
         //

@@ -5,6 +5,10 @@ namespace App\Filament\Resources\BookingResource\Pages;
 use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Notifications\Notification;
 use App\Mail\BookingConfirmation;
 use App\Services\Printing\ThermalPrintService;
@@ -42,14 +46,51 @@ class ViewBooking extends ViewRecord
                 ->label(__('booking.actions.confirm_booking'))
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->action(function () {
-                    $this->record->confirm();
+                ->schema([
+                    Grid::make(2)->schema([
+                        Select::make('payment_method')
+                            ->label(__('booking.payments.fields.method'))
+                            ->options([
+                                'cash' => __('booking.payments.methods.cash'),
+                                'credit_debit' => __('booking.payments.methods.credit_debit'),
+                                'partial' => __('booking.payments.methods.partial'),
+                            ])
+                            ->default('cash')
+                            ->required()
+                            ->native(false)
+                            ->live(),
+
+                        TextInput::make('amount')
+                            ->label(__('booking.payments.fields.amount'))
+                            ->numeric()
+                            ->prefix('OMR')
+                            ->minValue(0)
+                            ->required()
+                            ->default(fn() => round($this->record->balance_due, 2))
+                            ->helperText(fn() => __('booking.payments.summary.balance_due') . ': OMR ' . number_format($this->record->balance_due, 2)),
+                    ]),
+
+                    TextInput::make('reference')
+                        ->label(__('booking.payments.fields.reference'))
+                        ->required(fn(Get $get) => $get('payment_method') === 'credit_debit')
+                        ->maxLength(255),
+
+                    Textarea::make('notes')
+                        ->label(__('booking.payments.fields.notes'))
+                        ->rows(2),
+                ])
+                ->action(function (array $data) {
+                    $this->record->recordPaymentAndConfirm($data);
                     Notification::make()
                         ->success()
                         ->title(__('booking.notifications.booking_confirmed'))
+                        ->body(__('booking.notifications.booking_confirmed_body'))
                         ->send();
                 })
                 ->requiresConfirmation()
+                ->modalHeading(__('booking.modals.confirm_payment_heading'))
+                ->modalDescription(fn() => __('booking.modals.confirm_payment_description', ['amount' => number_format($this->record->balance_due, 2)]))
+                ->modalSubmitActionLabel(__('booking.modals.confirm_payment_submit'))
                 ->visible(fn() => $this->record->status === 'pending'),
 
             Action::make('cancel')

@@ -116,6 +116,9 @@ return [
 
         'terms_en'                => 'Terms & Conditions (English)',
         'terms_ar'                => 'Terms & Conditions (Arabic)',
+        'terms_url_en'            => 'Full Terms Link (English)',
+        'terms_url_ar'            => 'Full Terms Link (Arabic)',
+        'terms_url_helper'        => 'Optional. Link to a full terms & conditions page shown next to the agreement checkbox. Leave blank to hide the link',
 
         'admission_policies_en'      => 'Admission & Visiting Policies (English)',
         'admission_policies_ar'      => 'Admission & Visiting Policies (Arabic)',
@@ -179,6 +182,8 @@ return [
         'status'      => 'Status',
         'bookings'    => 'Bookings',
         'capacity'    => 'Capacity',
+        'commission'  => 'Effective Commission',
+        'no_commission' => 'No commission set',
         'created_at'  => 'Created At',
         'updated_at'  => 'Updated At',
     ],
@@ -203,6 +208,7 @@ return [
         'publish_selected'=> 'Publish Selected',
         'move_to_draft'   => 'Move to Draft',
         'create_first'    => 'Create your first event',
+        'more_actions'     => 'More Actions',
     ],
 
     'empty_state' => [

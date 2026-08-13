@@ -326,6 +326,9 @@ return [
         'refund_heading'              => 'استرداد الحجز',
         'refund_description'          => 'سيتم تعليم الحجز كمسترد، واستبعاده من المبيعات، وإعادة تذاكره إلى المخزون. لا يمكن التراجع عن هذا الإجراء.',
         'refund_reason'               => 'السبب (اختياري)',
+        'confirm_payment_heading'      => 'تسجيل الدفعة وتأكيد الحجز',
+        'confirm_payment_description'  => 'سجّل الدفعة المستلمة قبل تأكيد هذا الحجز. المبلغ المتبقي: :amount ر.ع.',
+        'confirm_payment_submit'       => 'تسجيل الدفعة والتأكيد',
     ],
 
     'notifications' => [

@@ -8,6 +8,7 @@ use App\Enums\Gender;
 use App\Enums\MaritalStatus;
 use App\Enums\UserPrefix;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Panel;
 
-class User extends Authenticatable implements HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles, LogsActivity;

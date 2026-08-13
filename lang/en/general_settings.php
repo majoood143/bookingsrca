@@ -9,6 +9,7 @@ return [
         'general' => 'General',
         'branding' => 'Branding & Appearance',
         'booking_rules' => 'Booking Rules',
+        'check_in' => 'Check-In',
         'attendee_fields' => 'Attendee Fields',
         'terms' => 'Terms & Conditions',
         'modules' => 'Modules',
@@ -24,10 +25,14 @@ return [
         'colors' => 'Theme Colors',
         'colors_desc' => 'Colors used on the public booking site and in the control panel.',
         'booking_rules' => 'Booking Rules',
+        'check_in' => 'Check-In Date Restriction',
+        'check_in_desc' => 'Control whether staff can check in attendees for bookings outside the event\'s scheduled date on the Check-In Scan page.',
         'attendee_fields' => 'Attendee Fields',
         'attendee_fields_desc' => 'Choose which fields are shown on the booking form.',
         'modules' => 'Modules',
         'modules_desc' => 'Enable or disable optional features across the system.',
+        'terms_url' => 'Full Terms Link',
+        'terms_url_desc' => 'Optional link to a full terms & conditions page shown next to the agreement checkbox. Used when an event has no terms link of its own. Leave blank to hide the link.',
     ],
 
     'fields' => [
@@ -60,6 +65,15 @@ return [
         'show_slot_end_time' => 'Show Time Slot End Time',
         'show_slot_end_time_helper' => 'When off, only the start time is shown for time slots on the booking and kiosk pages (e.g. "09:00" instead of "09:00 - 10:00").',
 
+        'checkin_date_restriction_enabled' => 'Restrict Check-In to Event Date',
+        'checkin_date_restriction_enabled_helper' => 'When enabled, the Check-In Scan page checks the booking\'s event date before allowing check-in.',
+        'checkin_date_restriction_mode' => 'When a Wrong Date Is Scanned',
+        'checkin_date_restriction_mode_helper' => '"Block" refuses check-in entirely. "Warn" shows a popup but still lets staff proceed — useful if early arrivals or late walk-ins are common.',
+        'checkin_date_restriction_mode_block' => 'Block check-in entirely',
+        'checkin_date_restriction_mode_warn' => 'Warn, but allow staff to override',
+        'checkin_date_grace_days' => 'Grace Period (Days)',
+        'checkin_date_grace_days_helper' => 'Allow check-in this many days before and after the scheduled event date without triggering the restriction. Use 0 for single-day, exact-date-only events, or a higher number for multi-day festivals.',
+
         'show_email' => 'Show Email Field',
         'show_phone' => 'Show Mobile Number Field',
         'show_date_of_birth' => 'Show Date of Birth Field',
@@ -69,6 +83,8 @@ return [
 
         'terms_en' => 'Terms & Conditions (English)',
         'terms_ar' => 'Terms & Conditions (Arabic)',
+        'terms_url_en' => 'Full Terms Link (English)',
+        'terms_url_ar' => 'Full Terms Link (Arabic)',
 
         'module_kiosk_enabled' => 'Kiosk Check-in Module',
         'module_kiosk_enabled_helper' => 'Enables the self-service kiosk check-in module and its navigation.',
@@ -80,6 +96,8 @@ return [
         'module_promo_codes_enabled_helper' => 'Allows customers to apply promo codes for a discount at checkout.',
         'module_expenses_enabled' => 'Expenses Module',
         'module_expenses_enabled_helper' => 'Enables expense and expense category tracking, and the Expenses tab on bookings.',
+        'module_commission_enabled' => 'Commission Module',
+        'module_commission_enabled_helper' => 'Enables commission settings, the effective-commission column on Events, and the Commission Report.',
     ],
 
     'notifications' => [

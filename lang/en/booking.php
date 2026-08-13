@@ -326,6 +326,9 @@ return [
         'refund_heading'             => 'Refund Booking',
         'refund_description'         => 'This will mark the booking as refunded, exclude it from sales, and return its tickets to stock. This cannot be undone.',
         'refund_reason'              => 'Reason (optional)',
+        'confirm_payment_heading'     => 'Record Payment & Confirm Booking',
+        'confirm_payment_description' => 'Record the payment received before confirming this booking. Balance due: OMR :amount.',
+        'confirm_payment_submit'      => 'Record Payment & Confirm',
     ],
 
     'notifications' => [

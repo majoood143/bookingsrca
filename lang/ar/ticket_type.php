@@ -138,6 +138,7 @@ return [
         'activate_selected'   => 'تفعيل المحدد',
         'deactivate_selected' => 'تعطيل المحدد',
         'create_first'        => 'أنشئ أول نوع تذكرة',
+        'more_actions'         => 'خيارات',
     ],
 
     'modals' => [

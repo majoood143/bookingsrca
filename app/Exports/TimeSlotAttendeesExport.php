@@ -23,7 +23,8 @@ class TimeSlotAttendeesExport implements FromCollection, WithHeadings, WithMappi
     public function collection()
     {
         return BookingAttendee::query()
-            ->whereHas('booking', fn($query) => $query->where('time_slot_id', $this->timeSlot->id))
+            ->whereHas('booking', fn($query) => $query->where('time_slot_id', $this->timeSlot->id)
+                ->where('status', 'confirmed'))
             ->with(['booking', 'ticketType'])
             ->get();
     }

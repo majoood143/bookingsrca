@@ -7,6 +7,7 @@ use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\DB;
@@ -84,6 +85,22 @@ class BalanceDueBookingsWidget extends BaseWidget
                         'success' => 'confirmed',
                         'info'    => 'checked_in',
                     ]),
+
+                BadgeColumn::make('source')
+                    ->label(__('widgets.balance_due_bookings.source'))
+                    ->formatStateUsing(fn ($state) => __('booking.options.source')[$state] ?? $state)
+                    ->sortable()
+                    ->colors([
+                        'info'    => 'online',
+                        'gray'    => 'admin',
+                        'success' => 'kiosk',
+                    ]),
+            ])
+            ->filters([
+                SelectFilter::make('source')
+                    ->label(__('widgets.balance_due_bookings.source'))
+                    ->options(__('booking.options.source'))
+                    ->multiple(),
             ])
             ->recordActions([
                 Action::make('view')

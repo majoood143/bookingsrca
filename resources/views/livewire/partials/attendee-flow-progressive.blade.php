@@ -177,9 +177,15 @@
                             {{ $errors->has('agreedToTerms') ? 'border-red-400 ring-1 ring-red-300' : '' }}">
                     <label for="agreedToTermsProgressive" class="text-sm text-gray-700 cursor-pointer leading-snug">
                         {{ __('event_booking.step5.terms_agree') }}
-                        <a href="{{ app()->getLocale() === 'ar' ? 'https://razatfarm.gov.om/terms-of-use/' : 'https://razatfarm.gov.om/en/terms-of-use/' }}"
-                            target="_blank" rel="noopener noreferrer"
-                            class="font-semibold text-gray-900 underline hover:text-brand">{{ __('event_booking.step5.terms_heading') }}</a>
+                        @php
+                            $termsUrl = app()->getLocale() === 'ar' ? $termsUrlAr : $termsUrlEn;
+                        @endphp
+                        @if ($termsUrl)
+                            <a href="{{ $termsUrl }}" target="_blank" rel="noopener noreferrer"
+                                class="font-semibold text-gray-900 underline hover:text-brand">{{ __('event_booking.step5.terms_heading') }}</a>
+                        @else
+                            <span class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
+                        @endif
                         <span class="text-red-500 ml-0.5">*</span>
                     </label>
                 </div>

@@ -35,13 +35,14 @@ class Event extends Model
         'timeline',
         'faq',
         'terms_and_conditions',
+        'terms_url',
         'admission_policies',
         'promotional_video_url',
     ];
 
     protected $hidden = ['password'];
 
-    protected $translatable = ['title', 'description', 'location', 'organizer', 'timeline', 'terms_and_conditions', 'admission_policies'];
+    protected $translatable = ['title', 'description', 'location', 'organizer', 'timeline', 'terms_and_conditions', 'terms_url', 'admission_policies'];
 
     protected $casts = [
         'recurring_days' => 'array',
@@ -61,7 +62,7 @@ class Event extends Model
                 'status', 'start_date', 'end_date', 'max_attendees',
                 'booking_cutoff_enabled', 'booking_cutoff_value', 'booking_cutoff_unit',
                 'is_recurring', 'recurring_days',
-                'timeline', 'faq', 'terms_and_conditions', 'admission_policies', 'promotional_video_url',
+                'timeline', 'faq', 'terms_and_conditions', 'terms_url', 'admission_policies', 'promotional_video_url',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
@@ -102,6 +103,11 @@ class Event extends Model
     public function expenses()
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function commissionSettings()
+    {
+        return $this->hasMany(CommissionSetting::class);
     }
 
     public function signageSetting()

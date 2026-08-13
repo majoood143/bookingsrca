@@ -228,7 +228,7 @@ class UserResource extends Resource
                     ViewAction::make(),
                     EditAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label(__('user.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(Size::Small)
                     ->color('primary')

@@ -5,7 +5,7 @@
 
         <div class="mt-6 flex justify-end">
             <x-filament::button type="submit" size="lg">
-                {{ __('Save Settings') }}
+                {{ __('printer_settings.save') }}
             </x-filament::button>
         </div>
     </form>

@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Apply locale from session on every web request
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\EnsureAppIsInstalled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

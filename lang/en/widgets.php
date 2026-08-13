@@ -88,6 +88,7 @@ return [
         'paid'           => 'Paid',
         'balance_due'    => 'Balance Due',
         'status'         => 'Status',
+        'source'         => 'Source',
         'action_view'    => 'View',
         'empty_heading'  => 'No bookings with an outstanding balance',
     ],

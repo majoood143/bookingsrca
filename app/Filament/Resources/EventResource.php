@@ -45,7 +45,9 @@ use App\Filament\Resources\EventResource\Pages\ViewEvent;
 use App\Filament\Resources\EventResource\Pages\ListEventActivities;
 use App\Filament\Resources\EventResource\Pages;
 use App\Filament\Resources\EventResource\RelationManagers;
+use App\Models\BookingSetting;
 use App\Models\Event;
+use App\Services\CommissionService;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -341,6 +343,21 @@ class EventResource extends Resource
                                         RichEditor::make('terms_and_conditions.ar')
                                             ->label(__('event.fields.terms_ar'))
                                             ->fileAttachmentsDisk('public'),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('terms_url.en')
+                                                    ->label(__('event.fields.terms_url_en'))
+                                                    ->helperText(__('event.fields.terms_url_helper'))
+                                                    ->url()
+                                                    ->maxLength(255),
+
+                                                TextInput::make('terms_url.ar')
+                                                    ->label(__('event.fields.terms_url_ar'))
+                                                    ->helperText(__('event.fields.terms_url_helper'))
+                                                    ->url()
+                                                    ->maxLength(255),
+                                            ]),
                                     ])
                                     ->columns(1)
                                     ->collapsible()
@@ -646,7 +663,7 @@ class EventResource extends Resource
                 ImageColumn::make('image')
                     ->label(__('event.columns.image'))
                     ->circular()
-                    ->defaultImageUrl(url('/images/placeholder-event.png')),
+                    ->defaultImageUrl(asset('storage/images/horizontalLogo-03.svg')),
 
                 TextColumn::make('title')
                     ->label(__('event.columns.title'))
@@ -713,6 +730,19 @@ class EventResource extends Resource
                 TextColumn::make('max_attendees')
                     ->label(__('event.columns.capacity'))
                     ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('effective_commission')
+                    ->label(__('event.columns.commission'))
+                    ->getStateUsing(function (Event $record) {
+                        $setting = app(CommissionService::class)->resolveForEvent($record);
+
+                        return $setting?->formatted_rate;
+                    })
+                    ->badge()
+                    ->color(fn ($state) => $state ? 'success' : 'gray')
+                    ->placeholder(__('event.columns.no_commission'))
+                    ->visible(fn () => (bool) BookingSetting::get('module_commission_enabled', true))
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
@@ -807,7 +837,7 @@ class EventResource extends Resource
                         })
                         ->requiresConfirmation(),
                 ])
-                    ->label('More actions')
+                    ->label(__('event.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(Size::Small)
                     ->color('primary')

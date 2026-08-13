@@ -66,9 +66,9 @@ class Booking extends Model
 
     protected $casts = [
         'event_date' => 'date',
-        'ticket_price' => 'decimal:2',
-        'services_price' => 'decimal:2',
-        'total_price' => 'decimal:2',
+        'ticket_price' => 'decimal:3',
+        'services_price' => 'decimal:3',
+        'total_price' => 'decimal:3',
         'discount_amount' => 'decimal:2',
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
@@ -188,6 +188,23 @@ class Booking extends Model
         };
 
         $this->update(['payment_status' => $status]);
+    }
+
+    // Records a payment (when an amount is given) before confirming the booking,
+    // so admins can settle the balance due as part of the confirmation step.
+    public function recordPaymentAndConfirm(array $paymentData): void
+    {
+        if ((float) ($paymentData['amount'] ?? 0) > 0) {
+            $this->payments()->create([
+                'payment_method' => $paymentData['payment_method'],
+                'amount' => $paymentData['amount'],
+                'reference' => $paymentData['reference'] ?? null,
+                'notes' => $paymentData['notes'] ?? null,
+                'recorded_by' => auth()->id(),
+            ]);
+        }
+
+        $this->confirm();
     }
 
     // Updated confirm method

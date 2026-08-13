@@ -185,8 +185,10 @@ return [
     'release_token' => 'a',
 
 
-    #'asset_url' => 'https://razatfarm.gov.om/events/',
-    // 'asset_url' => rtrim(config('app.url'), '/') . '/livewire/livewire.js',
-    'asset_url' => rtrim(config('app.url'), '/') . '/livewire/' . (config('app.debug') ? 'livewire.js' : 'livewire.min.js'),
+    // Left unset so the script tag's URL comes from the custom route registered
+    // in AppServiceProvider (which correctly includes the /events/ prefix this
+    // app is served under). A hardcoded value here previously overrode that
+    // route and pointed at a URL missing the /events/ prefix.
+    'asset_url' => null,
 
 ];

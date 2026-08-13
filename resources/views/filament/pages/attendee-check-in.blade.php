@@ -40,6 +40,44 @@
             </button>
         </div>
 
+        @if ($eventStats)
+            @php
+                $eventProgress = $eventStats['total'] > 0
+                    ? (int) round(($eventStats['checked_in'] / $eventStats['total']) * 100)
+                    : 0;
+                $eventTitle = $eventStats['event_title'][$locale] ?? ($eventStats['event_title']['en'] ?? null);
+                $eventComplete = $eventStats['total'] > 0 && $eventStats['checked_in'] >= $eventStats['total'];
+            @endphp
+            <div
+                class="border rounded-xl p-4 shadow-sm"
+                style="background-color: {{ $eventComplete ? '#f0fdf4' : '#eef2ff' }}; border-color: {{ $eventComplete ? '#bbf7d0' : '#c7d2fe' }};"
+            >
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium uppercase tracking-wide" style="color: {{ $eventComplete ? '#15803d' : '#4338ca' }};">
+                            {{ __('attendee_check_in.event_progress.label') }}
+                        </p>
+                        <p class="text-sm font-semibold truncate" style="color: {{ $eventComplete ? '#14532d' : '#312e81' }};">
+                            {{ $eventTitle }} · {{ $eventStats['event_date'] }}
+                        </p>
+                    </div>
+                    <p class="text-lg font-bold shrink-0" style="color: {{ $eventComplete ? '#15803d' : '#4338ca' }};">
+                        @if ($eventComplete)
+                            {{ __('attendee_check_in.event_progress.complete') }}
+                        @else
+                            {{ __('attendee_check_in.event_progress.summary', ['checked_in' => $eventStats['checked_in'], 'total' => $eventStats['total']]) }}
+                        @endif
+                    </p>
+                </div>
+                <div class="mt-2 w-full rounded-full overflow-hidden" style="height: 8px; background-color: {{ $eventComplete ? '#bbf7d0' : '#c7d2fe' }};">
+                    <div
+                        class="h-full rounded-full transition-all duration-300"
+                        style="width: {{ $eventProgress }}%; background-color: {{ $eventComplete ? '#16a34a' : '#4f46e5' }};"
+                    ></div>
+                </div>
+            </div>
+        @endif
+
         <form wire:submit.prevent="search" x-on:keydown.enter.prevent="$wire.search()">
             {{ $this->form }}
         </form>

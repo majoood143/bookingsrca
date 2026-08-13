@@ -101,6 +101,7 @@ return [
         'export'              => 'Export',
         'view_attendees'      => 'Attendees',
         'download_attendees'  => 'Download Attendees',
+        'more_actions'         => 'More Actions',
     ],
 
     'tooltips' => [

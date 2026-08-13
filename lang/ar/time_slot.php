@@ -101,6 +101,7 @@ return [
         'export'              => 'تصدير',
         'view_attendees'      => 'الحضور',
         'download_attendees'  => 'تنزيل الحضور',
+        'more_actions'         => 'خيارات',
     ],
 
     'tooltips' => [

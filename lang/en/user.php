@@ -83,5 +83,11 @@ return [
         'o+'  => 'O+',
         'o-'  => 'O-',
     ],
+    'actions' => [
+        'create' => 'Create New User',
+        'edit'   => 'Edit User',
+        'delete' => 'Delete User',
+        'more_actions' => 'More Actions'
+    ],
 
 ];

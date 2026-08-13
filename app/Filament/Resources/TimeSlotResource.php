@@ -521,7 +521,7 @@ class TimeSlotResource extends Resource
                             }
                         }),
                 ])
-                    ->label('More actions')
+                    ->label(__('time_slot.actions.more_actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(Size::Small)
                     ->color('primary')

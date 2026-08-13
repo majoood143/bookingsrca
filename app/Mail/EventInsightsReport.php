@@ -3,15 +3,11 @@
 namespace App\Mail;
 
 use App\Models\Event;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 
-class EventInsightsReport extends Mailable implements ShouldQueue
+class EventInsightsReport extends Mailable
 {
-    use Queueable, SerializesModels;
 
     public function __construct(
         public Event $event,

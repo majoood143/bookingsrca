@@ -32,12 +32,12 @@ class PaymentGateways extends Page implements HasForms
 
     public function getTitle(): string
     {
-        return __('Payment Gateways');
+        return __('payment_gateways.title');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('Payment Gateways');
+        return __('payment_gateways.title');
     }
 
     public function mount(): void
@@ -72,50 +72,50 @@ class PaymentGateways extends Page implements HasForms
     {
         return $schema
             ->components([
-                Section::make(__('Active Gateway'))
-                    ->description(__('Choose which payment gateway is used during checkout.'))
+                Section::make(__('payment_gateways.sections.active_gateway'))
+                    ->description(__('payment_gateways.sections.active_gateway_desc'))
                     ->schema([
                         Select::make('active_gateway')
-                            ->label(__('Active Payment Gateway'))
+                            ->label(__('payment_gateways.options.active_gateway'))
                             ->options([
-                                'free'    => __('Free (no payment required)'),
-                                'cash'    => __('Cash / Pay at Door'),
-                                'thawani'  => __('Thawani'),
-                                'nbo'      => __('NBO Unified Checkout'),
-                                'ccavenue' => __('CCAvenue (Bank Muscat)'),
+                                'free'    => __('payment_gateways.options.free'),
+                                'cash'    => __('payment_gateways.options.cash'),
+                                'thawani'  => __('payment_gateways.options.thawani'),
+                                'nbo'      => __('payment_gateways.options.nbo'),
+                                'ccavenue' => __('payment_gateways.options.ccavenue'),
                             ])
                             ->required()
                             ->live()
                             ->native(false),
                     ]),
 
-                Section::make(__('Thawani Settings'))
-                    ->description(__('Credentials for the Thawani payment gateway.'))
+                Section::make(__('payment_gateways.sections.thawani'))
+                    ->description(__('payment_gateways.sections.thawani_desc'))
                     ->visible(fn ($get) => $get('active_gateway') === 'thawani')
                     ->schema([
                         Toggle::make('thawani.test_mode')
-                            ->label(__('Test Mode'))
-                            ->helperText(__('When enabled, requests go to uatcheckout.thawani.om instead of the live endpoint.'))
+                            ->label(__('payment_gateways.fields.test_mode'))
+                            ->helperText(__('payment_gateways.fields.thawani_test_mode_helper'))
                             ->default(true)
                             ->live(),
 
                         Group::make([
                             TextInput::make('thawani.secret_key')
-                                ->label(__('Secret Key'))
+                                ->label(__('payment_gateways.fields.secret_key'))
                                 ->password()
                                 ->revealable()
                                 ->required(fn ($get) => $get('active_gateway') === 'thawani')
                                 ->maxLength(255),
 
                             TextInput::make('thawani.publishable_key')
-                                ->label(__('Publishable Key'))
+                                ->label(__('payment_gateways.fields.publishable_key'))
                                 ->required(fn ($get) => $get('active_gateway') === 'thawani')
                                 ->maxLength(255),
                         ])->columns(2),
 
                         TextInput::make('thawani.base_url')
-                            ->label(__('Base URL Override'))
-                            ->helperText(__('Leave blank to use the default URL based on test-mode setting.'))
+                            ->label(__('payment_gateways.fields.base_url_override'))
+                            ->helperText(__('payment_gateways.fields.url_override_helper'))
                             ->url()
                             ->placeholder(fn ($get) => $get('thawani.test_mode')
                                 ? 'https://uatcheckout.thawani.om'
@@ -123,31 +123,31 @@ class PaymentGateways extends Page implements HasForms
                             ->maxLength(255),
 
                         TextInput::make('thawani.webhook_secret')
-                            ->label(__('Webhook Secret'))
-                            ->helperText(__('Optional HMAC-SHA256 secret used to verify incoming Thawani webhook events.'))
+                            ->label(__('payment_gateways.fields.webhook_secret'))
+                            ->helperText(__('payment_gateways.fields.webhook_secret_helper'))
                             ->password()
                             ->revealable()
                             ->maxLength(255),
                     ]),
 
-                Section::make(__('NBO Settings'))
-                    ->description(__('Credentials for the NBO Unified Checkout payment gateway.'))
+                Section::make(__('payment_gateways.sections.nbo'))
+                    ->description(__('payment_gateways.sections.nbo_desc'))
                     ->visible(fn ($get) => $get('active_gateway') === 'nbo')
                     ->schema([
                         Toggle::make('nbo.test_mode')
-                            ->label(__('Test Mode'))
-                            ->helperText(__('When enabled, requests go to the NBO sandbox endpoint instead of the live endpoint.'))
+                            ->label(__('payment_gateways.fields.test_mode'))
+                            ->helperText(__('payment_gateways.fields.nbo_test_mode_helper'))
                             ->default(true)
                             ->live(),
 
                         Group::make([
                             TextInput::make('nbo.tranportal_id')
-                                ->label(__('Tranportal ID'))
+                                ->label(__('payment_gateways.fields.tranportal_id'))
                                 ->required(fn ($get) => $get('active_gateway') === 'nbo')
                                 ->maxLength(255),
 
                             TextInput::make('nbo.tranportal_password')
-                                ->label(__('Tranportal Password'))
+                                ->label(__('payment_gateways.fields.tranportal_password'))
                                 ->password()
                                 ->revealable()
                                 ->required(fn ($get) => $get('active_gateway') === 'nbo')
@@ -155,16 +155,16 @@ class PaymentGateways extends Page implements HasForms
                         ])->columns(2),
 
                         TextInput::make('nbo.resource_key')
-                            ->label(__('Resource Key'))
-                            ->helperText(__('AES encryption key provided by NBO. Must be exactly 16 characters.'))
+                            ->label(__('payment_gateways.fields.resource_key'))
+                            ->helperText(__('payment_gateways.fields.resource_key_helper'))
                             ->password()
                             ->revealable()
                             ->required(fn ($get) => $get('active_gateway') === 'nbo')
                             ->maxLength(255),
 
                         TextInput::make('nbo.endpoint_url')
-                            ->label(__('Endpoint URL Override'))
-                            ->helperText(__('Leave blank to use the default URL based on test-mode setting.'))
+                            ->label(__('payment_gateways.fields.endpoint_url_override'))
+                            ->helperText(__('payment_gateways.fields.url_override_helper'))
                             ->url()
                             ->placeholder(fn ($get) => $get('nbo.test_mode')
                                 ? 'https://unifiedpg.nbo.om/OLTPSTG/payment/hosted.htm'
@@ -172,24 +172,24 @@ class PaymentGateways extends Page implements HasForms
                             ->maxLength(255),
                     ]),
 
-                Section::make(__('CCAvenue Settings'))
-                    ->description(__('Credentials for the CCAvenue (Bank Muscat MCPG) payment gateway.'))
+                Section::make(__('payment_gateways.sections.ccavenue'))
+                    ->description(__('payment_gateways.sections.ccavenue_desc'))
                     ->visible(fn ($get) => $get('active_gateway') === 'ccavenue')
                     ->schema([
                         Toggle::make('ccavenue.test_mode')
-                            ->label(__('Test Mode'))
-                            ->helperText(__('When enabled, requests go to the CCAvenue sandbox endpoint instead of the live endpoint.'))
+                            ->label(__('payment_gateways.fields.test_mode'))
+                            ->helperText(__('payment_gateways.fields.ccavenue_test_mode_helper'))
                             ->default(true)
                             ->live(),
 
                         Group::make([
                             TextInput::make('ccavenue.merchant_id')
-                                ->label(__('Merchant ID'))
+                                ->label(__('payment_gateways.fields.merchant_id'))
                                 ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
                                 ->maxLength(255),
 
                             TextInput::make('ccavenue.access_code')
-                                ->label(__('Access Code'))
+                                ->label(__('payment_gateways.fields.access_code'))
                                 ->password()
                                 ->revealable()
                                 ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
@@ -197,16 +197,16 @@ class PaymentGateways extends Page implements HasForms
                         ])->columns(2),
 
                         TextInput::make('ccavenue.working_key')
-                            ->label(__('Working Key'))
-                            ->helperText(__('AES-256 encryption key provided by Bank Muscat/CCAvenue.'))
+                            ->label(__('payment_gateways.fields.working_key'))
+                            ->helperText(__('payment_gateways.fields.working_key_helper'))
                             ->password()
                             ->revealable()
                             ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
                             ->maxLength(255),
 
                         TextInput::make('ccavenue.endpoint_url')
-                            ->label(__('Endpoint URL Override'))
-                            ->helperText(__('Leave blank to use the placeholder default; must be overridden with the real Bank Muscat/CCAvenue transaction URL before going live.'))
+                            ->label(__('payment_gateways.fields.endpoint_url_override'))
+                            ->helperText(__('payment_gateways.fields.ccavenue_endpoint_url_helper'))
                             ->url()
                             ->placeholder(fn ($get) => $get('ccavenue.test_mode')
                                 ? 'https://mti.bankmuscat.com:6443/transaction.do?command=initiateTransaction'
@@ -245,7 +245,7 @@ class PaymentGateways extends Page implements HasForms
         BookingSetting::set('ccavenue.test_mode',    !empty($ccavenue['test_mode']) ? '1' : '0');
 
         Notification::make()
-            ->title(__('Payment gateway settings saved.'))
+            ->title(__('payment_gateways.notifications.saved'))
             ->success()
             ->send();
     }

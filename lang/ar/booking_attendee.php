@@ -72,6 +72,7 @@ return [
         'check_in'          => 'تسجيل الدخول',
         'undo_check_in'     => 'إلغاء تسجيل الدخول',
         'view_booking'      => 'عرض الحجز',
+        'more_actions'        => 'خيارات',
     ],
 
     'tabs' => [

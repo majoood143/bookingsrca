@@ -14,6 +14,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Local/dev convenience data only — production installs create their
+        // admin account interactively via the /install wizard instead.
+        if (! app()->environment('local')) {
+            return;
+        }
+
         // User::factory(10)->create();
 
         User::factory()->create([

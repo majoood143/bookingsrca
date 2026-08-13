@@ -115,6 +115,8 @@ trait HandlesEventBookingFlow
     // Terms and conditions
     public string $termsEn       = '';
     public string $termsAr       = '';
+    public string $termsUrlEn    = '';
+    public string $termsUrlAr    = '';
     public bool   $agreedToTerms = false;
 
     public $step       = 1;
@@ -304,6 +306,21 @@ trait HandlesEventBookingFlow
         } else {
             $this->termsEn = (string) BookingSetting::get('terms_en', '');
             $this->termsAr = (string) BookingSetting::get('terms_ar', '');
+        }
+
+        // Link to the full terms & conditions page shown next to the
+        // agreement checkbox. Same event-overrides-global fallback as above,
+        // checked independently since an event may set a link without
+        // overriding the terms text (or vice versa).
+        $eventTermsUrlEn = (string) ($this->event?->getTranslation('terms_url', 'en', false) ?? '');
+        $eventTermsUrlAr = (string) ($this->event?->getTranslation('terms_url', 'ar', false) ?? '');
+
+        if (filled($eventTermsUrlEn) || filled($eventTermsUrlAr)) {
+            $this->termsUrlEn = $eventTermsUrlEn;
+            $this->termsUrlAr = $eventTermsUrlAr;
+        } else {
+            $this->termsUrlEn = (string) BookingSetting::get('terms_url_en', '');
+            $this->termsUrlAr = (string) BookingSetting::get('terms_url_ar', '');
         }
     }
 

@@ -13,6 +13,9 @@ return [
         'attendee_fields' => 'Attendee Fields',
         'terms' => 'Terms & Conditions',
         'modules' => 'Modules',
+        'social_media' => 'Social Media',
+        'seo' => 'SEO',
+        'success_page' => 'Success Page',
     ],
 
     'sections' => [
@@ -33,6 +36,14 @@ return [
         'modules_desc' => 'Enable or disable optional features across the system.',
         'terms_url' => 'Full Terms Link',
         'terms_url_desc' => 'Optional link to a full terms & conditions page shown next to the agreement checkbox. Used when an event has no terms link of its own. Leave blank to hide the link.',
+        'social_media' => 'Social Media Links',
+        'social_media_desc' => 'Leave a field blank to hide that platform\'s icon from the public site footer. Filled-in links are also included in the page\'s SEO metadata (Open Graph and structured data).',
+        'seo' => 'Search Engine Optimization',
+        'seo_desc' => 'Metadata used by search engines and social platforms when the public booking site is shared or indexed.',
+        'success_page_link' => 'Back Button Link',
+        'success_page_link_desc' => 'Where the "Back to Events" button on the booking success page goes. Leave blank to use the default events list.',
+        'success_page_message' => 'Success Page Message',
+        'success_page_message_desc' => 'Optional message shown above the buttons on the booking success page.',
     ],
 
     'fields' => [
@@ -98,6 +109,36 @@ return [
         'module_expenses_enabled_helper' => 'Enables expense and expense category tracking, and the Expenses tab on bookings.',
         'module_commission_enabled' => 'Commission Module',
         'module_commission_enabled_helper' => 'Enables commission settings, the effective-commission column on Events, and the Commission Report.',
+        'module_cms_enabled' => 'Content (CMS) Module',
+        'module_cms_enabled_helper' => 'Enables the Content section — Pages, Posts, Categories, Tags, Menus, and Redirects — and its navigation.',
+        'module_pos_enabled' => 'Point of Sale Module',
+        'module_pos_enabled_helper' => 'Enables the Point of Sale section — the cashier counter screen, terminals, products, discounts, shifts, transactions, and reconciliation dashboard — and its navigation.',
+
+        'social_facebook_url' => 'Facebook URL',
+        'social_instagram_url' => 'Instagram URL',
+        'social_x_url' => 'X (Twitter) URL',
+        'social_linkedin_url' => 'LinkedIn URL',
+        'social_youtube_url' => 'YouTube URL',
+        'social_tiktok_url' => 'TikTok URL',
+        'social_whatsapp_url' => 'WhatsApp Link',
+        'social_whatsapp_url_helper' => 'e.g. https://wa.me/9689XXXXXXX',
+
+        'seo_meta_description' => 'Meta Description',
+        'seo_meta_description_helper' => 'Shown in search engine results and social media link previews. Keep it under 160 characters for best results.',
+        'seo_og_image' => 'Social Share Image (Open Graph)',
+        'seo_og_image_helper' => 'Image shown when the site is shared on social media. Recommended size: 1200x630px.',
+
+        'success_page_back_url' => 'Back Button URL',
+        'success_page_back_url_helper' => 'Full URL or path (e.g. https://example.com or /events). Leave blank to link to the default events list.',
+        'success_page_message_en' => 'Message (English)',
+        'success_page_message_ar' => 'Message (Arabic)',
+        'success_page_message_color' => 'Message Color',
+        'color_gray' => 'Gray',
+        'color_blue' => 'Blue',
+        'color_green' => 'Green',
+        'color_red' => 'Red',
+        'color_yellow' => 'Yellow',
+        'color_purple' => 'Purple',
     ],
 
     'notifications' => [

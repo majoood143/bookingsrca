@@ -47,6 +47,11 @@ class AppServiceProvider extends ServiceProvider
         // gates access to the Backups page.
         Gate::define('create-backup', fn ($user) => $user->can('View:Backups'));
 
+        // dedoc/scramble only auto-allows /docs/api when APP_ENV=local; since this
+        // app runs with APP_ENV=production even in dev, restrict docs to any
+        // authenticated panel user (there is no public-facing auth guard/user).
+        Gate::define('viewApiDocs', fn ($user) => (bool) $user);
+
         // Force HTTPS if you are on production SSL
         // if (config('app.env') === 'production' || str_contains(config('app.url'), 'https://')) {
         //     URL::forceScheme('https');

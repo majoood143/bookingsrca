@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class ExpensesRelationManager extends RelationManager
 {
@@ -45,7 +46,7 @@ class ExpensesRelationManager extends RelationManager
                 ->required()
                 ->minValue(0.001)
                 ->step(0.001)
-                ->suffix('OMR'),
+                ->suffix(fn () => new HtmlString(view('partials.currency-label')->render())),
 
             DatePicker::make('expense_date')
                 ->label(__('expense.fields.expense_date'))
@@ -82,8 +83,13 @@ class ExpensesRelationManager extends RelationManager
 
                 TextColumn::make('total_amount')
                     ->label(__('expense.columns.amount'))
-                    ->money('OMR')
-                    ->summarize(Sum::make()->money('OMR')),
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                    ->summarize(
+                        Sum::make()
+                            ->html()
+                            ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                    ),
 
                 TextColumn::make('expense_date')
                     ->label(__('expense.columns.date'))

@@ -6,8 +6,8 @@ return [
     'save' => 'Save Settings',
 
     'sections' => [
-        'active_gateway' => 'Active Gateway',
-        'active_gateway_desc' => 'Choose which payment gateway is used during checkout.',
+        'active_gateway' => 'Enabled Gateways',
+        'active_gateway_desc' => 'Choose which payment gateways are offered at checkout. Enable more than one to let customers pick between them in step 6 of the booking flow.',
         'thawani' => 'Thawani Settings',
         'thawani_desc' => 'Credentials for the Thawani payment gateway.',
         'nbo' => 'NBO Settings',
@@ -17,7 +17,7 @@ return [
     ],
 
     'options' => [
-        'active_gateway' => 'Active Payment Gateway',
+        'active_gateway' => 'Enabled Payment Gateways',
         'free' => 'Free (no payment required)',
         'cash' => 'Cash / Pay at Door',
         'thawani' => 'Thawani',

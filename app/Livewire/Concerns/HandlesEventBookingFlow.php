@@ -5,13 +5,12 @@ namespace App\Livewire\Concerns;
 use Exception;
 use App\Models\Event;
 use App\Models\TimeSlot;
-use App\Models\TicketType;
-use App\Models\ExtraService;
 use App\Models\BookingAttendee;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\PromoCode;
 use App\Services\PromoCodeService;
+use App\Services\SeatAllocationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithFileUploads;
@@ -93,11 +92,20 @@ trait HandlesEventBookingFlow
         return 'event_booking';
     }
 
-    // Per-kiosk replacement for the global BookingSetting booking-rule values
-    // (min/max tickets, max attendee age, pending expiry, slot end time).
-    // Null everywhere except KioskBooking (overridden there), which returns
-    // Kiosk::bookingRuleOverrides() when that kiosk has overrides enabled.
-    protected function bookingRuleOverrides(): ?array
+    // Per-kiosk, per-field replacement for the global BookingSetting
+    // booking-rule values (min/max tickets, max attendee age, slot end
+    // time). Empty everywhere except KioskBooking (overridden there), which
+    // returns Kiosk::bookingRuleOverrides() — only the keys that kiosk has
+    // individually enabled overriding for are present.
+    protected function bookingRuleOverrides(): array
+    {
+        return [];
+    }
+
+    // Per-kiosk replacement for the event's booking-cutoff window. Null
+    // everywhere except KioskBooking (overridden there), which returns
+    // Kiosk::bookingCutoffOverride() when that kiosk has its own cutoff enabled.
+    protected function bookingCutoffOverride(): ?array
     {
         return null;
     }
@@ -239,14 +247,27 @@ trait HandlesEventBookingFlow
         $this->maxAttendeeAge  = (int) BookingSetting::get('max_attendee_age_years', 75);
         $this->showSlotEndTime = (bool) BookingSetting::get('show_slot_end_time', true);
 
-        // A kiosk with its own booking rules fully replaces the global
-        // min/max tickets, max attendee age, and slot-end-time values above
-        // for bookings made on that device (pending_booking_expiry_minutes
-        // is applied separately by CancelExpiredBookings, per booking).
-        if ($ruleOverrides = $this->bookingRuleOverrides()) {
-            $this->minTickets     = $ruleOverrides['min_tickets_per_booking'];
-            $this->maxTickets     = $ruleOverrides['max_tickets_per_booking'];
+        // A kiosk may replace any subset of the global min/max tickets, max
+        // attendee age, and slot-end-time values above for bookings made on
+        // that device — each has its own independent override toggle, so
+        // only the keys the kiosk actually overrides are present here
+        // (pending_booking_expiry_minutes is applied separately by
+        // CancelExpiredBookings, per booking).
+        $ruleOverrides = $this->bookingRuleOverrides();
+
+        if (array_key_exists('min_tickets_per_booking', $ruleOverrides)) {
+            $this->minTickets = $ruleOverrides['min_tickets_per_booking'];
+        }
+
+        if (array_key_exists('max_tickets_per_booking', $ruleOverrides)) {
+            $this->maxTickets = $ruleOverrides['max_tickets_per_booking'];
+        }
+
+        if (array_key_exists('max_attendee_age_years', $ruleOverrides)) {
             $this->maxAttendeeAge = $ruleOverrides['max_attendee_age_years'];
+        }
+
+        if (array_key_exists('show_slot_end_time', $ruleOverrides)) {
             $this->showSlotEndTime = $ruleOverrides['show_slot_end_time'];
         }
 
@@ -347,7 +368,7 @@ trait HandlesEventBookingFlow
             ->where('date', $this->selectedDate)
             ->find($slotId);
 
-        if ($slot && $slot->is_active && $this->event->isBookingCutoffPassed($slot)) {
+        if ($slot && $slot->is_active && $this->isBookingCutoffPassed($slot)) {
             session()->flash('error', $this->bookingCutoffMessage($slot));
             return;
         }
@@ -373,11 +394,23 @@ trait HandlesEventBookingFlow
         $this->step = 3;
     }
 
-    // A slot is bookable if it's active, its start datetime hasn't passed,
-    // and the event's booking cutoff window (if configured) hasn't closed it yet.
+    // Distinguishes the kiosk wizard from the public web wizard — both share
+    // this trait, but only KioskBooking carries a bound $kiosk property.
+    protected function isKioskContext(): bool
+    {
+        return property_exists($this, 'kiosk');
+    }
+
+    // A slot is bookable if it's active, allowed for the current channel
+    // (online vs kiosk), its start datetime hasn't passed, and the event's
+    // booking cutoff window (if configured) hasn't closed it yet.
     protected function isSlotBookable(TimeSlot $slot): bool
     {
         if (!$slot->is_active) {
+            return false;
+        }
+
+        if ($this->isKioskContext() ? !$slot->isBookableAtKiosk() : !$slot->isBookableOnline()) {
             return false;
         }
 
@@ -389,15 +422,44 @@ trait HandlesEventBookingFlow
             return false;
         }
 
-        return !$this->event->isBookingCutoffPassed($slot);
+        return !$this->isBookingCutoffPassed($slot);
     }
 
     // Friendly "closed N hours ago" message for a slot whose booking cutoff has passed.
     protected function bookingCutoffMessage(TimeSlot $slot): string
     {
         return __('event_booking.step2.booking_closed', [
-            'time' => $this->event->bookingClosesAt($slot)->locale(app()->getLocale())->diffForHumans(),
+            'time' => $this->bookingClosesAt($slot)->locale(app()->getLocale())->diffForHumans(),
         ]);
+    }
+
+    // A kiosk with its own booking-cutoff override replaces the event's
+    // cutoff window for slot-close checks made on that device; otherwise
+    // this defers to the event's own configured cutoff.
+    protected function isBookingCutoffPassed(TimeSlot $slot): bool
+    {
+        if ($override = $this->bookingCutoffOverride()) {
+            $closesAt = Event::cutoffClosesAtFor(
+                $slot,
+                Event::cutoffMinutesFor($override['enabled'], $override['value'], $override['unit'])
+            );
+
+            return $closesAt !== null && now()->gte($closesAt);
+        }
+
+        return $this->event->isBookingCutoffPassed($slot);
+    }
+
+    protected function bookingClosesAt(TimeSlot $slot): ?\Carbon\Carbon
+    {
+        if ($override = $this->bookingCutoffOverride()) {
+            return Event::cutoffClosesAtFor(
+                $slot,
+                Event::cutoffMinutesFor($override['enabled'], $override['value'], $override['unit'])
+            );
+        }
+
+        return $this->event->bookingClosesAt($slot);
     }
 
     // ── Quantity helpers ────────────────────────────────────────────────────
@@ -755,53 +817,26 @@ trait HandlesEventBookingFlow
         }
 
         return DB::transaction(function () use ($totalQty, $resolveAttributes, $afterCreate) {
-            $timeSlot = TimeSlot::where('event_id', $this->event->id)
-                ->where('date', $this->selectedDate)
-                ->lockForUpdate()
-                ->find($this->selectedSlot);
-
-            if ($timeSlot && $timeSlot->is_active && $this->event->isBookingCutoffPassed($timeSlot)) {
-                throw new Exception($this->bookingCutoffMessage($timeSlot));
-            }
-
-            if (!$timeSlot || !$this->isSlotBookable($timeSlot)) {
-                throw new Exception(__('Time slot is no longer available.'));
-            }
-
-            if ($this->enforcesCapacity() && !$timeSlot->isAvailable($totalQty)) {
-                throw new Exception(__('Time slot is not available for the requested quantity.'));
-            }
-
-            $ticketPrice   = 0;
-            $servicesPrice = 0;
-
-            foreach ($this->ticketQuantities as $typeId => $qty) {
-                if ($qty <= 0) continue;
-
-                $ticketType = TicketType::where('id', $typeId)->lockForUpdate()->first();
-                if ($this->enforcesCapacity() && !$ticketType->isAvailable($qty)) {
-                    throw new Exception(__('Ticket type :name is not available.', [
-                        'name' => $ticketType->getTranslation('name', app()->getLocale()),
-                    ]));
-                }
-
-                $ticketPrice += $ticketType->price * $qty;
-
-                if (!empty($this->ticketTypeServices[$typeId])) {
-                    $services = ExtraService::whereIn('id', array_keys($this->ticketTypeServices[$typeId]))->lockForUpdate()->get()->keyBy('id');
-                    foreach ($this->ticketTypeServices[$typeId] as $serviceId => $count) {
-                        if ($count <= 0) continue;
-
-                        $service = $services[$serviceId] ?? null;
-                        if ($this->enforcesCapacity() && (!$service || !$service->isAvailable($count))) {
-                            throw new Exception(__('Service :name is not available.', [
-                                'name' => $service?->getTranslation('name', app()->getLocale()) ?? '',
-                            ]));
-                        }
-                        $servicesPrice += ($service->price ?? 0) * $count;
+            $allocation = app(SeatAllocationService::class)->lockAndPrice(
+                timeSlotId: $this->selectedSlot,
+                eventId: $this->event->id,
+                ticketQuantities: $this->ticketQuantities,
+                extraServiceCounts: $this->ticketTypeServices,
+                enforceCapacity: $this->enforcesCapacity(),
+                extraTimeSlotConstraints: ['date' => $this->selectedDate],
+                afterSlotLocked: function (TimeSlot $timeSlot) {
+                    if ($timeSlot->is_active && $this->isBookingCutoffPassed($timeSlot)) {
+                        throw new Exception($this->bookingCutoffMessage($timeSlot));
                     }
-                }
-            }
+
+                    if (!$this->isSlotBookable($timeSlot)) {
+                        throw new Exception(__('Time slot is no longer available.'));
+                    }
+                },
+            );
+
+            $ticketPrice   = $allocation['ticketPrice'];
+            $servicesPrice = $allocation['servicesPrice'];
 
             // Primary ticket type = first selected type (for backward-compat column)
             $primaryTypeId = collect($this->ticketQuantities)

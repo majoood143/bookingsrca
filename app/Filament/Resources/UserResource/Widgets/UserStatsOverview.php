@@ -7,6 +7,7 @@ use App\Support\UserInsightsReport;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 class UserStatsOverview extends BaseWidget
 {
@@ -25,7 +26,7 @@ class UserStatsOverview extends BaseWidget
                 ->chart($report['trendCounts'])
                 ->color('primary'),
 
-            Stat::make(__('widgets.user_insights.revenue'), 'OMR' . number_format($report['totalRevenue'], 3))
+            Stat::make(__('widgets.user_insights.revenue'), new HtmlString(view('partials.currency-amount', ['amount' => (float) $report['totalRevenue']])->render()))
                 ->description(__('widgets.user_insights.avg_ticket_price', ['amount' => number_format($report['avgTicketPrice'], 3)]))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->chart($report['trendRevenue'])

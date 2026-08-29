@@ -1,0 +1,80 @@
+<?php
+
+return [
+    'navigation' => [
+        'label' => 'Page',
+        'plural' => 'Pages',
+    ],
+    'tabs' => [
+        'content' => 'Content',
+        'media' => 'Media',
+        'settings' => 'Settings',
+        'seo' => 'SEO',
+    ],
+    'sections' => [
+        'details' => 'Details',
+        'theme' => 'Layout & Appearance',
+    ],
+    'fields' => [
+        'title_en' => 'Title (English)',
+        'title_ar' => 'Title (Arabic)',
+        'slug' => 'Slug',
+        'excerpt_en' => 'Excerpt (English)',
+        'excerpt_ar' => 'Excerpt (Arabic)',
+        'content' => 'Page content',
+        'featured_image' => 'Featured image',
+        'gallery' => 'Gallery',
+        'status' => 'Status',
+        'published_at' => 'Publish at',
+        'template' => 'Template',
+        'layout' => 'Layout',
+        'is_homepage' => 'Set as homepage',
+        'is_homepage_helper' => 'Only one page can be the site homepage. Setting this will unset it on any other page.',
+        'meta_title_en' => 'Meta title (English)',
+        'meta_title_ar' => 'Meta title (Arabic)',
+        'meta_description_en' => 'Meta description (English)',
+        'meta_description_ar' => 'Meta description (Arabic)',
+        'canonical_url' => 'Canonical URL',
+        'noindex' => 'No index',
+        'nofollow' => 'No follow',
+        'og_type' => 'Open Graph type',
+        'og_image' => 'Open Graph image',
+        'container_width' => 'Content Width',
+        'container_width_helper' => 'Boxed keeps a centered reading width; full width lets blocks stretch edge to edge.',
+        'show_title' => 'Show Page Title',
+        'show_title_helper' => 'Turn off to hide the automatic H1 title (e.g. when a Hero block already shows a heading).',
+        'custom_css' => 'Custom CSS',
+        'custom_css_helper' => 'Optional CSS applied only on this page, wrapped in a <style> tag.',
+    ],
+    'container_width' => [
+        'boxed' => 'Boxed',
+        'full_width' => 'Full Width',
+    ],
+    'status' => [
+        'draft' => 'Draft',
+        'published' => 'Published',
+        'scheduled' => 'Scheduled',
+    ],
+    'columns' => [
+        'featured_image' => 'Image',
+        'title' => 'Title',
+        'slug' => 'Slug',
+        'status' => 'Status',
+        'is_homepage' => 'Homepage',
+        'published_at' => 'Published at',
+    ],
+    'filters' => [
+        'status' => 'Status',
+    ],
+    'actions' => [
+        'create_first' => 'Create first page',
+    ],
+    'empty_state' => [
+        'heading' => 'No pages yet',
+        'description' => 'Create a page to start building your site content.',
+    ],
+    'notifications' => [
+        'cannot_delete' => 'Cannot delete page',
+        'is_homepage' => 'This page is set as the homepage. Assign the homepage to another page before deleting this one.',
+    ],
+];

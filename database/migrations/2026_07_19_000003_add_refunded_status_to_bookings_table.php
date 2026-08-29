@@ -9,7 +9,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE bookings MODIFY status ENUM('pending', 'confirmed', 'cancelled', 'checked_in', 'refunded') NOT NULL DEFAULT 'pending'");
+        // MODIFY is MySQL-only; SQLite (test suite) needs a plain column-type change.
+        if (DB::getDriverName() === 'sqlite') {
+            Schema::table('bookings', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'confirmed', 'cancelled', 'checked_in', 'refunded'])->default('pending')->change();
+            });
+        } else {
+            DB::statement("ALTER TABLE bookings MODIFY status ENUM('pending', 'confirmed', 'cancelled', 'checked_in', 'refunded') NOT NULL DEFAULT 'pending'");
+        }
 
         Schema::table('bookings', function (Blueprint $table) {
             $table->timestamp('refunded_at')->nullable()->after('cancelled_at');
@@ -24,6 +31,14 @@ return new class extends Migration
             $table->dropConstrainedForeignId('refunded_by');
             $table->dropColumn(['refunded_at', 'refund_reason']);
         });
+
+        if (DB::getDriverName() === 'sqlite') {
+            Schema::table('bookings', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'confirmed', 'cancelled', 'checked_in'])->default('pending')->change();
+            });
+
+            return;
+        }
 
         DB::statement("ALTER TABLE bookings MODIFY status ENUM('pending', 'confirmed', 'cancelled', 'checked_in') NOT NULL DEFAULT 'pending'");
     }

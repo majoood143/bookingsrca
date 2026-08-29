@@ -261,21 +261,30 @@ class Event extends Model
     // the slot itself starts).
     public function getBookingCutoffMinutes(): ?int
     {
-        if (!$this->booking_cutoff_enabled || !$this->booking_cutoff_value) {
-            return null;
-        }
-
-        return $this->booking_cutoff_unit === 'hours'
-            ? $this->booking_cutoff_value * 60
-            : $this->booking_cutoff_value;
+        return self::cutoffMinutesFor($this->booking_cutoff_enabled, $this->booking_cutoff_value, $this->booking_cutoff_unit);
     }
 
     // The moment bookings close for the given slot, or null when no cutoff
     // is configured for this event.
     public function bookingClosesAt(TimeSlot $slot): ?\Carbon\Carbon
     {
-        $cutoffMinutes = $this->getBookingCutoffMinutes();
+        return self::cutoffClosesAtFor($slot, $this->getBookingCutoffMinutes());
+    }
 
+    // Shared cutoff math, extracted so a Kiosk-level cutoff override (see
+    // Kiosk::bookingCutoffOverride()) can compute against its own
+    // enabled/value/unit trio without duplicating this logic.
+    public static function cutoffMinutesFor(?bool $enabled, ?int $value, ?string $unit): ?int
+    {
+        if (!$enabled || !$value) {
+            return null;
+        }
+
+        return $unit === 'hours' ? $value * 60 : $value;
+    }
+
+    public static function cutoffClosesAtFor(TimeSlot $slot, ?int $cutoffMinutes): ?\Carbon\Carbon
+    {
         if ($cutoffMinutes === null) {
             return null;
         }

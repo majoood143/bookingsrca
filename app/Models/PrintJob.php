@@ -8,6 +8,7 @@ class PrintJob extends Model
 {
     protected $fillable = [
         'booking_id',
+        'pos_transaction_id',
         'type',
         'status',
         'payload_path',
@@ -26,5 +27,10 @@ class PrintJob extends Model
     public function booking()
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function posTransaction()
+    {
+        return $this->belongsTo(PosTransaction::class);
     }
 }

@@ -79,6 +79,11 @@ return [
         'confirmed_msg'  => 'تم تأكيد الحجز',
     ],
 
+    'total_balance_due' => [
+        'heading'     => 'إجمالي المبالغ المستحقة',
+        'description' => ':count حجز به مبلغ مستحق|:count حجوزات بها مبالغ مستحقة',
+    ],
+
     'balance_due_bookings' => [
         'heading'        => 'الحجوزات ذات المبالغ المستحقة',
         'reference'      => 'المرجع',
@@ -90,6 +95,11 @@ return [
         'status'         => 'الحالة',
         'source'         => 'المصدر',
         'action_view'    => 'عرض',
+        'action_record_payment' => 'تسجيل دفعة',
+        'record_payment_heading' => 'تسجيل دفعة',
+        'record_payment_description' => 'قم بتسجيل الدفعة المستلمة لهذا الحجز. المبلغ المستحق: :amount ر.ع.',
+        'record_payment_submit' => 'تسجيل الدفعة',
+        'payment_recorded' => 'تم تسجيل الدفعة',
         'empty_heading'  => 'لا توجد حجوزات بها مبالغ مستحقة',
     ],
 

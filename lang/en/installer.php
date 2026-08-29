@@ -10,6 +10,7 @@ return [
         'Database',
         'App Settings',
         'Install',
+        'General Settings',
         'Admin Account',
         'Finish',
     ],
@@ -67,6 +68,25 @@ return [
         'already_done' => 'Database tables are already installed.',
     ],
 
+    'settings' => [
+        'title' => 'General Settings',
+        'description' => 'Set the essentials for this environment — branding, currency, and identity. Everything here can be changed later from Settings → General.',
+        'fields' => [
+            'site_name_en' => 'Site Name (English)',
+            'site_name_ar' => 'Site Name (Arabic)',
+            'currency_code' => 'Currency',
+            'currency_symbol' => 'Currency Symbol',
+            'primary_color' => 'Brand Color',
+            'primary_color_helper' => 'Used across the public booking pages.',
+            'panel_primary_color' => 'Admin Panel Color',
+            'panel_primary_color_helper' => 'Used for the admin dashboard theme.',
+            'site_logo' => 'Site Logo',
+            'site_logo_helper' => 'Shown on the public booking pages and in emails. Optional.',
+            'app_logo' => 'Admin Panel Logo',
+            'app_logo_helper' => 'Shown in the admin dashboard sidebar. Optional.',
+        ],
+    ],
+
     'admin' => [
         'title' => 'Create Admin Account',
         'already_exists' => 'An admin account already exists (:email).',
@@ -81,6 +101,9 @@ return [
     'finish' => [
         'title' => 'Setup Complete',
         'description' => 'Your booking system is ready. Click below to sign in to the admin dashboard.',
+        'seed_demo_data' => 'Seed demo data',
+        'seed_demo_data_helper' => 'Adds one example event with dates, ticket types, and extra services so you can explore the system before going live. Safe to skip for a production launch.',
+        'finishing' => 'Finishing…',
         'cache_note' => 'If you run "php artisan optimize" or "route:cache" as part of your deployment, run it after finishing setup — running it earlier can cache settings from before the wizard wrote your final configuration.',
     ],
 

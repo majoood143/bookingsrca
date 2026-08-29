@@ -99,11 +99,13 @@ class KioskBooking extends Component
         }
     }
 
-    // Walk-in kiosk guests are never blocked by remaining stock — a member of
-    // staff resolves any resulting overbooking from the admin panel afterwards.
+    // Walk-in kiosk guests are never blocked by remaining stock by default —
+    // a member of staff resolves any resulting overbooking from the admin
+    // panel afterwards. An admin can opt a specific kiosk into enforcing
+    // capacity via Kiosk::enforcesCapacityOverride().
     protected function enforcesCapacity(): bool
     {
-        return false;
+        return $this->kiosk->enforcesCapacityOverride() ?? false;
     }
 
     // ── Welcome screen — two giant EN/AR buttons gate the wizard so the kiosk
@@ -360,12 +362,20 @@ class KioskBooking extends Component
         return 'kiosk';
     }
 
-    // This kiosk's own booking rules (if enabled) replace the global
-    // BookingSetting values for min/max tickets, max attendee age, and
-    // slot end time — see Kiosk::bookingRuleOverrides().
-    protected function bookingRuleOverrides(): ?array
+    // This kiosk's own per-field booking rules (whichever are enabled)
+    // replace the global BookingSetting values for min/max tickets, max
+    // attendee age, and slot end time — see Kiosk::bookingRuleOverrides().
+    protected function bookingRuleOverrides(): array
     {
         return $this->kiosk->bookingRuleOverrides();
+    }
+
+    // This kiosk's own booking-cutoff window (if enabled) replaces the
+    // event's cutoff for bookings made on this device — see
+    // Kiosk::bookingCutoffOverride().
+    protected function bookingCutoffOverride(): ?array
+    {
+        return $this->kiosk->bookingCutoffOverride();
     }
 
     protected function showConfirmation(Booking $booking): void

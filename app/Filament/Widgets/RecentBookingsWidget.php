@@ -58,7 +58,8 @@ class RecentBookingsWidget extends BaseWidget
 
                 TextColumn::make('total_price')
                     ->label(__('widgets.recent_bookings.total'))
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('success'),
 

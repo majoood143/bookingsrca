@@ -26,12 +26,22 @@ class Kiosk extends Model
         'printer_connected',
         'printer_last_seen_at',
         'app_version',
-        'override_booking_rules',
+        'override_min_tickets_per_booking',
         'min_tickets_per_booking',
+        'override_max_tickets_per_booking',
         'max_tickets_per_booking',
+        'override_max_attendee_age_years',
         'max_attendee_age_years',
+        'override_pending_booking_expiry_minutes',
         'pending_booking_expiry_minutes',
+        'override_show_slot_end_time',
         'show_slot_end_time',
+        'override_booking_cutoff',
+        'booking_cutoff_enabled',
+        'booking_cutoff_value',
+        'booking_cutoff_unit',
+        'override_capacity_enforcement',
+        'enforce_capacity',
     ];
 
     protected $translatable = ['receipt_footer_text'];
@@ -45,18 +55,36 @@ class Kiosk extends Model
         'reader_last_seen_at' => 'datetime',
         'printer_connected' => 'boolean',
         'printer_last_seen_at' => 'datetime',
-        'override_booking_rules' => 'boolean',
+        'override_min_tickets_per_booking' => 'boolean',
         'min_tickets_per_booking' => 'integer',
+        'override_max_tickets_per_booking' => 'boolean',
         'max_tickets_per_booking' => 'integer',
+        'override_max_attendee_age_years' => 'boolean',
         'max_attendee_age_years' => 'integer',
+        'override_pending_booking_expiry_minutes' => 'boolean',
         'pending_booking_expiry_minutes' => 'integer',
+        'override_show_slot_end_time' => 'boolean',
         'show_slot_end_time' => 'boolean',
+        'override_booking_cutoff' => 'boolean',
+        'booking_cutoff_enabled' => 'boolean',
+        'booking_cutoff_value' => 'integer',
+        'override_capacity_enforcement' => 'boolean',
+        'enforce_capacity' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'code', 'event_id', 'is_active', 'idle_timeout_seconds', 'enabled_payment_methods', 'override_booking_rules', 'min_tickets_per_booking', 'max_tickets_per_booking', 'max_attendee_age_years', 'pending_booking_expiry_minutes', 'show_slot_end_time'])
+            ->logOnly([
+                'name', 'code', 'event_id', 'is_active', 'idle_timeout_seconds', 'enabled_payment_methods',
+                'override_min_tickets_per_booking', 'min_tickets_per_booking',
+                'override_max_tickets_per_booking', 'max_tickets_per_booking',
+                'override_max_attendee_age_years', 'max_attendee_age_years',
+                'override_pending_booking_expiry_minutes', 'pending_booking_expiry_minutes',
+                'override_show_slot_end_time', 'show_slot_end_time',
+                'override_booking_cutoff', 'booking_cutoff_enabled', 'booking_cutoff_value', 'booking_cutoff_unit',
+                'override_capacity_enforcement', 'enforce_capacity',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -88,23 +116,62 @@ class Kiosk extends Model
         return in_array($method, $this->enabled_payment_methods ?? [], true);
     }
 
-    // Per-kiosk replacement for the general settings "Booking Rules" — mirrors
-    // Event::fieldVisibilityOverridesFor(): null means "use the global
-    // BookingSetting values", a non-null array fully replaces them so this
-    // kiosk's bookings are governed by its own rules instead.
-    public function bookingRuleOverrides(): ?array
+    // Per-kiosk, per-rule replacement for the general settings "Booking
+    // Rules": each rule has its own override toggle, so a kiosk can replace
+    // just one value (e.g. its own pending-expiry window) while inheriting
+    // the rest from the global BookingSetting values. Only overridden keys
+    // are present in the returned array.
+    public function bookingRuleOverrides(): array
     {
-        if (!$this->override_booking_rules) {
+        $overrides = [];
+
+        if ($this->override_min_tickets_per_booking) {
+            $overrides['min_tickets_per_booking'] = $this->min_tickets_per_booking;
+        }
+
+        if ($this->override_max_tickets_per_booking) {
+            $overrides['max_tickets_per_booking'] = $this->max_tickets_per_booking;
+        }
+
+        if ($this->override_max_attendee_age_years) {
+            $overrides['max_attendee_age_years'] = $this->max_attendee_age_years;
+        }
+
+        if ($this->override_pending_booking_expiry_minutes) {
+            $overrides['pending_booking_expiry_minutes'] = $this->pending_booking_expiry_minutes;
+        }
+
+        if ($this->override_show_slot_end_time) {
+            $overrides['show_slot_end_time'] = $this->show_slot_end_time;
+        }
+
+        return $overrides;
+    }
+
+    // Per-kiosk booking-cutoff window, replacing the event's own cutoff for
+    // bookings made on this device — see Event::cutoffMinutesFor()/cutoffClosesAtFor().
+    public function bookingCutoffOverride(): ?array
+    {
+        if (!$this->override_booking_cutoff) {
             return null;
         }
 
         return [
-            'min_tickets_per_booking' => $this->min_tickets_per_booking,
-            'max_tickets_per_booking' => $this->max_tickets_per_booking,
-            'max_attendee_age_years' => $this->max_attendee_age_years,
-            'pending_booking_expiry_minutes' => $this->pending_booking_expiry_minutes,
-            'show_slot_end_time' => $this->show_slot_end_time,
+            'enabled' => $this->booking_cutoff_enabled,
+            'value' => $this->booking_cutoff_value,
+            'unit' => $this->booking_cutoff_unit,
         ];
+    }
+
+    // Per-kiosk capacity-enforcement override — null means "use the calling
+    // context's default" (kiosks never enforce capacity unless this is set).
+    public function enforcesCapacityOverride(): ?bool
+    {
+        if (!$this->override_capacity_enforcement) {
+            return null;
+        }
+
+        return (bool) $this->enforce_capacity;
     }
 
     public function recordHeartbeat(bool $readerConnected, bool $printerConnected, ?string $appVersion = null): void

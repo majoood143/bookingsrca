@@ -56,7 +56,8 @@ class EventTicketBreakdown extends BaseWidget
 
                 TextColumn::make('revenue')
                     ->label(__('reports.columns.revenue'))
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('success'),
             ])

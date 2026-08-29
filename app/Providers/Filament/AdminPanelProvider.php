@@ -17,6 +17,7 @@ use App\Filament\Widgets\LowStockAlertsWidget;
 use App\Filament\Widgets\RecentBookingsWidget;
 use App\Filament\Widgets\RevenueChartWidget;
 use App\Filament\Widgets\TicketStockWidget;
+use App\Filament\Widgets\TotalBalanceDueWidget;
 use App\Filament\Widgets\UpcomingEventsWidget;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -36,6 +37,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Models\BookingSetting;
 use MarcoGermani87\FilamentCaptcha\FilamentCaptcha;
 use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
+use Rupadana\ApiService\ApiServicePlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -54,6 +56,21 @@ class AdminPanelProvider extends PanelProvider
         }
     }
 
+    /**
+     * Reads the favicon from settings. Falls back to the default
+     * favicon when the table isn't migrated yet (e.g. fresh install).
+     */
+    protected function panelFavicon(): ?string
+    {
+        try {
+            $favicon = BookingSetting::get('favicon');
+
+            return $favicon ? asset('storage/' . $favicon) : asset('favicon.ico');
+        } catch (\Throwable $e) {
+            return asset('favicon.ico');
+        }
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -67,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->brandLogoHeight('4rem')
+            ->favicon(fn() => $this->panelFavicon())
             ->databaseNotifications()
             //->routes(fn() => FilamentMails::routes())
             ->colors([
@@ -80,12 +98,14 @@ class AdminPanelProvider extends PanelProvider
                 //Widgets\AccountWidget::class,
                 //Widgets\FilamentInfoWidget::class,
                 BookingOverviewWidget::class,
+                TotalBalanceDueWidget::class,
                 LowStockAlertsWidget::class,
                 RevenueChartWidget::class,
                 TicketStockWidget::class,
                 UpcomingEventsWidget::class,
                 RecentBookingsWidget::class,
                 BalanceDueBookingsWidget::class,
+                
 
             ])
             ->middleware([
@@ -125,6 +145,7 @@ class AdminPanelProvider extends PanelProvider
                     ->navigationCountBadge()
                     ->enablePruning()
                     ->pruningRetention(7),
+                ApiServicePlugin::make(),
 
             ])
             ->authMiddleware([

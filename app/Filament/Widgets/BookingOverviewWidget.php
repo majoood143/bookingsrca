@@ -8,6 +8,7 @@ use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 class BookingOverviewWidget extends BaseWidget
 {
@@ -63,7 +64,7 @@ class BookingOverviewWidget extends BaseWidget
                 ->chart($bookingsTrend)
                 ->color('primary'),
 
-            Stat::make(__('widgets.booking_overview.revenue_month'), 'OMR' . number_format($revenueThisMonth, 3))
+            Stat::make(__('widgets.booking_overview.revenue_month'), new HtmlString(view('partials.currency-amount', ['amount' => (float) $revenueThisMonth])->render()))
                 ->description(
                     ($revenueChange >= 0 ? '+' : '') .
                     __('widgets.booking_overview.vs_last_month', ['change' => $revenueChange])

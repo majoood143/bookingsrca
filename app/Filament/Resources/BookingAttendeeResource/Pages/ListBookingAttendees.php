@@ -19,10 +19,36 @@ class ListBookingAttendees extends ListRecords
         return [
             ExportAction::make()
                 ->exports([
-                    BookingAttendeesExport::make()
+                    BookingAttendeesExport::make(visibleTableColumns: $this->getVisibleExportColumns())
                         ->queue(),
                 ]),
         ];
+    }
+
+    /**
+     * Names of the toggleable table columns that are currently switched on,
+     * so the export only includes the columns the user has chosen to see.
+     *
+     * Header actions are cached before the table trait's own booted hook
+     * runs, so `$this->table` is not yet initialized at this point. Build
+     * it (and the column manager state) up front here rather than relying
+     * on the later hook, which comes too late for this call.
+     *
+     * @return array<int, string>
+     */
+    protected function getVisibleExportColumns(): array
+    {
+        if (! isset($this->table)) {
+            $this->table = $this->table($this->makeTable());
+        }
+
+        $this->initTableColumnManager();
+
+        return collect($this->getTable()->getColumns())
+            ->reject(fn ($column) => $column->isToggledHidden())
+            ->map(fn ($column) => $column->getName())
+            ->values()
+            ->all();
     }
 
     public function getTabs(): array

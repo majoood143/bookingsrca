@@ -82,18 +82,38 @@ class InstallWizardTest extends TestCase
         $this->assertGreaterThan(0, \Spatie\Permission\Models\Permission::count());
     }
 
+    public function test_general_settings_step_saves_booking_settings_and_advances(): void
+    {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+
+        Livewire::test(InstallWizard::class)
+            ->set('step', 5)
+            ->set('site_name_en', 'My Venue')
+            ->set('site_name_ar', 'مكاني')
+            ->set('currency_code', 'USD')
+            ->set('currency_symbol', '$')
+            ->set('primary_color', '#112233')
+            ->set('panel_primary_color', '#445566')
+            ->call('saveGeneralSettings')
+            ->assertSet('step', 6);
+
+        $this->assertSame('My Venue', \App\Models\BookingSetting::get('site_name_en'));
+        $this->assertSame('USD', \App\Models\BookingSetting::get('currency_code'));
+        $this->assertSame('#112233', \App\Models\BookingSetting::get('primary_color'));
+    }
+
     public function test_admin_account_is_created_with_super_admin_role_and_logged_in(): void
     {
         Livewire::test(InstallWizard::class)
             ->set('step', 4)
             ->call('runMigrations')
-            ->set('step', 5)
+            ->set('step', 6)
             ->set('admin_name', 'Test Admin')
             ->set('admin_email', 'admin@example.com')
             ->set('admin_password', 'password123')
             ->set('admin_password_confirmation', 'password123')
             ->call('createAdmin')
-            ->assertSet('step', 6);
+            ->assertSet('step', 7);
 
         $admin = User::where('email', 'admin@example.com')->first();
 
@@ -108,7 +128,7 @@ class InstallWizardTest extends TestCase
         Livewire::test(InstallWizard::class)
             ->set('step', 4)
             ->call('runMigrations')
-            ->set('step', 5)
+            ->set('step', 6)
             ->set('admin_name', 'Test Admin')
             ->set('admin_email', 'admin@example.com')
             ->set('admin_password', 'password123')
@@ -116,7 +136,7 @@ class InstallWizardTest extends TestCase
             ->call('createAdmin');
 
         Livewire::test(InstallWizard::class)
-            ->set('step', 5)
+            ->set('step', 6)
             ->assertSee('admin@example.com');
     }
 
@@ -125,7 +145,7 @@ class InstallWizardTest extends TestCase
         $this->assertFileDoesNotExist(storage_path('installed'));
 
         Livewire::test(InstallWizard::class)
-            ->set('step', 6)
+            ->set('step', 7)
             ->call('finish');
 
         $this->assertFileExists(storage_path('installed'));
@@ -133,6 +153,20 @@ class InstallWizardTest extends TestCase
         // mount() should now bounce anyone hitting /install straight to login.
         Livewire::test(InstallWizard::class)
             ->assertRedirect('/admin/login');
+    }
+
+    public function test_finish_seeds_demo_data_when_requested(): void
+    {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+
+        $this->assertSame(0, \App\Models\Event::count());
+
+        Livewire::test(InstallWizard::class)
+            ->set('step', 7)
+            ->set('seed_demo_data', true)
+            ->call('finish');
+
+        $this->assertGreaterThan(0, \App\Models\Event::count());
     }
 
     public function test_migrated_tables_without_populated_permissions_do_not_unlock_admin_step(): void
@@ -155,7 +189,7 @@ class InstallWizardTest extends TestCase
         Livewire::test(InstallWizard::class)
             ->set('step', 4)
             ->call('runMigrations')
-            ->set('step', 5)
+            ->set('step', 6)
             ->set('admin_name', 'Test Admin')
             ->set('admin_email', 'admin@example.com')
             ->set('admin_password', 'short')

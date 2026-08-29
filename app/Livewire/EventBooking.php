@@ -18,7 +18,7 @@ class EventBooking extends Component
 
     // Payment
     public string $selectedPaymentMethod = '';
-    public string $activeGateway         = 'free';
+    public array $enabledGateways        = [];
 
     public function mount()
     {
@@ -33,11 +33,38 @@ class EventBooking extends Component
     {
         $this->loadBookingFieldSettings();
 
-        $this->activeGateway           = (string) BookingSetting::get('active_gateway', 'free');
-        $this->selectedPaymentMethod   = $this->activeGateway;
+        $this->enabledGateways       = $this->resolveEnabledGateways();
+        $this->selectedPaymentMethod = $this->enabledGateways[0] ?? 'free';
     }
 
-    // Step 6 "Confirm / Pay" — create the booking and handle the active gateway.
+    /**
+     * Reads the enabled_gateways JSON setting, falling back to the legacy
+     * single active_gateway value for installs that haven't saved the
+     * payment gateways settings page since the multi-gateway option was
+     * introduced.
+     */
+    protected function resolveEnabledGateways(): array
+    {
+        $stored  = BookingSetting::get('enabled_gateways');
+        $decoded = $stored ? json_decode($stored, true) : null;
+
+        if (is_array($decoded) && !empty($decoded)) {
+            return array_values($decoded);
+        }
+
+        return [(string) BookingSetting::get('active_gateway', 'free')];
+    }
+
+    // Called when the customer picks a different payment method in step 6
+    // (only rendered when more than one gateway is enabled).
+    public function selectGateway(string $gateway): void
+    {
+        if (in_array($gateway, $this->enabledGateways, true)) {
+            $this->selectedPaymentMethod = $gateway;
+        }
+    }
+
+    // Step 6 "Confirm / Pay" — create the booking and handle the selected gateway.
 
     public function submitBooking()
     {
@@ -47,7 +74,7 @@ class EventBooking extends Component
 
                 return [
                     'source'         => 'online',
-                    'payment_method' => $isFree ? 'free' : $this->activeGateway,
+                    'payment_method' => $isFree ? 'free' : $this->selectedPaymentMethod,
                 ];
             });
         } catch (Exception $e) {
@@ -58,15 +85,15 @@ class EventBooking extends Component
         $isFree = $booking->payment_method === 'free';
 
         // ── Route by gateway ────────────────────────────────────────────
-        if (!$isFree && $this->activeGateway === 'thawani') {
+        if (!$isFree && $this->selectedPaymentMethod === 'thawani') {
             return $this->redirectToThawani($booking);
         }
 
-        if (!$isFree && $this->activeGateway === 'nbo') {
+        if (!$isFree && $this->selectedPaymentMethod === 'nbo') {
             return $this->redirectToNbo($booking);
         }
 
-        if (!$isFree && $this->activeGateway === 'ccavenue') {
+        if (!$isFree && $this->selectedPaymentMethod === 'ccavenue') {
             return $this->redirectToCcavenue($booking);
         }
 

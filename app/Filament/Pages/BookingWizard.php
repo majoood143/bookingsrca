@@ -345,7 +345,7 @@ class BookingWizard extends Page implements HasForms
     protected static function isSlotBookable(TimeSlot $slot, ?string $date): bool
     {
         if ($date && Carbon::parse($date)->isToday()) {
-            return $slot->start_time->format('H:i') > now()->format('H:i');
+            return $slot->getStartDateTime()->isFuture();
         }
 
         return true;

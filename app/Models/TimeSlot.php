@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
@@ -21,12 +22,13 @@ class TimeSlot extends Model
         'max_attendees',
         'current_bookings',
         'is_active',
+        'booking_channel',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['event_id', 'date', 'start_time', 'end_time', 'max_attendees', 'is_active'])
+            ->logOnly(['event_id', 'date', 'start_time', 'end_time', 'max_attendees', 'is_active', 'booking_channel'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -37,6 +39,16 @@ class TimeSlot extends Model
         'end_time' => 'datetime:H:i',
         'is_active' => 'boolean',
     ];
+
+    // MySQL's native DATE column silently truncates a full "Y-m-d H:i:s"
+    // string on write, but SQLite has no real date type and stores it
+    // verbatim — which then breaks equality lookups like
+    // where('date', '2026-08-29') against a stored '2026-08-29 00:00:00'.
+    // Normalize here so storage is identical across both drivers.
+    public function setDateAttribute($value): void
+    {
+        $this->attributes['date'] = $value ? Carbon::parse($value)->format('Y-m-d') : $value;
+    }
 
     // Relationships
     public function event()
@@ -76,9 +88,55 @@ class TimeSlot extends Model
         return $this->is_active && $this->getRemainingCapacity() >= $quantity;
     }
 
+    public function isBookableOnline(): bool
+    {
+        return in_array($this->booking_channel, ['both', 'online']);
+    }
+
+    public function isBookableAtKiosk(): bool
+    {
+        return in_array($this->booking_channel, ['both', 'kiosk']);
+    }
+
+    // A slot is overnight when its end time is not strictly after its start
+    // time (e.g. 23:30 - 00:30). Both columns are plain TIME values with no
+    // date component, so this is purely a time-of-day comparison.
+    public function isOvernight(): bool
+    {
+        return $this->end_time->format('H:i') <= $this->start_time->format('H:i');
+    }
+
+    // Real start instant, combining the slot's calendar `date` with its
+    // time-of-day. Use this (not the bare `start_time` cast) for any
+    // date-aware comparison, since `start_time` alone is always anchored to
+    // "today" by the `datetime:H:i` cast.
+    public function getStartDateTime(): Carbon
+    {
+        return Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->start_time->format('H:i:s'));
+    }
+
+    // Real end instant, rolled to the next calendar day when the slot is
+    // overnight. This is the correct way to compute duration or to check
+    // whether "now" still falls within the slot.
+    public function getEndDateTime(): Carbon
+    {
+        $end = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->end_time->format('H:i:s'));
+
+        return $this->isOvernight() ? $end->addDay() : $end;
+    }
+
+    // End time formatted for display, with a "(next day)" indicator appended
+    // when the slot rolls over midnight (e.g. "00:30 (next day)").
+    public function getEndTimeLabel(): string
+    {
+        $label = $this->end_time->format('H:i');
+
+        return $this->isOvernight() ? $label . ' ' . __('time_slot.suffix.next_day') : $label;
+    }
+
     public function getTimeRange()
     {
-        return $this->start_time->format('H:i') . ' - ' . $this->end_time->format('H:i');
+        return $this->start_time->format('H:i') . ' - ' . $this->getEndTimeLabel();
     }
 
     // Admin-facing label for this slot (e.g. "Bus 2"), falling back to an

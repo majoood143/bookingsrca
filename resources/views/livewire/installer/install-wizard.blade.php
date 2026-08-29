@@ -174,14 +174,109 @@
             </div>
         @endif
 
-        {{-- ── Step 5: Admin account ── --}}
+        {{-- ── Step 5: General settings ── --}}
         @if ($step === 5)
+            <h2 class="text-lg font-bold text-gray-900 mb-1">{{ __('installer.settings.title') }}</h2>
+            <p class="text-sm text-gray-500 mb-6">{{ __('installer.settings.description') }}</p>
+
+            <div class="space-y-5 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.site_name_en') }}</label>
+                        <input type="text" wire:model="site_name_en" class="w-full rounded-lg border-gray-300 text-sm">
+                        @error('site_name_en') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.site_name_ar') }}</label>
+                        <input type="text" wire:model="site_name_ar" dir="rtl" class="w-full rounded-lg border-gray-300 text-sm">
+                        @error('site_name_ar') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.currency_code') }}</label>
+                        <select wire:model="currency_code" class="w-full rounded-lg border-gray-300 text-sm">
+                            <option value="OMR">OMR — Omani Rial</option>
+                            <option value="USD">USD — US Dollar</option>
+                            <option value="AED">AED — UAE Dirham</option>
+                            <option value="SAR">SAR — Saudi Riyal</option>
+                            <option value="QAR">QAR — Qatari Riyal</option>
+                            <option value="KWD">KWD — Kuwaiti Dinar</option>
+                            <option value="BHD">BHD — Bahraini Dinar</option>
+                            <option value="EUR">EUR — Euro</option>
+                            <option value="GBP">GBP — British Pound</option>
+                        </select>
+                        @error('currency_code') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.currency_symbol') }}</label>
+                        <input type="text" wire:model="currency_symbol" class="w-full rounded-lg border-gray-300 text-sm">
+                        @error('currency_symbol') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.primary_color') }}</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" wire:model="primary_color" class="h-9 w-12 rounded border-gray-300 p-0.5">
+                            <input type="text" wire:model="primary_color" class="flex-1 rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('installer.settings.fields.primary_color_helper') }}</p>
+                        @error('primary_color') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.panel_primary_color') }}</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" wire:model="panel_primary_color" class="h-9 w-12 rounded border-gray-300 p-0.5">
+                            <input type="text" wire:model="panel_primary_color" class="flex-1 rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('installer.settings.fields.panel_primary_color_helper') }}</p>
+                        @error('panel_primary_color') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.site_logo') }}</label>
+                        <input type="file" wire:model="site_logo" accept="image/*" class="w-full text-sm text-gray-600">
+                        <p class="text-xs text-gray-400 mt-1">{{ __('installer.settings.fields.site_logo_helper') }}</p>
+                        <div wire:loading wire:target="site_logo" class="text-xs text-gray-400 mt-1">{{ __('installer.actions.testing') }}</div>
+                        @error('site_logo') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        @if ($site_logo)
+                            <img src="{{ $site_logo->temporaryUrl() }}" class="h-12 mt-2 rounded border border-gray-100">
+                        @endif
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('installer.settings.fields.app_logo') }}</label>
+                        <input type="file" wire:model="app_logo" accept="image/*" class="w-full text-sm text-gray-600">
+                        <p class="text-xs text-gray-400 mt-1">{{ __('installer.settings.fields.app_logo_helper') }}</p>
+                        <div wire:loading wire:target="app_logo" class="text-xs text-gray-400 mt-1">{{ __('installer.actions.testing') }}</div>
+                        @error('app_logo') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        @if ($app_logo)
+                            <img src="{{ $app_logo->temporaryUrl() }}" class="h-12 mt-2 rounded border border-gray-100">
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button wire:click="saveGeneralSettings" wire:loading.attr="disabled" wire:target="saveGeneralSettings"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors">
+                    {{ __('installer.actions.continue') }}
+                </button>
+            </div>
+        @endif
+
+        {{-- ── Step 6: Admin account ── --}}
+        @if ($step === 6)
             <h2 class="text-lg font-bold text-gray-900 mb-4">{{ __('installer.admin.title') }}</h2>
 
             @if ($this->existingAdmin)
                 <p class="text-sm text-gray-600 mb-6">{{ __('installer.admin.already_exists', ['email' => $this->existingAdmin->email]) }}</p>
                 <div class="flex justify-end">
-                    <button wire:click="goToStep(6)"
+                    <button wire:click="goToStep(7)"
                         class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors">
                         {{ __('installer.actions.continue') }}
                     </button>
@@ -218,16 +313,25 @@
             @endif
         @endif
 
-        {{-- ── Step 6: Finish ── --}}
-        @if ($step === 6)
+        {{-- ── Step 7: Finish ── --}}
+        @if ($step === 7)
             <div class="text-center py-4">
                 <div class="text-5xl mb-4">🎉</div>
                 <h2 class="text-lg font-bold text-gray-900 mb-2">{{ __('installer.finish.title') }}</h2>
                 <p class="text-sm text-gray-500 mb-6">{{ __('installer.finish.description') }}</p>
 
-                <button wire:click="finish" wire:loading.attr="disabled"
+                <label class="flex items-start gap-3 text-left bg-gray-50 rounded-xl p-4 mb-6 cursor-pointer">
+                    <input type="checkbox" wire:model="seed_demo_data" class="mt-1 rounded border-gray-300">
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-800">{{ __('installer.finish.seed_demo_data') }}</span>
+                        <span class="block text-xs text-gray-500 mt-0.5">{{ __('installer.finish.seed_demo_data_helper') }}</span>
+                    </span>
+                </label>
+
+                <button wire:click="finish" wire:loading.attr="disabled" wire:target="finish"
                     class="px-6 py-3 rounded-xl text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors">
-                    {{ __('installer.actions.finish') }}
+                    <span wire:loading.remove wire:target="finish">{{ __('installer.actions.finish') }}</span>
+                    <span wire:loading wire:target="finish">{{ __('installer.finish.finishing') }}</span>
                 </button>
 
                 <p class="text-xs text-gray-400 mt-6">{{ __('installer.finish.cache_note') }}</p>

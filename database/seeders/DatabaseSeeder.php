@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PosTerminal;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -39,5 +40,25 @@ class DatabaseSeeder extends Seeder
         );
 
         $superAdmin->syncRoles([$superAdminRole]);
+
+        $this->call(PosRolesSeeder::class);
+
+        PosTerminal::firstOrCreate(
+            ['name' => 'Gate 1'],
+            ['location' => 'Main Entrance', 'is_active' => true],
+        );
+
+        $cashierRole = Role::firstOrCreate(['name' => 'cashier', 'guard_name' => 'web']);
+
+        $cashier = User::updateOrCreate(
+            ['email' => 'cashier@example.com'],
+            [
+                'name' => 'Demo Cashier',
+                'password' => bcrypt('cashier'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $cashier->syncRoles([$cashierRole]);
     }
 }

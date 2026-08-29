@@ -1,15 +1,26 @@
+@php
+    use App\Models\BookingSetting;
+
+    $locale = app()->getLocale();
+    $siteName = BookingSetting::get('site_name_' . $locale, config('app.name', 'RCA Booking'));
+    $siteLogo = BookingSetting::get('site_logo');
+    $favicon = BookingSetting::get('favicon');
+    $primaryColor = BookingSetting::get('primary_color', '#05602b');
+    $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', $locale) }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>@yield('code') - @yield('title', config('app.name', 'RCA Booking'))</title>
+    <link rel="icon" href="{{ $favicon ? asset('storage/' . $favicon) : asset('favicon.ico') }}" sizes="any">
+    <title>@yield('code') - @yield('title', $siteName)</title>
 
     <style>
         :root {
-            --brand: #16a34a;
-            --brand-dark: #15803d;
+            --brand: {{ $primaryColor }};
+            --brand-dark: {{ $secondaryColor }};
         }
 
         * { box-sizing: border-box; }
@@ -115,7 +126,7 @@
 </head>
 <body>
     <div class="card">
-        <img src="{{ asset('storage/images/horizontalLogo-02.svg') }}" alt="{{ config('app.name', 'RCA Booking') }}" class="logo">
+        <img src="{{ $siteLogo ? asset('storage/' . $siteLogo) : asset('storage/images/horizontalLogo-02.svg') }}" alt="{{ $siteName }}" class="logo">
 
         <p class="code">@yield('code')</p>
         <h1 class="heading">@yield('heading')</h1>

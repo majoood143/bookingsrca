@@ -62,7 +62,7 @@ class ListTimeSlots extends ListRecords
                         ->seconds(false)
                         ->native(false)
                         ->displayFormat('H:i')
-                        ->after('start_time'),
+                        ->helperText(__('time_slot.fields.end_time_helper')),
 
                     TextInput::make('max_attendees')
                         ->label(__('time_slot.fields.max_attendees'))
@@ -75,6 +75,17 @@ class ListTimeSlots extends ListRecords
                     Toggle::make('is_active')
                         ->label(__('time_slot.fields.is_active'))
                         ->default(true),
+
+                    Select::make('booking_channel')
+                        ->label(__('time_slot.fields.booking_channel'))
+                        ->options([
+                            'both'   => __('time_slot.fields.booking_channel_both'),
+                            'online' => __('time_slot.fields.booking_channel_online'),
+                            'kiosk'  => __('time_slot.fields.booking_channel_kiosk'),
+                        ])
+                        ->default('both')
+                        ->required()
+                        ->native(false),
                 ])
                 ->modalHeading(__('time_slot.actions.generate_slots'))
                 ->modalDescription(__('time_slot.modals.generate_slots_description'))
@@ -95,6 +106,7 @@ class ListTimeSlots extends ListRecords
                             [
                                 'max_attendees' => $data['max_attendees'],
                                 'is_active' => $data['is_active'],
+                                'booking_channel' => $data['booking_channel'],
                             ],
                         );
 

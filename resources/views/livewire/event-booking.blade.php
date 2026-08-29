@@ -309,12 +309,83 @@
                     @endif
 
                     @if ($hasTimeline)
-                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
-                            <h2 class="text-lg font-bold text-gray-900 mb-3">{{ __('event_booking.details.timeline') }}</h2>
-                            <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">
-                                {!! $eventTimeline !!}
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="flex items-start justify-between gap-3 flex-wrap p-5 sm:p-6 pb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="flex items-center justify-center w-9 h-9 rounded-full bg-brand/10 text-brand shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </span>
+                                    <h2 class="text-lg font-bold text-gray-900">{{ __('event_booking.details.timeline') }}</h2>
+                                </div>
+                                @if ($event->start_date)
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand/10 text-brand text-xs font-semibold whitespace-nowrap">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>
+                                            {{ $event->start_date->locale(app()->getLocale())->translatedFormat('M d, Y') }}
+                                            @if ($event->end_date && !$event->end_date->isSameDay($event->start_date))
+                                                &ndash; {{ $event->end_date->locale(app()->getLocale())->translatedFormat('M d, Y') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="px-5 sm:px-6 pb-5 sm:pb-6">
+                                <div class="event-timeline-content prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                                    {!! $eventTimeline !!}
+                                </div>
                             </div>
                         </div>
+
+                        <style>
+                            .event-timeline-content ul,
+                            .event-timeline-content ol {
+                                list-style: none;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .event-timeline-content li {
+                                position: relative;
+                                padding-inline-start: 1.75rem;
+                                padding-bottom: 1.25rem;
+                            }
+                            .event-timeline-content li:last-child {
+                                padding-bottom: 0;
+                            }
+                            .event-timeline-content li::before {
+                                content: '';
+                                position: absolute;
+                                inset-inline-start: 0.25rem;
+                                top: 0.45rem;
+                                width: 0.5rem;
+                                height: 0.5rem;
+                                border-radius: 9999px;
+                                background: var(--color-brand);
+                                box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 15%, transparent);
+                            }
+                            .event-timeline-content li::after {
+                                content: '';
+                                position: absolute;
+                                inset-inline-start: 0.5rem;
+                                top: 1.05rem;
+                                bottom: -0.25rem;
+                                width: 1px;
+                                background: #e5e7eb;
+                            }
+                            .event-timeline-content li:last-child::after {
+                                display: none;
+                            }
+                            .event-timeline-content li > strong:first-child,
+                            .event-timeline-content li > p:first-child > strong:first-child {
+                                display: block;
+                                color: #111827;
+                            }
+                        </style>
                     @endif
 
                     @if (!empty($eventFaq))
@@ -363,8 +434,37 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step6.heading') }}</h2>
                     <p class="text-gray-500 mb-6">{{ __('event_booking.step6.subheading') }}</p>
 
+                    {{-- Gateway picker (only shown when more than one gateway is enabled) --}}
+                    @if (count($enabledGateways) > 1)
+                        @php
+                            $gatewayLabels = [
+                                'free'     => __('event_booking.step6.free_title'),
+                                'cash'     => __('event_booking.step6.pay_at_door_title'),
+                                'thawani'  => __('event_booking.step6.thawani_title'),
+                                'nbo'      => __('event_booking.step6.nbo_title'),
+                                'ccavenue' => __('event_booking.step6.ccavenue_title'),
+                            ];
+                        @endphp
+                        <div class="mb-6">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">
+                                {{ __('event_booking.step6.choose_method') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($enabledGateways as $gateway)
+                                    <button type="button" wire:click="selectGateway('{{ $gateway }}')"
+                                        wire:loading.attr="disabled" wire:target="submitBooking"
+                                        class="px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors
+                                            {{ $selectedPaymentMethod === $gateway
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50' }}">
+                                        {{ $gatewayLabels[$gateway] ?? $gateway }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Gateway card --}}
-                    @if ($activeGateway === 'thawani')
+                    @if ($selectedPaymentMethod === 'thawani')
                         <div
                             class="p-6 border-2 border-blue-500 bg-blue-50 rounded-2xl shadow-md shadow-blue-100 mb-6">
                             <div class="flex items-center gap-4">
@@ -392,7 +492,7 @@
                                 {{ __('event_booking.step6.thawani_redirect_note') }}
                             </p>
                         </div>
-                    @elseif ($activeGateway === 'nbo')
+                    @elseif ($selectedPaymentMethod === 'nbo')
                         <div
                             class="p-6 border-2 border-indigo-500 bg-indigo-50 rounded-2xl shadow-md shadow-indigo-100 mb-6">
                             <div class="flex items-center gap-4">
@@ -418,7 +518,7 @@
                                 {{ __('event_booking.step6.nbo_redirect_note') }}
                             </p>
                         </div>
-                    @elseif ($activeGateway === 'ccavenue')
+                    @elseif ($selectedPaymentMethod === 'ccavenue')
                         <div
                             class="p-6 border-2 border-teal-500 bg-teal-50 rounded-2xl shadow-md shadow-teal-100 mb-6">
                             <div class="flex items-center gap-4">
@@ -445,7 +545,7 @@
                                 {{ __('event_booking.step6.ccavenue_redirect_note') }}
                             </p>
                         </div>
-                    @elseif ($activeGateway === 'cash')
+                    @elseif ($selectedPaymentMethod === 'cash')
                         <div class="p-6 border-2 border-amber-400 bg-amber-50 rounded-2xl mb-6">
                             <div class="flex items-center gap-4">
                                 <div
@@ -506,7 +606,7 @@
                             ← {{ __('event_booking.back') }}
                         </button>
 
-                        @if ($activeGateway === 'thawani')
+                        @if ($selectedPaymentMethod === 'thawani')
                             <button type="button" wire:click="submitBooking"
                                 class="flex-1 sm:flex-none px-8 py-3 bg-blue-600 text-white font-bold text-base rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
@@ -523,7 +623,7 @@
                                     {{ __('event_booking.step6.redirecting_thawani') }}
                                 </span>
                             </button>
-                        @elseif ($activeGateway === 'nbo')
+                        @elseif ($selectedPaymentMethod === 'nbo')
                             <button type="button" wire:click="submitBooking"
                                 class="flex-1 sm:flex-none px-8 py-3 bg-indigo-600 text-white font-bold text-base rounded-xl hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
@@ -540,7 +640,7 @@
                                     {{ __('event_booking.step6.redirecting_nbo') }}
                                 </span>
                             </button>
-                        @elseif ($activeGateway === 'ccavenue')
+                        @elseif ($selectedPaymentMethod === 'ccavenue')
                             <button type="button" wire:click="submitBooking"
                                 class="flex-1 sm:flex-none px-8 py-3 bg-teal-600 text-white font-bold text-base rounded-xl hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
@@ -729,7 +829,7 @@
                                     class="font-black text-2xl text-blue-600">@include('partials.currency-amount', ['amount' => $this->finalTotal()])</span>
                             </div>
 
-                            @if ($activeGateway === 'thawani')
+                            @if ($selectedPaymentMethod === 'thawani')
                                 <div class="pt-2 text-center text-xs text-gray-400">
                                     <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">
@@ -739,7 +839,7 @@
                                     </svg>
                                     {{ __('event_booking.step6.secured_by_thawani') }}
                                 </div>
-                            @elseif ($activeGateway === 'nbo')
+                            @elseif ($selectedPaymentMethod === 'nbo')
                                 <div class="pt-2 text-center text-xs text-gray-400">
                                     <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">
@@ -749,7 +849,7 @@
                                     </svg>
                                     {{ __('event_booking.step6.secured_by_nbo') }}
                                 </div>
-                            @elseif ($activeGateway === 'ccavenue')
+                            @elseif ($selectedPaymentMethod === 'ccavenue')
                                 <div class="pt-2 text-center text-xs text-gray-400">
                                     <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">

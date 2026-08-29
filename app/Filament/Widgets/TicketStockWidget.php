@@ -50,7 +50,8 @@ class TicketStockWidget extends BaseWidget
 
                 TextColumn::make('price')
                     ->label(__('widgets.ticket_stock.price'))
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->sortable(),
 
                 TextColumn::make('quantity_sold')
@@ -105,7 +106,8 @@ class TicketStockWidget extends BaseWidget
                 TextColumn::make('revenue')
                     ->label(__('widgets.ticket_stock.revenue'))
                     ->state(fn (TicketType $record): float => $record->quantity_sold * $record->price)
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('success'),
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CancelExpiredBookings;
+use App\Console\Commands\PublishScheduledCmsContent;
 use App\Console\Commands\SendScheduledEventReports;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -13,6 +14,8 @@ Artisan::command('inspire', function () {
 Schedule::command(CancelExpiredBookings::class)->everyFiveMinutes();
 
 Schedule::command(SendScheduledEventReports::class)->everyMinute();
+
+Schedule::command(PublishScheduledCmsContent::class)->everyFiveMinutes();
 
 Artisan::command('project:refresh', function () {
     $runIfAvailable = function (string $command) {

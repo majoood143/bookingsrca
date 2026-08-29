@@ -7,6 +7,7 @@ use Throwable;
 use App\Models\Booking;
 use App\Models\BookingAttendee;
 use App\Models\BookingSetting;
+use App\Models\PosTransaction;
 use App\Models\PrintJob;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -201,7 +202,7 @@ class ThermalPrintService
         return $this->queue(null, 'test_print', $bytes);
     }
 
-    private function queue(?Booking $booking, string $type, string $bytes): PrintJob
+    private function queue(?Booking $booking, string $type, string $bytes, ?PosTransaction $posTransaction = null): PrintJob
     {
         Storage::disk('local')->makeDirectory('print-jobs');
 
@@ -209,11 +210,101 @@ class ThermalPrintService
         Storage::disk('local')->put($relativePath, $bytes);
 
         return PrintJob::create([
-            'booking_id'   => $booking?->id,
-            'type'         => $type,
-            'status'       => 'pending',
-            'payload_path' => $relativePath,
+            'booking_id'         => $booking?->id,
+            'pos_transaction_id' => $posTransaction?->id,
+            'type'               => $type,
+            'status'             => 'pending',
+            'payload_path'       => $relativePath,
         ]);
+    }
+
+    /**
+     * Render a POS transaction's receipt (mixed ticket/merchandise lines,
+     * VAT breakdown) and queue the raw ESC/POS bytes, same pipeline as the
+     * online booking receipt above — no separate printing code path.
+     *
+     * When any payment on the transaction was cash, this also appends the
+     * printer-driven drawer-kick command (ESC/POS "p" pulse) right before
+     * the cut, per the confirmed cash-drawer hardware decision: the drawer
+     * is wired into the printer, not a separate USB-HID device.
+     */
+    public function enqueuePosReceipt(PosTransaction $transaction): PrintJob
+    {
+        if (!$this->enabled) {
+            throw new RuntimeException('Thermal printing is currently disabled in Printer Settings.');
+        }
+
+        $transaction->loadMissing(['terminal', 'cashier', 'payments']);
+        // itemable is polymorphic (BookingAttendee|PosProduct) — only the
+        // ticket branch has a ticketType relation, so it needs morphWith()
+        // rather than uniform dot-notation eager loading across both types.
+        $transaction->loadMissing(['items.itemable' => function ($morphTo) {
+            $morphTo->morphWith([BookingAttendee::class => ['ticketType']]);
+        }]);
+
+        $tmpDir = 'printing/tmp';
+        Storage::disk('local')->makeDirectory($tmpDir);
+
+        $connector   = new MemoryPrintConnector();
+        $printer     = new Printer($connector);
+        $currentPath = null;
+        $bytes       = '';
+
+        try {
+            $currentPath = $this->renderPosReceiptToPng($transaction, $tmpDir);
+
+            $image = EscposImage::load(Storage::disk('local')->path($currentPath));
+
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+
+            if ($this->graphicsMode) {
+                $printer->graphics($image);
+            } else {
+                $printer->bitImage($image);
+            }
+
+            Storage::disk('local')->delete($currentPath);
+            $currentPath = null;
+
+            if ($transaction->payments->contains('method', 'cash')) {
+                $printer->pulse();
+            }
+
+            $printer->feed(2);
+            $printer->cut(Printer::CUT_FULL);
+
+            $bytes = $connector->getData();
+        } catch (Throwable $e) {
+            throw new RuntimeException("Could not render POS receipt — {$e->getMessage()}", previous: $e);
+        } finally {
+            if ($currentPath !== null) {
+                Storage::disk('local')->delete($currentPath);
+            }
+            $printer->close();
+        }
+
+        return $this->queue(null, 'pos_receipt', $bytes, $transaction);
+    }
+
+    private function renderPosReceiptToPng(PosTransaction $transaction, string $tmpDir): string
+    {
+        $locale = app()->getLocale();
+        $isRtl  = $locale === 'ar';
+
+        $html = view('pos.receipt-thermal', [
+            'transaction'            => $transaction,
+            'locale'                 => $locale,
+            'isRtl'                  => $isRtl,
+            'paperWidth'             => $this->paperWidthDots,
+            'vatRegistrationNumber'  => BookingSetting::get('pos_vat_registration_number'),
+        ])->render();
+
+        $relativePath = $tmpDir . '/pos-receipt-' . $transaction->id . '-' . Str::random(8) . '.png';
+        $absolutePath = Storage::disk('local')->path($relativePath);
+
+        $this->newBrowsershot($html)->save($absolutePath);
+
+        return $relativePath;
     }
 
     /**

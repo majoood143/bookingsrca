@@ -28,6 +28,16 @@ return [
 
     'footer' => [
         'rights' => 'جميع الحقوق محفوظة.',
+        'follow_us' => 'تابعنا',
+        'social' => [
+            'facebook' => 'فيسبوك',
+            'instagram' => 'إنستغرام',
+            'x' => 'إكس (تويتر)',
+            'linkedin' => 'لينكدإن',
+            'youtube' => 'يوتيوب',
+            'tiktok' => 'تيك توك',
+            'whatsapp' => 'واتساب',
+        ],
     ],
 
 ];

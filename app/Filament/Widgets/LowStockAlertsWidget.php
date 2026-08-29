@@ -6,6 +6,7 @@ use App\Models\TicketType;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\HtmlString;
 
 class LowStockAlertsWidget extends BaseWidget
 {
@@ -79,7 +80,7 @@ class LowStockAlertsWidget extends BaseWidget
                     default           => 'success',
                 }),
 
-            Stat::make(__('widgets.low_stock_alerts.total_revenue'), 'OMR' . number_format($totalRevenue, 3))
+            Stat::make(__('widgets.low_stock_alerts.total_revenue'), new HtmlString(view('partials.currency-amount', ['amount' => (float) $totalRevenue])->render()))
                 ->description(__('widgets.low_stock_alerts.revenue_desc'))
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success'),

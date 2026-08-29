@@ -25,7 +25,7 @@ return [
         'start_time'              => 'وقت البداية',
         'start_time_helper'       => 'اختر وقت بداية هذه الفترة',
         'end_time'                => 'وقت النهاية',
-        'end_time_helper'         => 'اختر وقت نهاية هذه الفترة',
+        'end_time_helper'         => 'اختر وقت نهاية هذه الفترة. إذا كان أبكر من وقت البداية، تُعامل الفترة على أنها تنتهي في اليوم التالي (مثال: 23:30 - 00:30).',
         'label'                   => 'التسمية المعروضة',
         'label_placeholder'       => 'مثال: الحافلة 2 / البوابة أ',
         'label_helper'            => 'تسمية اختيارية تظهر على شاشة العرض الرقمية. اتركها فارغة للترقيم التلقائي.',
@@ -35,6 +35,11 @@ return [
         'current_bookings_helper' => 'يُحدَّث تلقائيًا عند إجراء الحجوزات',
         'is_active'               => 'نشط',
         'is_active_helper'        => 'الفترات الزمنية النشطة فقط هي المتاحة للحجز',
+        'booking_channel'         => 'متاحة لـ',
+        'booking_channel_helper'  => 'اختر ما إذا كانت هذه الفترة قابلة للحجز عبر الإنترنت، أو من الكشك، أو كليهما.',
+        'booking_channel_both'    => 'الإنترنت والكشك',
+        'booking_channel_online'  => 'الإنترنت فقط',
+        'booking_channel_kiosk'   => 'الكشك فقط',
     ],
 
     'create_event_form' => [
@@ -64,6 +69,7 @@ return [
         'available'      => 'المتاح',
         'filled'         => 'الممتلئ',
         'status'         => 'الحالة',
+        'booking_channel'=> 'متاحة لـ',
         'total_bookings' => 'إجمالي الحجوزات',
         'created_at'     => 'تاريخ الإنشاء',
         'updated_at'     => 'تاريخ التعديل',
@@ -75,6 +81,7 @@ return [
         'status_all'        => 'جميع الفترات',
         'status_active'     => 'النشطة فقط',
         'status_inactive'   => 'غير النشطة فقط',
+        'booking_channel'   => 'متاحة لـ',
         'availability'      => 'التوفر',
         'availability_show' => 'عرض',
         'avail_available'   => 'الفترات المتاحة',
@@ -149,8 +156,9 @@ return [
     ],
 
     'suffix' => [
-        'people' => 'شخص',
-        'booked' => 'محجوز',
+        'people'   => 'شخص',
+        'booked'   => 'محجوز',
+        'next_day' => '(اليوم التالي)',
     ],
 
 ];

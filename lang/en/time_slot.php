@@ -25,7 +25,7 @@ return [
         'start_time'               => 'Start Time',
         'start_time_helper'        => 'Select the start time for this slot',
         'end_time'                 => 'End Time',
-        'end_time_helper'          => 'Select the end time for this slot',
+        'end_time_helper'          => 'Select the end time for this slot. If it is earlier than the start time, the slot is treated as ending the next day (e.g. 23:30 - 00:30).',
         'label'                    => 'Display Label',
         'label_placeholder'        => 'e.g. Bus 2 / Gate A',
         'label_helper'             => 'Optional label shown on the digital signage screen. Leave blank to auto-number the slot.',
@@ -35,6 +35,11 @@ return [
         'current_bookings_helper'  => 'This is automatically updated when bookings are made',
         'is_active'                => 'Active',
         'is_active_helper'         => 'Only active time slots are available for booking',
+        'booking_channel'          => 'Available For',
+        'booking_channel_helper'   => 'Choose whether this slot can be booked online, at the kiosk, or both.',
+        'booking_channel_both'     => 'Online & Kiosk',
+        'booking_channel_online'   => 'Online only',
+        'booking_channel_kiosk'    => 'Kiosk only',
     ],
 
     'create_event_form' => [
@@ -64,6 +69,7 @@ return [
         'available'      => 'Available',
         'filled'         => 'Filled',
         'status'         => 'Status',
+        'booking_channel'=> 'Available For',
         'total_bookings' => 'Total Bookings',
         'created_at'     => 'Created At',
         'updated_at'     => 'Updated At',
@@ -75,6 +81,7 @@ return [
         'status_all'        => 'All slots',
         'status_active'     => 'Active only',
         'status_inactive'   => 'Inactive only',
+        'booking_channel'   => 'Available For',
         'availability'      => 'Availability',
         'availability_show' => 'Show',
         'avail_available'   => 'Available slots',
@@ -149,8 +156,9 @@ return [
     ],
 
     'suffix' => [
-        'people' => 'people',
-        'booked' => 'booked',
+        'people'    => 'people',
+        'booked'    => 'booked',
+        'next_day'  => '(next day)',
     ],
 
 ];

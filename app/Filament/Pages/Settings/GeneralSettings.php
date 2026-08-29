@@ -7,6 +7,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -91,6 +92,24 @@ class GeneralSettings extends Page implements HasForms
             'module_promo_codes_enabled' => (bool) BookingSetting::get('module_promo_codes_enabled', true),
             'module_expenses_enabled' => (bool) BookingSetting::get('module_expenses_enabled', true),
             'module_commission_enabled' => (bool) BookingSetting::get('module_commission_enabled', true),
+            'module_cms_enabled' => (bool) BookingSetting::get('module_cms_enabled', true),
+            'module_pos_enabled' => (bool) BookingSetting::get('module_pos_enabled', true),
+
+            'social_facebook_url' => BookingSetting::get('social_facebook_url', ''),
+            'social_instagram_url' => BookingSetting::get('social_instagram_url', ''),
+            'social_x_url' => BookingSetting::get('social_x_url', ''),
+            'social_linkedin_url' => BookingSetting::get('social_linkedin_url', ''),
+            'social_youtube_url' => BookingSetting::get('social_youtube_url', ''),
+            'social_tiktok_url' => BookingSetting::get('social_tiktok_url', ''),
+            'social_whatsapp_url' => BookingSetting::get('social_whatsapp_url', ''),
+
+            'seo_meta_description' => BookingSetting::get('seo_meta_description', ''),
+            'seo_og_image' => BookingSetting::get('seo_og_image'),
+
+            'success_page_back_url' => BookingSetting::get('success_page_back_url', ''),
+            'success_page_message_en' => BookingSetting::get('success_page_message_en', ''),
+            'success_page_message_ar' => BookingSetting::get('success_page_message_ar', ''),
+            'success_page_message_color' => BookingSetting::get('success_page_message_color', 'blue'),
         ]);
     }
 
@@ -386,6 +405,125 @@ class GeneralSettings extends Page implements HasForms
                                         Toggle::make('module_commission_enabled')
                                             ->label(__('general_settings.fields.module_commission_enabled'))
                                             ->helperText(__('general_settings.fields.module_commission_enabled_helper')),
+
+                                        Toggle::make('module_cms_enabled')
+                                            ->label(__('general_settings.fields.module_cms_enabled'))
+                                            ->helperText(__('general_settings.fields.module_cms_enabled_helper')),
+
+                                        Toggle::make('module_pos_enabled')
+                                            ->label(__('general_settings.fields.module_pos_enabled'))
+                                            ->helperText(__('general_settings.fields.module_pos_enabled_helper')),
+                                    ]),
+                            ]),
+
+                        Tab::make(__('general_settings.tabs.social_media'))
+                            ->icon('heroicon-o-share')
+                            ->schema([
+                                Section::make(__('general_settings.sections.social_media'))
+                                    ->description(__('general_settings.sections.social_media_desc'))
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('social_facebook_url')
+                                                ->label(__('general_settings.fields.social_facebook_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_instagram_url')
+                                                ->label(__('general_settings.fields.social_instagram_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_x_url')
+                                                ->label(__('general_settings.fields.social_x_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_linkedin_url')
+                                                ->label(__('general_settings.fields.social_linkedin_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_youtube_url')
+                                                ->label(__('general_settings.fields.social_youtube_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_tiktok_url')
+                                                ->label(__('general_settings.fields.social_tiktok_url'))
+                                                ->url()
+                                                ->maxLength(255),
+
+                                            TextInput::make('social_whatsapp_url')
+                                                ->label(__('general_settings.fields.social_whatsapp_url'))
+                                                ->helperText(__('general_settings.fields.social_whatsapp_url_helper'))
+                                                ->url()
+                                                ->maxLength(255),
+                                        ]),
+                                    ]),
+                            ]),
+
+                        Tab::make(__('general_settings.tabs.success_page'))
+                            ->icon('heroicon-o-check-circle')
+                            ->schema([
+                                Section::make(__('general_settings.sections.success_page_link'))
+                                    ->description(__('general_settings.sections.success_page_link_desc'))
+                                    ->schema([
+                                        TextInput::make('success_page_back_url')
+                                            ->label(__('general_settings.fields.success_page_back_url'))
+                                            ->helperText(__('general_settings.fields.success_page_back_url_helper'))
+                                            ->url()
+                                            ->maxLength(255),
+                                    ]),
+
+                                Section::make(__('general_settings.sections.success_page_message'))
+                                    ->description(__('general_settings.sections.success_page_message_desc'))
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            Textarea::make('success_page_message_en')
+                                                ->label(__('general_settings.fields.success_page_message_en'))
+                                                ->maxLength(500)
+                                                ->rows(3),
+
+                                            Textarea::make('success_page_message_ar')
+                                                ->label(__('general_settings.fields.success_page_message_ar'))
+                                                ->maxLength(500)
+                                                ->rows(3),
+                                        ]),
+
+                                        Select::make('success_page_message_color')
+                                            ->label(__('general_settings.fields.success_page_message_color'))
+                                            ->options([
+                                                'gray' => __('general_settings.fields.color_gray'),
+                                                'blue' => __('general_settings.fields.color_blue'),
+                                                'green' => __('general_settings.fields.color_green'),
+                                                'red' => __('general_settings.fields.color_red'),
+                                                'yellow' => __('general_settings.fields.color_yellow'),
+                                                'purple' => __('general_settings.fields.color_purple'),
+                                            ])
+                                            ->native(false)
+                                            ->required(),
+                                    ]),
+                            ]),
+
+                        Tab::make(__('general_settings.tabs.seo'))
+                            ->icon('heroicon-o-magnifying-glass')
+                            ->schema([
+                                Section::make(__('general_settings.sections.seo'))
+                                    ->description(__('general_settings.sections.seo_desc'))
+                                    ->schema([
+                                        Textarea::make('seo_meta_description')
+                                            ->label(__('general_settings.fields.seo_meta_description'))
+                                            ->helperText(__('general_settings.fields.seo_meta_description_helper'))
+                                            ->maxLength(300)
+                                            ->rows(3),
+
+                                        FileUpload::make('seo_og_image')
+                                            ->label(__('general_settings.fields.seo_og_image'))
+                                            ->helperText(__('general_settings.fields.seo_og_image_helper'))
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('branding')
+                                            ->visibility('public'),
                                     ]),
                             ]),
                     ])
@@ -421,6 +559,19 @@ class GeneralSettings extends Page implements HasForms
             'terms_ar',
             'terms_url_en',
             'terms_url_ar',
+            'social_facebook_url',
+            'social_instagram_url',
+            'social_x_url',
+            'social_linkedin_url',
+            'social_youtube_url',
+            'social_tiktok_url',
+            'social_whatsapp_url',
+            'seo_meta_description',
+            'seo_og_image',
+            'success_page_back_url',
+            'success_page_message_en',
+            'success_page_message_ar',
+            'success_page_message_color',
         ] as $key) {
             BookingSetting::set($key, (string) ($state[$key] ?? ''));
         }
@@ -440,6 +591,8 @@ class GeneralSettings extends Page implements HasForms
             'module_promo_codes_enabled',
             'module_expenses_enabled',
             'module_commission_enabled',
+            'module_cms_enabled',
+            'module_pos_enabled',
         ] as $key) {
             BookingSetting::set($key, !empty($state[$key]) ? 'true' : 'false');
         }

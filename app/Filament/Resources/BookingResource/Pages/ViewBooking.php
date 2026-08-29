@@ -15,9 +15,11 @@ use App\Services\Printing\ThermalPrintService;
 use App\Filament\Resources\BookingResource;
 use App\Filament\Resources\BookingResource\Pages\EditBooking;
 use App\Filament\Resources\BookingResource\Pages\ListBookingActivities;
+use App\Models\BookingSetting;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\HtmlString;
 
 class ViewBooking extends ViewRecord
 {
@@ -63,11 +65,11 @@ class ViewBooking extends ViewRecord
                         TextInput::make('amount')
                             ->label(__('booking.payments.fields.amount'))
                             ->numeric()
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->minValue(0)
                             ->required()
                             ->default(fn() => round($this->record->balance_due, 2))
-                            ->helperText(fn() => __('booking.payments.summary.balance_due') . ': OMR ' . number_format($this->record->balance_due, 2)),
+                            ->helperText(fn() => __('booking.payments.summary.balance_due') . ': ' . BookingSetting::currencySymbol() . ' ' . number_format($this->record->balance_due, 2)),
                     ]),
 
                     TextInput::make('reference')

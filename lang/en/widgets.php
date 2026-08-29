@@ -79,6 +79,11 @@ return [
         'confirmed_msg'  => 'Booking confirmed',
     ],
 
+    'total_balance_due' => [
+        'heading'     => 'Total Balance Due',
+        'description' => ':count booking|:count bookings with outstanding balance',
+    ],
+
     'balance_due_bookings' => [
         'heading'        => 'Bookings with Balance Due',
         'reference'      => 'Reference',
@@ -90,6 +95,11 @@ return [
         'status'         => 'Status',
         'source'         => 'Source',
         'action_view'    => 'View',
+        'action_record_payment' => 'Record Payment',
+        'record_payment_heading' => 'Record Payment',
+        'record_payment_description' => 'Record a payment received for this booking. Balance due: OMR :amount.',
+        'record_payment_submit' => 'Record Payment',
+        'payment_recorded' => 'Payment recorded',
         'empty_heading'  => 'No bookings with an outstanding balance',
     ],
 

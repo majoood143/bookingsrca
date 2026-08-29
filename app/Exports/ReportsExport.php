@@ -82,7 +82,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             ->implode(', ');
 
         $timeSlotLabel = $booking->timeSlot
-            ? $booking->timeSlot->start_time . ' – ' . $booking->timeSlot->end_time
+            ? $booking->timeSlot->getTimeRange()
             : '';
 
         return [

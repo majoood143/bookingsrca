@@ -149,6 +149,7 @@ return [
     'step6' => [
         'heading'               => 'الدفع',
         'subheading'            => 'راجع طلبك وأكمل عملية الدفع',
+        'choose_method'         => 'اختر طريقة الدفع',
         'thawani_title'         => 'ثواني',
         'thawani_subtitle'      => 'دفع آمن عبر الإنترنت مدعوم من ثواني',
         'thawani_redirect_note' => 'سيتم تحويلك إلى صفحة الدفع الآمنة لإتمام عملية الشراء.',

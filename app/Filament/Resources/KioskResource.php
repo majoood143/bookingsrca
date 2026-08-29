@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Components\TextInput;
@@ -129,21 +130,31 @@ class KioskResource extends Resource
                 Section::make(__('kiosk.sections.booking_rules'))
                     ->description(__('kiosk.sections.booking_rules_desc'))
                     ->schema([
-                        Toggle::make('override_booking_rules')
-                            ->label(__('kiosk.fields.override_booking_rules'))
-                            ->helperText(__('kiosk.fields.override_booking_rules_helper'))
-                            ->default(false)
-                            ->live()
-                            ->inline(false),
-
-                        Grid::make(2)
+                        Fieldset::make(__('kiosk.fields.min_tickets_per_booking'))
                             ->schema([
+                                Toggle::make('override_min_tickets_per_booking')
+                                    ->label(__('kiosk.fields.override_min_tickets_per_booking'))
+                                    ->helperText(__('kiosk.fields.override_min_tickets_per_booking_helper'))
+                                    ->default(false)
+                                    ->live(),
+
                                 TextInput::make('min_tickets_per_booking')
                                     ->label(__('kiosk.fields.min_tickets_per_booking'))
                                     ->numeric()
                                     ->minValue(1)
                                     ->default(fn () => BookingSetting::get('min_tickets_per_booking', 1))
-                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+                                    ->required(fn (Get $get) => (bool) $get('override_min_tickets_per_booking'))
+                                    ->visible(fn (Get $get) => (bool) $get('override_min_tickets_per_booking')),
+                            ])
+                            ->columns(2),
+
+                        Fieldset::make(__('kiosk.fields.max_tickets_per_booking'))
+                            ->schema([
+                                Toggle::make('override_max_tickets_per_booking')
+                                    ->label(__('kiosk.fields.override_max_tickets_per_booking'))
+                                    ->helperText(__('kiosk.fields.override_max_tickets_per_booking_helper'))
+                                    ->default(false)
+                                    ->live(),
 
                                 TextInput::make('max_tickets_per_booking')
                                     ->label(__('kiosk.fields.max_tickets_per_booking'))
@@ -151,7 +162,18 @@ class KioskResource extends Resource
                                     ->minValue(1)
                                     ->maxValue(1000)
                                     ->default(fn () => BookingSetting::get('max_tickets_per_booking', 10))
-                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+                                    ->required(fn (Get $get) => (bool) $get('override_max_tickets_per_booking'))
+                                    ->visible(fn (Get $get) => (bool) $get('override_max_tickets_per_booking')),
+                            ])
+                            ->columns(2),
+
+                        Fieldset::make(__('kiosk.fields.max_attendee_age_years'))
+                            ->schema([
+                                Toggle::make('override_max_attendee_age_years')
+                                    ->label(__('kiosk.fields.override_max_attendee_age_years'))
+                                    ->helperText(__('kiosk.fields.override_max_attendee_age_years_helper'))
+                                    ->default(false)
+                                    ->live(),
 
                                 TextInput::make('max_attendee_age_years')
                                     ->label(__('kiosk.fields.max_attendee_age_years'))
@@ -159,7 +181,18 @@ class KioskResource extends Resource
                                     ->minValue(1)
                                     ->maxValue(120)
                                     ->default(fn () => BookingSetting::get('max_attendee_age_years', 75))
-                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+                                    ->required(fn (Get $get) => (bool) $get('override_max_attendee_age_years'))
+                                    ->visible(fn (Get $get) => (bool) $get('override_max_attendee_age_years')),
+                            ])
+                            ->columns(2),
+
+                        Fieldset::make(__('kiosk.fields.pending_booking_expiry_minutes'))
+                            ->schema([
+                                Toggle::make('override_pending_booking_expiry_minutes')
+                                    ->label(__('kiosk.fields.override_pending_booking_expiry_minutes'))
+                                    ->helperText(__('kiosk.fields.override_pending_booking_expiry_minutes_helper'))
+                                    ->default(false)
+                                    ->live(),
 
                                 TextInput::make('pending_booking_expiry_minutes')
                                     ->label(__('kiosk.fields.pending_booking_expiry_minutes'))
@@ -167,16 +200,81 @@ class KioskResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->default(fn () => BookingSetting::get('pending_booking_expiry_minutes', 15))
-                                    ->required(fn (Get $get) => (bool) $get('override_booking_rules')),
+                                    ->required(fn (Get $get) => (bool) $get('override_pending_booking_expiry_minutes'))
+                                    ->visible(fn (Get $get) => (bool) $get('override_pending_booking_expiry_minutes')),
                             ])
-                            ->visible(fn (Get $get) => (bool) $get('override_booking_rules')),
+                            ->columns(2),
 
-                        Toggle::make('show_slot_end_time')
-                            ->label(__('kiosk.fields.show_slot_end_time'))
-                            ->helperText(__('kiosk.fields.show_slot_end_time_helper'))
-                            ->default(fn () => (bool) BookingSetting::get('show_slot_end_time', true))
-                            ->inline(false)
-                            ->visible(fn (Get $get) => (bool) $get('override_booking_rules')),
+                        Fieldset::make(__('kiosk.fields.show_slot_end_time'))
+                            ->schema([
+                                Toggle::make('override_show_slot_end_time')
+                                    ->label(__('kiosk.fields.override_show_slot_end_time'))
+                                    ->helperText(__('kiosk.fields.override_show_slot_end_time_helper'))
+                                    ->default(false)
+                                    ->live(),
+
+                                Toggle::make('show_slot_end_time')
+                                    ->label(__('kiosk.fields.show_slot_end_time'))
+                                    ->helperText(__('kiosk.fields.show_slot_end_time_helper'))
+                                    ->default(fn () => (bool) BookingSetting::get('show_slot_end_time', true))
+                                    ->visible(fn (Get $get) => (bool) $get('override_show_slot_end_time')),
+                            ])
+                            ->columns(2),
+
+                        Fieldset::make(__('kiosk.sections.booking_cutoff'))
+                            ->schema([
+                                Toggle::make('override_booking_cutoff')
+                                    ->label(__('kiosk.fields.override_booking_cutoff'))
+                                    ->helperText(__('kiosk.fields.override_booking_cutoff_helper'))
+                                    ->default(false)
+                                    ->live()
+                                    ->columnSpanFull(),
+
+                                Toggle::make('booking_cutoff_enabled')
+                                    ->label(__('kiosk.fields.booking_cutoff_enabled'))
+                                    ->helperText(__('kiosk.fields.booking_cutoff_enabled_helper'))
+                                    ->default(false)
+                                    ->live()
+                                    ->visible(fn (Get $get) => (bool) $get('override_booking_cutoff'))
+                                    ->columnSpanFull(),
+
+                                Grid::make(2)
+                                    ->schema([
+                                        TextInput::make('booking_cutoff_value')
+                                            ->label(__('kiosk.fields.booking_cutoff_value'))
+                                            ->numeric()
+                                            ->minValue(1)
+                                            ->required(fn (Get $get) => (bool) $get('override_booking_cutoff') && (bool) $get('booking_cutoff_enabled')),
+
+                                        Select::make('booking_cutoff_unit')
+                                            ->label(__('kiosk.fields.booking_cutoff_unit'))
+                                            ->options([
+                                                'hours'   => __('kiosk.fields.booking_cutoff_units.hours'),
+                                                'minutes' => __('kiosk.fields.booking_cutoff_units.minutes'),
+                                            ])
+                                            ->default('hours')
+                                            ->native(false)
+                                            ->required(fn (Get $get) => (bool) $get('override_booking_cutoff') && (bool) $get('booking_cutoff_enabled')),
+                                    ])
+                                    ->visible(fn (Get $get) => (bool) $get('override_booking_cutoff') && (bool) $get('booking_cutoff_enabled')),
+                            ])
+                            ->columns(1),
+
+                        Fieldset::make(__('kiosk.fields.enforce_capacity'))
+                            ->schema([
+                                Toggle::make('override_capacity_enforcement')
+                                    ->label(__('kiosk.fields.override_capacity_enforcement'))
+                                    ->helperText(__('kiosk.fields.override_capacity_enforcement_helper'))
+                                    ->default(false)
+                                    ->live(),
+
+                                Toggle::make('enforce_capacity')
+                                    ->label(__('kiosk.fields.enforce_capacity'))
+                                    ->helperText(__('kiosk.fields.enforce_capacity_helper'))
+                                    ->default(false)
+                                    ->visible(fn (Get $get) => (bool) $get('override_capacity_enforcement')),
+                            ])
+                            ->columns(2),
                     ])
                     ->columns(1)
                     ->collapsible(),

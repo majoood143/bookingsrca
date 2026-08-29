@@ -22,7 +22,7 @@ class CancelExpiredBookings extends Command
         // expiry than the global default — widen the initial scan to the
         // shortest window in play so those bookings aren't missed, then each
         // candidate is re-checked below against its own kiosk's expiry.
-        $shortestPossibleExpiry = min($globalExpiryMinutes, Kiosk::where('override_booking_rules', true)
+        $shortestPossibleExpiry = min($globalExpiryMinutes, Kiosk::where('override_pending_booking_expiry_minutes', true)
             ->whereNotNull('pending_booking_expiry_minutes')
             ->min('pending_booking_expiry_minutes') ?? $globalExpiryMinutes);
 

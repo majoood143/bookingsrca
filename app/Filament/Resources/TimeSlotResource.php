@@ -158,7 +158,6 @@ class TimeSlotResource extends Resource
                                     ->seconds(false)
                                     ->native(false)
                                     ->displayFormat('H:i')
-                                    ->after('start_time')
                                     ->helperText(__('time_slot.fields.end_time_helper')),
                             ]),
 
@@ -196,6 +195,18 @@ class TimeSlotResource extends Resource
                             ->helperText(__('time_slot.fields.is_active_helper'))
                             ->default(true)
                             ->inline(false),
+
+                        Select::make('booking_channel')
+                            ->label(__('time_slot.fields.booking_channel'))
+                            ->options([
+                                'both'   => __('time_slot.fields.booking_channel_both'),
+                                'online' => __('time_slot.fields.booking_channel_online'),
+                                'kiosk'  => __('time_slot.fields.booking_channel_kiosk'),
+                            ])
+                            ->default('both')
+                            ->required()
+                            ->native(false)
+                            ->helperText(__('time_slot.fields.booking_channel_helper')),
                     ])
                     ->columns(1),
 
@@ -268,7 +279,7 @@ class TimeSlotResource extends Resource
 
                 TextColumn::make('end_time')
                     ->label(__('time_slot.columns.end_time'))
-                    ->time('H:i')
+                    ->getStateUsing(fn($record) => $record->getEndTimeLabel())
                     ->sortable()
                     ->badge()
                     ->searchable()
@@ -335,6 +346,17 @@ class TimeSlotResource extends Resource
                     ->falseColor('danger')
                     ->alignCenter(),
 
+                TextColumn::make('booking_channel')
+                    ->label(__('time_slot.columns.booking_channel'))
+                    ->formatStateUsing(fn(string $state) => __('time_slot.fields.booking_channel_' . $state))
+                    ->badge()
+                    ->color(fn(string $state) => match ($state) {
+                        'online' => 'info',
+                        'kiosk'  => 'warning',
+                        default  => 'gray',
+                    })
+                    ->toggleable(),
+
                 TextColumn::make('bookings_count')
                     ->counts('bookings')
                     ->label(__('time_slot.columns.total_bookings'))
@@ -391,6 +413,14 @@ class TimeSlotResource extends Resource
                     ->placeholder(__('time_slot.filters.status_all'))
                     ->trueLabel(__('time_slot.filters.status_active'))
                     ->falseLabel(__('time_slot.filters.status_inactive')),
+
+                SelectFilter::make('booking_channel')
+                    ->label(__('time_slot.filters.booking_channel'))
+                    ->options([
+                        'both'   => __('time_slot.fields.booking_channel_both'),
+                        'online' => __('time_slot.fields.booking_channel_online'),
+                        'kiosk'  => __('time_slot.fields.booking_channel_kiosk'),
+                    ]),
 
                 Filter::make('availability')
                     ->label(__('time_slot.filters.availability'))
@@ -599,7 +629,7 @@ class TimeSlotResource extends Resource
                                 ->seconds(false)
                                 ->native(false)
                                 ->displayFormat('H:i')
-                                ->after('start_time'),
+                                ->helperText(__('time_slot.fields.end_time_helper')),
                         ])
                         ->modalHeading(__('time_slot.modals.edit_time_range_heading'))
                         ->modalDescription(__('time_slot.modals.edit_time_range_description'))

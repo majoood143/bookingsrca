@@ -6,7 +6,7 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 use App\Models\BookingSetting;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -43,7 +43,7 @@ class PaymentGateways extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'active_gateway' => BookingSetting::get('active_gateway', 'free'),
+            'enabled_gateways' => $this->resolveEnabledGateways(),
             'thawani'        => [
                 'secret_key'      => BookingSetting::get('thawani.secret_key', ''),
                 'publishable_key' => BookingSetting::get('thawani.publishable_key', ''),
@@ -68,6 +68,23 @@ class PaymentGateways extends Page implements HasForms
         ]);
     }
 
+    /**
+     * Reads the enabled_gateways JSON setting, falling back to the legacy
+     * single active_gateway value for installs that haven't saved this
+     * page since the multi-gateway option was introduced.
+     */
+    protected function resolveEnabledGateways(): array
+    {
+        $stored  = BookingSetting::get('enabled_gateways');
+        $decoded = $stored ? json_decode($stored, true) : null;
+
+        if (is_array($decoded) && !empty($decoded)) {
+            return array_values($decoded);
+        }
+
+        return [(string) BookingSetting::get('active_gateway', 'free')];
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -75,7 +92,7 @@ class PaymentGateways extends Page implements HasForms
                 Section::make(__('payment_gateways.sections.active_gateway'))
                     ->description(__('payment_gateways.sections.active_gateway_desc'))
                     ->schema([
-                        Select::make('active_gateway')
+                        CheckboxList::make('enabled_gateways')
                             ->label(__('payment_gateways.options.active_gateway'))
                             ->options([
                                 'free'    => __('payment_gateways.options.free'),
@@ -86,12 +103,12 @@ class PaymentGateways extends Page implements HasForms
                             ])
                             ->required()
                             ->live()
-                            ->native(false),
+                            ->columns(2),
                     ]),
 
                 Section::make(__('payment_gateways.sections.thawani'))
                     ->description(__('payment_gateways.sections.thawani_desc'))
-                    ->visible(fn ($get) => $get('active_gateway') === 'thawani')
+                    ->visible(fn ($get) => in_array('thawani', (array) $get('enabled_gateways')))
                     ->schema([
                         Toggle::make('thawani.test_mode')
                             ->label(__('payment_gateways.fields.test_mode'))
@@ -104,12 +121,12 @@ class PaymentGateways extends Page implements HasForms
                                 ->label(__('payment_gateways.fields.secret_key'))
                                 ->password()
                                 ->revealable()
-                                ->required(fn ($get) => $get('active_gateway') === 'thawani')
+                                ->required(fn ($get) => in_array('thawani', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
 
                             TextInput::make('thawani.publishable_key')
                                 ->label(__('payment_gateways.fields.publishable_key'))
-                                ->required(fn ($get) => $get('active_gateway') === 'thawani')
+                                ->required(fn ($get) => in_array('thawani', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
                         ])->columns(2),
 
@@ -132,7 +149,7 @@ class PaymentGateways extends Page implements HasForms
 
                 Section::make(__('payment_gateways.sections.nbo'))
                     ->description(__('payment_gateways.sections.nbo_desc'))
-                    ->visible(fn ($get) => $get('active_gateway') === 'nbo')
+                    ->visible(fn ($get) => in_array('nbo', (array) $get('enabled_gateways')))
                     ->schema([
                         Toggle::make('nbo.test_mode')
                             ->label(__('payment_gateways.fields.test_mode'))
@@ -143,14 +160,14 @@ class PaymentGateways extends Page implements HasForms
                         Group::make([
                             TextInput::make('nbo.tranportal_id')
                                 ->label(__('payment_gateways.fields.tranportal_id'))
-                                ->required(fn ($get) => $get('active_gateway') === 'nbo')
+                                ->required(fn ($get) => in_array('nbo', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
 
                             TextInput::make('nbo.tranportal_password')
                                 ->label(__('payment_gateways.fields.tranportal_password'))
                                 ->password()
                                 ->revealable()
-                                ->required(fn ($get) => $get('active_gateway') === 'nbo')
+                                ->required(fn ($get) => in_array('nbo', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
                         ])->columns(2),
 
@@ -159,7 +176,7 @@ class PaymentGateways extends Page implements HasForms
                             ->helperText(__('payment_gateways.fields.resource_key_helper'))
                             ->password()
                             ->revealable()
-                            ->required(fn ($get) => $get('active_gateway') === 'nbo')
+                            ->required(fn ($get) => in_array('nbo', (array) $get('enabled_gateways')))
                             ->maxLength(255),
 
                         TextInput::make('nbo.endpoint_url')
@@ -174,7 +191,7 @@ class PaymentGateways extends Page implements HasForms
 
                 Section::make(__('payment_gateways.sections.ccavenue'))
                     ->description(__('payment_gateways.sections.ccavenue_desc'))
-                    ->visible(fn ($get) => $get('active_gateway') === 'ccavenue')
+                    ->visible(fn ($get) => in_array('ccavenue', (array) $get('enabled_gateways')))
                     ->schema([
                         Toggle::make('ccavenue.test_mode')
                             ->label(__('payment_gateways.fields.test_mode'))
@@ -185,14 +202,14 @@ class PaymentGateways extends Page implements HasForms
                         Group::make([
                             TextInput::make('ccavenue.merchant_id')
                                 ->label(__('payment_gateways.fields.merchant_id'))
-                                ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                                ->required(fn ($get) => in_array('ccavenue', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
 
                             TextInput::make('ccavenue.access_code')
                                 ->label(__('payment_gateways.fields.access_code'))
                                 ->password()
                                 ->revealable()
-                                ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                                ->required(fn ($get) => in_array('ccavenue', (array) $get('enabled_gateways')))
                                 ->maxLength(255),
                         ])->columns(2),
 
@@ -201,7 +218,7 @@ class PaymentGateways extends Page implements HasForms
                             ->helperText(__('payment_gateways.fields.working_key_helper'))
                             ->password()
                             ->revealable()
-                            ->required(fn ($get) => $get('active_gateway') === 'ccavenue')
+                            ->required(fn ($get) => in_array('ccavenue', (array) $get('enabled_gateways')))
                             ->maxLength(255),
 
                         TextInput::make('ccavenue.endpoint_url')
@@ -223,8 +240,9 @@ class PaymentGateways extends Page implements HasForms
         $thawani  = $state['thawani']  ?? [];
         $nbo      = $state['nbo']      ?? [];
         $ccavenue = $state['ccavenue'] ?? [];
+        $enabled  = array_values($state['enabled_gateways'] ?? []);
 
-        BookingSetting::set('active_gateway', $state['active_gateway']);
+        BookingSetting::set('enabled_gateways', json_encode($enabled));
 
         BookingSetting::set('thawani.secret_key',      $thawani['secret_key']      ?? '');
         BookingSetting::set('thawani.publishable_key', $thawani['publishable_key'] ?? '');

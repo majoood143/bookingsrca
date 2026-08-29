@@ -13,6 +13,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Illuminate\Support\HtmlString;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -35,7 +36,7 @@ class PaymentsRelationManager extends RelationManager
             TextInput::make('amount')
                 ->label(__('booking.payments.fields.amount'))
                 ->numeric()
-                ->prefix('OMR')
+                ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                 ->required()
                 ->minValue(0.01)
                 ->default(fn() => $this->getOwnerRecord()->balance_due),
@@ -73,9 +74,15 @@ class PaymentsRelationManager extends RelationManager
 
                 TextColumn::make('amount')
                     ->label(__('booking.payments.fields.amount'))
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
-                    ->summarize(Sum::make()->money('OMR')->label(__('booking.payments.total_recorded'))),
+                    ->summarize(
+                        Sum::make()
+                            ->html()
+                            ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                            ->label(__('booking.payments.total_recorded'))
+                    ),
 
                 TextColumn::make('reference')
                     ->label(__('booking.payments.fields.reference'))

@@ -149,6 +149,7 @@ return [
     'step6' => [
         'heading'                => 'Payment',
         'subheading'             => 'Review your order and complete payment',
+        'choose_method'          => 'Choose a payment method',
         'thawani_title'          => 'Thawani',
         'thawani_subtitle'       => 'Secure online payment powered by Thawani',
         'thawani_redirect_note'  => 'You will be redirected to the Thawani secure payment page to complete your purchase.',

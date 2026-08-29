@@ -239,7 +239,7 @@ class BookingResource extends Resource
                                                     ->get()
                                                     ->mapWithKeys(fn($ticket) => [
                                                         $ticket->id => $ticket->getTranslation('name', 'en') .
-                                                            ' - OMR ' . number_format($ticket->price, 3) .
+                                                            ' - ' . BookingSetting::currencySymbol() . ' ' . number_format($ticket->price, 3) .
                                                             ' (' . $ticket->getRemainingQuantity() . ' available)'
                                                     ]);
                                             })
@@ -267,7 +267,7 @@ class BookingResource extends Resource
                                         TextInput::make('ticket_price')
                                             ->label(__('booking.fields.ticket_price'))
                                             //->numeric()
-                                            ->prefix('OMR')
+                                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                                             ->disabled()
                                             ->dehydrated(true)
                                             ->default(0)
@@ -342,7 +342,7 @@ class BookingResource extends Resource
                             ->label(__('booking.fields.ticket_price'))
                             //->numeric()
                             ->step(0.001)
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->disabled()
                             ->dehydrated()
                             ->live()
@@ -353,7 +353,7 @@ class BookingResource extends Resource
                             ->label(__('booking.fields.services_price'))
                             //->numeric()
                             ->step(0.001)
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->disabled()
                             ->dehydrated()
                             ->live()
@@ -364,7 +364,7 @@ class BookingResource extends Resource
                             ->label(__('booking.fields.total_price'))
                             //->numeric()
                             ->step(0.001)
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->disabled()
                             ->dehydrated()
                             ->live()
@@ -413,14 +413,14 @@ class BookingResource extends Resource
                     ->schema([
                         TextInput::make('total_paid')
                             ->label(__('booking.payments.summary.total_paid'))
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->disabled()
                             ->dehydrated(false)
                             ->formatStateUsing(fn($record) => number_format($record?->total_paid ?? 0, 3)),
 
                         TextInput::make('balance_due')
                             ->label(__('booking.payments.summary.balance_due'))
-                            ->prefix('OMR')
+                            ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                             ->disabled()
                             ->dehydrated(false)
                             ->formatStateUsing(fn($record) => number_format($record?->balance_due ?? 0, 3)),
@@ -545,7 +545,8 @@ class BookingResource extends Resource
 
                 TextColumn::make('total_price')
                     ->label(__('booking.columns.total'))
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('success')
                     ->toggleable()
@@ -857,11 +858,11 @@ class BookingResource extends Resource
                                 TextInput::make('amount')
                                     ->label(__('booking.payments.fields.amount'))
                                     ->numeric()
-                                    ->prefix('OMR')
+                                    ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
                                     ->minValue(0)
                                     ->required()
                                     ->default(fn(Booking $record) => round($record->balance_due, 2))
-                                    ->helperText(fn(Booking $record) => __('booking.payments.summary.balance_due') . ': OMR ' . number_format($record->balance_due, 2)),
+                                    ->helperText(fn(Booking $record) => __('booking.payments.summary.balance_due') . ': ' . BookingSetting::currencySymbol() . ' ' . number_format($record->balance_due, 2)),
                             ]),
 
                             TextInput::make('reference')

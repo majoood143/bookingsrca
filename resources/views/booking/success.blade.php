@@ -1,9 +1,27 @@
+@php
+    $favicon = \App\Models\BookingSetting::get('favicon');
+
+    $successBackUrl = \App\Models\BookingSetting::get('success_page_back_url') ?: url('/');
+
+    $successMessage = \App\Models\BookingSetting::get('success_page_message_' . app()->getLocale())
+        ?: \App\Models\BookingSetting::get('success_page_message_en');
+
+    $successMessageColorClasses = [
+        'gray' => 'bg-gray-50 border-gray-100 text-gray-700',
+        'blue' => 'bg-blue-50 border-blue-100 text-blue-700',
+        'green' => 'bg-green-50 border-green-100 text-green-700',
+        'red' => 'bg-red-50 border-red-100 text-red-700',
+        'yellow' => 'bg-yellow-50 border-yellow-100 text-yellow-700',
+        'purple' => 'bg-purple-50 border-purple-100 text-purple-700',
+    ][\App\Models\BookingSetting::get('success_page_message_color', 'blue')] ?? 'bg-blue-50 border-blue-100 text-blue-700';
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ $favicon ? asset('storage/' . $favicon) : asset('favicon.ico') }}" sizes="any">
     <title>{{ __('event_booking.success.title') }} — {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -109,6 +127,15 @@
                 </div>
             @endif
 
+            <!-- Message -->
+            @if ($successMessage)
+                <div class="px-8 pb-6">
+                    <div class="border rounded-xl p-4 text-center text-sm {{ $successMessageColorClasses }}">
+                        {{ $successMessage }}
+                    </div>
+                </div>
+            @endif
+
             <!-- Actions -->
             <div class="px-8 pb-8 flex flex-col sm:flex-row gap-3">
                 <a href="{{ route('event.booking', $booking->event->slug) }}"
@@ -119,7 +146,7 @@
                     </svg>
                     {{ __('event_booking.success.book_again') }}
                 </a>
-                <a href="{{ url('/events/razat-farm-visit') }}"
+                <a href="{{ $successBackUrl }}"
                     class="flex-1 flex items-center justify-center gap-2 text-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

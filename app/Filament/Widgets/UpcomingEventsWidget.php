@@ -118,7 +118,8 @@ class UpcomingEventsWidget extends BaseWidget
                             ->whereIn('status', ['confirmed', 'checked_in'])
                             ->sum('total_price')
                     )
-                    ->money('OMR')
+                    ->html()
+                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('success'),
 

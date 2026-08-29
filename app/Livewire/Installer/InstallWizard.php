@@ -2,21 +2,26 @@
 
 namespace App\Livewire\Installer;
 
+use App\Models\BookingSetting;
 use App\Models\User;
 use App\Support\Installer\DatabaseConnectionTester;
 use App\Support\Installer\EnvironmentFileWriter;
 use App\Support\Installer\RequirementsChecker;
+use Database\Seeders\EventSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Session;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
 class InstallWizard extends Component
 {
+    use WithFileUploads;
+
     #[Session]
     public int $step = 1;
 
@@ -45,7 +50,24 @@ class InstallWizard extends Component
 
     public bool $migrateSuccess = false;
 
-    // Step 5 — Admin account
+    // Step 5 — General settings
+    public string $site_name_en = '';
+
+    public string $site_name_ar = '';
+
+    public string $currency_code = 'OMR';
+
+    public string $currency_symbol = 'OMR';
+
+    public string $primary_color = '#05602b';
+
+    public string $panel_primary_color = '#16a34a';
+
+    public $site_logo = null;
+
+    public $app_logo = null;
+
+    // Step 6 — Admin account
     public string $admin_name = '';
 
     public string $admin_email = '';
@@ -53,6 +75,9 @@ class InstallWizard extends Component
     public string $admin_password = '';
 
     public string $admin_password_confirmation = '';
+
+    // Step 7 — Finish
+    public bool $seed_demo_data = false;
 
     public function mount(): void
     {
@@ -69,6 +94,25 @@ class InstallWizard extends Component
         $this->db_username = $writer->get('DB_USERNAME') ?: '';
         $this->app_name = $writer->get('APP_NAME') ?: config('app.name', '');
         $this->app_url = $writer->get('APP_URL') ?: request()->getSchemeAndHttpHost();
+
+        $this->site_name_en = $this->app_name ?: 'Bookings';
+
+        // booking_settings only exists once migrations have run — re-reads
+        // whatever was saved previously if the wizard is revisited (e.g. the
+        // page was refreshed after step 4), falling back to the defaults
+        // above on a genuinely fresh install.
+        try {
+            if (Schema::hasTable('booking_settings')) {
+                $this->site_name_en = BookingSetting::get('site_name_en', $this->site_name_en);
+                $this->site_name_ar = BookingSetting::get('site_name_ar', $this->site_name_ar);
+                $this->currency_code = BookingSetting::get('currency_code', $this->currency_code);
+                $this->currency_symbol = BookingSetting::get('currency_symbol', $this->currency_symbol);
+                $this->primary_color = BookingSetting::get('primary_color', $this->primary_color);
+                $this->panel_primary_color = BookingSetting::get('panel_primary_color', $this->panel_primary_color);
+            }
+        } catch (\Throwable) {
+            // Leave defaults as set above.
+        }
     }
 
     public function getRequirementsProperty(): array
@@ -106,7 +150,7 @@ class InstallWizard extends Component
 
     public function goToStep(int $step): void
     {
-        $this->step = max(1, min(6, $step));
+        $this->step = max(1, min(7, $step));
     }
 
     // ── Step 1 ──────────────────────────────────────────────────────────
@@ -232,6 +276,40 @@ class InstallWizard extends Component
     }
 
     // ── Step 5 ──────────────────────────────────────────────────────────
+    public function saveGeneralSettings(): void
+    {
+        $this->validate([
+            'site_name_en' => ['required', 'string', 'max:255'],
+            'site_name_ar' => ['required', 'string', 'max:255'],
+            'currency_code' => ['required', 'string', 'max:10'],
+            'currency_symbol' => ['required', 'string', 'max:10'],
+            'primary_color' => ['required', 'string', 'max:20'],
+            'panel_primary_color' => ['required', 'string', 'max:20'],
+            'site_logo' => ['nullable', 'image', 'max:2048'],
+            'app_logo' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        BookingSetting::set('site_name_en', $this->site_name_en);
+        BookingSetting::set('site_name_ar', $this->site_name_ar);
+        BookingSetting::set('currency_code', $this->currency_code);
+        BookingSetting::set('currency_symbol', $this->currency_symbol);
+        BookingSetting::set('primary_color', $this->primary_color);
+        BookingSetting::set('panel_primary_color', $this->panel_primary_color);
+
+        if ($this->site_logo) {
+            BookingSetting::set('site_logo', $this->site_logo->store('branding', 'public'));
+        }
+
+        if ($this->app_logo) {
+            BookingSetting::set('app_logo', $this->app_logo->store('branding', 'public'));
+        }
+
+        BookingSetting::clearCache();
+
+        $this->goToStep(6);
+    }
+
+    // ── Step 6 ──────────────────────────────────────────────────────────
     public function createAdmin(): void
     {
         $this->validate([
@@ -257,12 +335,25 @@ class InstallWizard extends Component
 
         Auth::login($user);
 
-        $this->goToStep(6);
+        $this->goToStep(7);
     }
 
-    // ── Step 6 ──────────────────────────────────────────────────────────
+    // ── Step 7 ──────────────────────────────────────────────────────────
     public function finish(): void
     {
+        if ($this->seed_demo_data) {
+            try {
+                Artisan::call('db:seed', [
+                    '--class' => EventSeeder::class,
+                    '--force' => true,
+                ]);
+            } catch (\Throwable $e) {
+                // Demo data is a convenience, not a requirement — don't block
+                // finishing the install over it, just log for later diagnosis.
+                report($e);
+            }
+        }
+
         File::put(storage_path('installed'), now()->toDateTimeString());
 
         Artisan::call('config:clear');

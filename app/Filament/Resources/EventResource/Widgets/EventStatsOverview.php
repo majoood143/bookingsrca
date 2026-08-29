@@ -7,6 +7,7 @@ use App\Support\EventInsightsReport;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 class EventStatsOverview extends BaseWidget
 {
@@ -24,7 +25,7 @@ class EventStatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary'),
 
-            Stat::make(__('widgets.event_insights.revenue'), 'OMR' . number_format($report['totalRevenue'], 3))
+            Stat::make(__('widgets.event_insights.revenue'), new HtmlString(view('partials.currency-amount', ['amount' => (float) $report['totalRevenue']])->render()))
                 ->description(__('widgets.event_insights.avg_ticket_price', ['amount' => number_format($report['avgTicketPrice'], 3)]))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),

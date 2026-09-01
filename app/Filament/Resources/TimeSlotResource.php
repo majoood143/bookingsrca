@@ -161,12 +161,21 @@ class TimeSlotResource extends Resource
                                     ->helperText(__('time_slot.fields.end_time_helper')),
                             ]),
 
-                        TextInput::make('label')
-                            ->label(__('time_slot.fields.label'))
-                            ->maxLength(255)
-                            ->placeholder(__('time_slot.fields.label_placeholder'))
-                            ->helperText(__('time_slot.fields.label_helper'))
-                            ->live(onBlur: true),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('label.en')
+                                    ->label(__('time_slot.fields.label_en'))
+                                    ->maxLength(255)
+                                    ->placeholder(__('time_slot.fields.label_placeholder'))
+                                    ->helperText(__('time_slot.fields.label_helper'))
+                                    ->live(onBlur: true),
+
+                                TextInput::make('label.ar')
+                                    ->label(__('time_slot.fields.label_ar'))
+                                    ->maxLength(255)
+                                    ->placeholder(__('time_slot.fields.label_placeholder_ar'))
+                                    ->live(onBlur: true),
+                            ]),
 
                         Grid::make(2)
                             ->schema([
@@ -182,7 +191,7 @@ class TimeSlotResource extends Resource
                                     ->default(true)
                                     ->inline(false),
                             ])
-                            ->visible(fn(Get $get) => filled($get('label'))),
+                            ->visible(fn(Get $get) => filled($get('label.en')) || filled($get('label.ar'))),
 
                         Grid::make(2)
                             ->schema([

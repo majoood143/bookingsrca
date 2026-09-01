@@ -23,7 +23,7 @@ return [
         'bookings'         => 'Bookings Count',
         'filter_revenue'   => 'Revenue',
         'filter_bookings'  => 'Bookings Count',
-        'dataset_revenue'  => 'Revenue ($)',
+        'dataset_revenue'  => 'Revenue (OMR)',
         'dataset_bookings' => 'Bookings',
     ],
 

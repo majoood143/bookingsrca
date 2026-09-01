@@ -64,6 +64,16 @@ class ListTimeSlots extends ListRecords
                         ->displayFormat('H:i')
                         ->helperText(__('time_slot.fields.end_time_helper')),
 
+                    TextInput::make('label.en')
+                        ->label(__('time_slot.fields.label_en'))
+                        ->maxLength(255)
+                        ->placeholder(__('time_slot.fields.label_placeholder')),
+
+                    TextInput::make('label.ar')
+                        ->label(__('time_slot.fields.label_ar'))
+                        ->maxLength(255)
+                        ->placeholder(__('time_slot.fields.label_placeholder_ar')),
+
                     TextInput::make('max_attendees')
                         ->label(__('time_slot.fields.max_attendees'))
                         ->required()
@@ -104,6 +114,10 @@ class ListTimeSlots extends ListRecords
                                 'end_time' => $data['end_time'],
                             ],
                             [
+                                'label' => [
+                                    'en' => $data['label']['en'] ?? null,
+                                    'ar' => $data['label']['ar'] ?? null,
+                                ],
                                 'max_attendees' => $data['max_attendees'],
                                 'is_active' => $data['is_active'],
                                 'booking_channel' => $data['booking_channel'],

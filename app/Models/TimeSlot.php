@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Translatable\HasTranslations;
 
 class TimeSlot extends Model
 {
 
-    use HasFactory, LogsActivity;
+    use HasFactory, HasTranslations, LogsActivity;
+
+    protected $translatable = ['label'];
 
     protected $fillable = [
         'event_id',
@@ -158,10 +161,13 @@ class TimeSlot extends Model
 
     // Admin-facing label for this slot (e.g. "Bus 2"), falling back to an
     // auto-numbered "Slot N" using the given position when none was set.
-    // The custom label (free text) is shown as-is regardless of locale;
-    // only the auto-numbered fallback is translated.
+    // The custom label is translated per locale (falling back to the
+    // default locale when only one language was filled in); only when
+    // neither language has a label does the auto-numbered fallback kick in.
     public function displayLabel(int $ordinal, ?string $locale = null): string
     {
-        return $this->label ?: __('signage.slot_fallback_label', ['number' => $ordinal], $locale);
+        $label = $this->getTranslation('label', $locale ?? app()->getLocale());
+
+        return filled($label) ? $label : __('signage.slot_fallback_label', ['number' => $ordinal], $locale);
     }
 }

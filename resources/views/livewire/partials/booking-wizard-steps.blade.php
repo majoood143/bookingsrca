@@ -122,7 +122,7 @@
                                     <span
                                         class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : $slot->start_time->format('H:i') }}</span>
                                     @if (($kioskMode ?? false) ? $slot->showsLabelAtKiosk() : $slot->showsLabelOnline())
-                                        <span class="block text-sm font-medium text-gray-500">{{ $slot->label }}</span>
+                                        <span class="block text-sm font-medium text-gray-500">{{ $slot->getTranslation('label', app()->getLocale()) }}</span>
                                     @endif
                                 </span>
                                 @if ($capacityOk)
@@ -682,7 +682,7 @@
                                         </p>
                                         @php $summarySlot = $timeSlots->find($selectedSlot); @endphp
                                         @if ($summarySlot && (($kioskMode ?? false) ? $summarySlot->showsLabelAtKiosk() : $summarySlot->showsLabelOnline()))
-                                            <p class="text-sm text-gray-500">{{ $summarySlot->label }}</p>
+                                            <p class="text-sm text-gray-500">{{ $summarySlot->getTranslation('label', app()->getLocale()) }}</p>
                                         @endif
                                     </div>
                                 </div>

@@ -113,6 +113,8 @@ return [
         'module_cms_enabled_helper' => 'Enables the Content section — Pages, Posts, Categories, Tags, Menus, and Redirects — and its navigation.',
         'module_pos_enabled' => 'Point of Sale Module',
         'module_pos_enabled_helper' => 'Enables the Point of Sale section — the cashier counter screen, terminals, products, discounts, shifts, transactions, and reconciliation dashboard — and its navigation.',
+        'module_pos_shop_enabled' => 'Online Shop',
+        'module_pos_shop_enabled_helper' => 'Enables the public online shop — the product catalog, product pages, cart, checkout, and online orders — under the Point of Sale module.',
 
         'social_facebook_url' => 'Facebook URL',
         'social_instagram_url' => 'Instagram URL',

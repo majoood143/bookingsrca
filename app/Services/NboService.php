@@ -6,6 +6,8 @@ use RuntimeException;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\PaymentGatewayLog;
+use App\Models\PosOrder;
+use App\Models\PosOrderGatewayLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -164,6 +166,86 @@ class NboService
         return $paymentUrl . '?PaymentID=' . $paymentId;
     }
 
+    // Parallel to initiatePayment() above, for a POS shop order instead of an
+    // event booking — billing info comes from the order's checkout contact
+    // fields rather than a ticket attendee, and the payment id is stashed on
+    // payment_reference (POS orders have no separate session-id column).
+    public function initiateOrderPayment(PosOrder $order): string
+    {
+        $responseUrl = route('shop.payment.callback.nbo');
+
+        $plainData = [
+            'id'           => $this->tranportalId,
+            'password'     => $this->tranportalPassword,
+            'action'       => '1',
+            'amt'          => number_format((float) $order->grand_total, 3, '.', ''),
+            'currencycode' => self::CURRENCY,
+            'langid'       => 'en',
+            'trackId'      => $this->trackIdForOrder($order),
+            'responseURL'  => $responseUrl,
+            'errorURL'     => $responseUrl,
+            'udf1'         => str_replace('-', '', $order->order_number),
+            'udf2'         => preg_replace('/\D+/', '', $order->contact_mobile),
+            'billingInfo'  => $this->billingInfoForOrder($order),
+        ];
+
+        $trandata = $this->encrypt($plainData);
+
+        $requestPayload = [
+            'id'          => $this->tranportalId,
+            'trandata'    => $trandata,
+            'responseURL' => $responseUrl,
+            'errorURL'    => $responseUrl,
+        ];
+
+        $response = Http::asJson()->post($this->endpointUrl, [$requestPayload]);
+
+        $body    = json_decode(trim($response->body()), true);
+        $payload = is_array($body) ? ($body[0] ?? $body) : [];
+
+        PosOrderGatewayLog::log(
+            $order,
+            'nbo',
+            'initiate_payment',
+            ['plain' => array_merge($plainData, ['password' => '••••••••']), 'encrypted' => $requestPayload],
+            $payload ?: ['raw' => $response->body()],
+            $response->status(),
+        );
+
+        if (!$response->successful()) {
+            Log::error('NBO initiateOrderPayment failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+            throw new RuntimeException('NBO payment gateway error: ' . $response->body());
+        }
+
+        if (($payload['status'] ?? '') !== '1') {
+            $errorText = $payload['errorText'] ?? $payload['error'] ?? 'Payment initiation failed';
+            Log::error('NBO initiateOrderPayment: gateway error', ['payload' => $payload]);
+            throw new RuntimeException('NBO: ' . $errorText);
+        }
+
+        $resultStr = $payload['result'] ?? '';
+        $colonPos  = strpos($resultStr, ':');
+
+        if ($colonPos === false || $colonPos === 0) {
+            Log::error('NBO initiateOrderPayment: unexpected result field', ['payload' => $payload]);
+            throw new RuntimeException('NBO: unexpected response format.');
+        }
+
+        $paymentId  = substr($resultStr, 0, $colonPos);
+        $paymentUrl = substr($resultStr, $colonPos + 1);
+
+        if (empty($paymentId) || empty($paymentUrl)) {
+            throw new RuntimeException('NBO: empty PaymentID or URL in response.');
+        }
+
+        $order->update(['payment_method' => 'nbo', 'payment_reference' => $paymentId]);
+
+        return $paymentUrl . '?PaymentID=' . $paymentId;
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -212,6 +294,31 @@ class NboService
             'locality'           => 'Muscat',
             'administrativeArea' => 'Muscat',
             'email'              => $attendee?->email ?: 'noemail@razatfarm.gov.om',
+        ];
+    }
+
+    // Same numeric-trackId requirement as trackId() above, keyed off the order id instead.
+    private function trackIdForOrder(PosOrder $order): string
+    {
+        return $order->id . substr((string) round(microtime(true) * 1000), -6);
+    }
+
+    // Same billingInfo requirement as billingInfo() above, built from the
+    // order's own checkout contact fields instead of a ticket attendee.
+    private function billingInfoForOrder(PosOrder $order): array
+    {
+        $nameParts = explode(' ', trim($order->contact_name), 2);
+
+        return [
+            'firstName'          => $nameParts[0] ?: 'Guest',
+            'lastName'           => $nameParts[1] ?? 'Guest',
+            'country'            => 'OM',
+            'phoneNumber'        => preg_replace('/\D+/', '', $order->contact_mobile) ?: '00000000',
+            'address'            => $order->address_line_1 ?: 'Raza Farm',
+            'postalCode'         => $order->zip_code ?: '100',
+            'locality'           => $order->city ?: 'Muscat',
+            'administrativeArea' => $order->state ?: 'Muscat',
+            'email'              => $order->contact_email,
         ];
     }
 

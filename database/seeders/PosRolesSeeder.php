@@ -18,7 +18,7 @@ use Spatie\Permission\Models\Role;
  * - pos_manager: cashier's abilities plus refund authorization, discount
  *   override approval, and visibility into every terminal's shift history —
  *   modeled here as read access across POS resources, the reconciliation
- *   dashboard, and the ability to manage products/discounts.
+ *   dashboard, and the ability to manage products/discounts/order taxes.
  */
 class PosRolesSeeder extends Seeder
 {
@@ -37,11 +37,12 @@ class PosRolesSeeder extends Seeder
                         ->orWhere('name', 'like', '%:PosTerminal')
                         ->orWhere('name', 'like', '%:PosReconciliation');
                 })->orWhere(function ($q) {
-                    // Products/discounts: everything except the destructive
-                    // delete/force-delete/restore actions.
+                    // Products/discounts/order taxes: everything except the
+                    // destructive delete/force-delete/restore actions.
                     $q->where(function ($qq) {
                         $qq->where('name', 'like', '%:PosProduct')
-                            ->orWhere('name', 'like', '%:PosDiscount');
+                            ->orWhere('name', 'like', '%:PosDiscount')
+                            ->orWhere('name', 'like', '%:PosTax');
                     })->where(function ($qq) {
                         $qq->where('name', 'like', 'ViewAny:%')
                             ->orWhere('name', 'like', 'View:%')

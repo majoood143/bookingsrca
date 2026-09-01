@@ -6,6 +6,8 @@ use RuntimeException;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\PaymentGatewayLog;
+use App\Models\PosOrder;
+use App\Models\PosOrderGatewayLog;
 
 class CCAvenueService
 {
@@ -154,6 +156,62 @@ class CCAvenueService
         );
 
         $booking->update(['payment_session_id' => $orderId]);
+
+        return [
+            'url'         => $this->endpointUrl,
+            'encRequest'  => $encRequest,
+            'access_code' => $this->accessCode,
+        ];
+    }
+
+    // Parallel to buildRedirectPayload() above, for a POS shop order. order_id
+    // is derived from order_number instead of booking_reference, and stored
+    // on payment_reference (POS orders have no separate session-id column) so
+    // the callback can look the order back up by the exact value CCAvenue
+    // echoes back.
+    public function buildOrderRedirectPayload(PosOrder $order): array
+    {
+        $callbackUrl = route('shop.payment.callback.ccavenue');
+        $orderId     = preg_replace('/[^A-Za-z0-9]/', '', $order->order_number);
+
+        $plainData = [
+            'merchant_id'      => $this->merchantId,
+            'order_id'         => $orderId,
+            'amount'           => number_format((float) $order->grand_total, 3, '.', ''),
+            'redirect_url'     => $callbackUrl,
+            'cancel_url'       => $callbackUrl,
+            'billing_name'     => $order->contact_name,
+            'billing_address'  => $order->address_line_1 ?: 'Raza Farm',
+            'billing_city'     => $order->city ?: 'Muscat',
+            'billing_state'    => $order->state ?: 'Muscat',
+            'billing_zip'      => $order->zip_code ?: '100',
+            'billing_country'  => $order->country ?: 'Oman',
+            'billing_tel'      => preg_replace('/\D+/', '', $order->contact_mobile) ?: '00000000',
+            'billing_email'    => $order->contact_email,
+            'delivery_name'    => '',
+            'delivery_address' => '',
+            'delivery_city'    => '',
+            'delivery_state'   => '',
+            'delivery_zip'     => '',
+            'delivery_country' => '',
+            'delivery_tel'     => '',
+            'language'         => 'EN',
+            'currency'         => self::CURRENCY,
+            'tid'              => (string) time(),
+        ];
+
+        $queryString = http_build_query($plainData);
+        $encRequest  = $this->encrypt($queryString);
+
+        PosOrderGatewayLog::log(
+            $order,
+            'ccavenue',
+            'initiate_payment',
+            ['plain' => array_merge($plainData, ['billing_email' => '••••••••']), 'endpoint' => $this->endpointUrl],
+            ['encRequest_len' => strlen($encRequest)],
+        );
+
+        $order->update(['payment_method' => 'ccavenue', 'payment_reference' => $orderId]);
 
         return [
             'url'         => $this->endpointUrl,

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PosProductResource\Pages\CreatePosProduct;
 use App\Filament\Resources\PosProductResource\Pages\EditPosProduct;
 use App\Filament\Resources\PosProductResource\Pages\ListPosProducts;
+use App\Filament\Resources\PosProductResource\RelationManagers\ReviewsRelationManager;
 use App\Filament\Resources\PosProductResource\RelationManagers\StockMovementsRelationManager;
 use App\Models\PosProduct;
 use App\Models\PosProductCategory;
@@ -23,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class PosProductResource extends Resource
 {
@@ -76,6 +78,12 @@ class PosProductResource extends Resource
                             TextInput::make('name')
                                 ->label(__('pos.product.fields.name'))
                                 ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn ($state, callable $set, $get) => $get('slug') ?: $set('slug', Str::slug($state))),
+
+                            TextInput::make('name_ar')
+                                ->label(__('pos.product.fields.name_ar'))
                                 ->maxLength(255),
 
                             Select::make('category_id')
@@ -120,6 +128,45 @@ class PosProductResource extends Resource
                         ->visibility('public')
                         ->imageEditor(),
                 ]),
+
+            Section::make(__('pos.product.sections.online_store'))
+                ->description(__('pos.product.sections.online_store_desc'))
+                ->schema([
+                    Grid::make(2)
+                        ->schema([
+                            Select::make('brand_id')
+                                ->label(__('pos.product.fields.brand'))
+                                ->relationship('brand', 'name')
+                                ->searchable()
+                                ->native(false),
+
+                            TextInput::make('slug')
+                                ->label(__('pos.product.fields.slug'))
+                                ->unique(ignoreRecord: true)
+                                ->maxLength(255)
+                                ->helperText(__('pos.product.fields.slug_helper')),
+                        ]),
+
+                    Textarea::make('description_ar')
+                        ->label(__('pos.product.fields.description_ar'))
+                        ->rows(3)
+                        ->columnSpanFull(),
+
+                    FileUpload::make('gallery_images')
+                        ->label(__('pos.product.fields.gallery_images'))
+                        ->image()
+                        ->multiple()
+                        ->reorderable()
+                        ->disk('public')
+                        ->directory('pos-products/gallery')
+                        ->visibility('public'),
+
+                    Toggle::make('is_published_online')
+                        ->label(__('pos.product.fields.is_published_online'))
+                        ->helperText(__('pos.product.fields.is_published_online_helper'))
+                        ->inline(false),
+                ])
+                ->collapsible(),
 
             Section::make(__('pos.product.sections.pricing_stock'))
                 ->schema([
@@ -232,13 +279,23 @@ class PosProductResource extends Resource
                 IconColumn::make('is_active')
                     ->label(__('pos.product.fields.is_active'))
                     ->boolean(),
+
+                IconColumn::make('is_published_online')
+                    ->label(__('pos.product.fields.is_published_online'))
+                    ->boolean()
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('category_id')
                     ->label(__('pos.product.fields.category'))
                     ->relationship('category', 'name'),
+                SelectFilter::make('brand_id')
+                    ->label(__('pos.product.fields.brand'))
+                    ->relationship('brand', 'name'),
                 TernaryFilter::make('is_active')
                     ->label(__('pos.product.fields.is_active')),
+                TernaryFilter::make('is_published_online')
+                    ->label(__('pos.product.fields.is_published_online')),
             ])
             ->defaultSort('name');
     }
@@ -247,6 +304,7 @@ class PosProductResource extends Resource
     {
         return [
             StockMovementsRelationManager::class,
+            ReviewsRelationManager::class,
         ];
     }
 

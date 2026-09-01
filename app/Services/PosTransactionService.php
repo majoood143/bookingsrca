@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\BookingAttendee;
+use App\Models\PosCustomer;
 use App\Models\PosDiscount;
 use App\Models\PosProduct;
 use App\Models\PosShift;
+use App\Models\PosTax;
 use App\Models\PosTransaction;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +33,12 @@ class PosTransactionService
      *        One entry per distinct ticket type in the cart — a single ticket type requested twice
      *        should be merged by the caller into one line with the combined quantity.
      * @param array<int,array{product_id:int,quantity:int}> $productLines
-     * @param array<int,array{method:string,amount:float,reference?:string}> $paymentLines
+     * @param array<int,array{method:string,amount:float,reference?:string,card_holder_name?:string,card_last4?:string,card_type?:string}> $paymentLines
+     * @param ?array{type:string,value:float} $adHocDiscount
+     *        A cashier-typed discount from the payment modal's Discount sub-modal. Takes
+     *        precedence over $discount (a code-based PosDiscount) when both are given —
+     *        only one of the two is ever actually applied.
+     * @param ?array{details?:string,address?:string,charges?:float,status?:string,delivered_to?:string,delivery_person_id?:int} $shipping
      */
     public function createTransaction(
         PosShift $shift,
@@ -40,6 +47,11 @@ class PosTransactionService
         array $paymentLines,
         ?PosDiscount $discount = null,
         ?string $notes = null,
+        ?PosCustomer $customer = null,
+        ?string $staffNote = null,
+        ?array $adHocDiscount = null,
+        ?PosTax $orderTax = null,
+        ?array $shipping = null,
     ): PosTransaction {
         if (!$shift->isOpen()) {
             throw new Exception(__('This shift is not open — sales cannot be recorded against it.'));
@@ -49,7 +61,7 @@ class PosTransactionService
             throw new Exception(__('Add at least one ticket or product to the cart.'));
         }
 
-        return DB::transaction(function () use ($shift, $ticketLines, $productLines, $paymentLines, $discount, $notes) {
+        return DB::transaction(function () use ($shift, $ticketLines, $productLines, $paymentLines, $discount, $notes, $customer, $staffNote, $adHocDiscount, $orderTax, $shipping) {
             $items = [];
 
             foreach ($ticketLines as $line) {
@@ -65,14 +77,30 @@ class PosTransactionService
             $taxTotal = array_sum(array_column($items, 'tax_amount'));
 
             $discountTotal = 0;
-            if ($discount) {
+            $appliedDiscount = null;
+            $adHocType = null;
+            $adHocValue = null;
+
+            if ($adHocDiscount && (float) ($adHocDiscount['value'] ?? 0) > 0) {
+                $adHocType = $adHocDiscount['type'];
+                $adHocValue = (float) $adHocDiscount['value'];
+                $discountTotal = match ($adHocType) {
+                    'percentage' => round($subtotal * ($adHocValue / 100), 3),
+                    'fixed_amount' => min($subtotal, $adHocValue),
+                    default => 0,
+                };
+            } elseif ($discount) {
                 if (!$discount->isUsable()) {
                     throw new Exception(__('This discount is no longer usable.'));
                 }
                 $discountTotal = $discount->calculateDiscount($subtotal);
+                $appliedDiscount = $discount;
             }
 
-            $grandTotal = round(max(0, $subtotal - $discountTotal + $taxTotal), 3);
+            $orderTaxTotal = $orderTax ? $orderTax->calculateTax($subtotal) : 0;
+            $shippingCharges = round((float) ($shipping['charges'] ?? 0), 3);
+
+            $grandTotal = round(max(0, $subtotal - $discountTotal + $taxTotal + $orderTaxTotal + $shippingCharges), 3);
             $paidTotal = round(array_sum(array_column($paymentLines, 'amount')), 3);
 
             if ($paidTotal !== $grandTotal) {
@@ -86,14 +114,26 @@ class PosTransactionService
                 'shift_id' => $shift->id,
                 'terminal_id' => $shift->terminal_id,
                 'cashier_id' => $shift->user_id,
-                'discount_id' => $discount?->id,
+                'discount_id' => $appliedDiscount?->id,
+                'ad_hoc_discount_type' => $adHocType,
+                'ad_hoc_discount_value' => $adHocValue,
+                'customer_id' => $customer?->id,
                 'transaction_number' => PosTransaction::nextTransactionNumber($shift->terminal_id),
                 'subtotal' => $subtotal,
                 'discount_total' => $discountTotal,
                 'tax_total' => $taxTotal,
+                'order_tax_id' => $orderTax?->id,
+                'order_tax_total' => $orderTaxTotal,
+                'shipping_details' => $shipping['details'] ?? null,
+                'shipping_address' => $shipping['address'] ?? null,
+                'shipping_charges' => $shippingCharges,
+                'shipping_status' => $shipping['status'] ?? null,
+                'delivered_to' => $shipping['delivered_to'] ?? null,
+                'delivery_person_id' => $shipping['delivery_person_id'] ?? null,
                 'grand_total' => $grandTotal,
                 'status' => 'completed',
                 'notes' => $notes,
+                'staff_note' => $staffNote,
             ]);
 
             foreach ($items as $item) {
@@ -112,10 +152,13 @@ class PosTransactionService
                     'method' => $payment['method'],
                     'amount' => $payment['amount'],
                     'reference' => $payment['reference'] ?? null,
+                    'card_holder_name' => $payment['card_holder_name'] ?? null,
+                    'card_last4' => $payment['card_last4'] ?? null,
+                    'card_type' => $payment['card_type'] ?? null,
                 ]);
             }
 
-            $discount?->increment('used_count');
+            $appliedDiscount?->increment('used_count');
 
             return $transaction;
         });

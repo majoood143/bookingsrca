@@ -16,7 +16,12 @@ use App\Http\Controllers\CCAvenueRedirectController;
 use App\Http\Controllers\CCAvenueCallbackController;
 use App\Http\Controllers\CmsFrontendController;
 use App\Http\Controllers\KioskHeartbeatController;
+use App\Http\Controllers\PosOrderPaymentController;
 use App\Http\Controllers\PrintAgentController;
+use App\Livewire\Shop\Checkout as ShopCheckout;
+use App\Livewire\Shop\ProductDetail as ShopProductDetail;
+use App\Livewire\Shop\ShopCatalog;
+use App\Models\PosOrder;
 
 Route::get('/install', InstallWizard::class)->name('install');
 
@@ -66,6 +71,35 @@ Route::get('/booking/payment/ccavenue/{reference}', [CCAvenueRedirectController:
 // CCAvenue browser-redirect callback (CSRF excluded via bootstrap/app.php).
 Route::post('/booking/payment/callback/ccavenue', [CCAvenueCallbackController::class, 'callback'])
     ->name('payment.callback.ccavenue');
+
+// ── POS online shop ───────────────────────────────────────────────────────────
+Route::get('/shop', ShopCatalog::class)->name('shop.index');
+Route::get('/shop/checkout', ShopCheckout::class)->name('shop.checkout');
+Route::get('/shop/order/{order:order_number}/success', function (PosOrder $order) {
+    abort_unless($order->isPaid(), 404);
+    return view('shop.order-success', compact('order'));
+})->name('shop.order.success');
+Route::get('/shop/{product:slug}', ShopProductDetail::class)->name('shop.product.show');
+
+// Thawani redirects here after shop checkout (success or cancel).
+Route::get('/shop/payment/callback', [PosOrderPaymentController::class, 'thawaniCallback'])
+    ->name('shop.payment.callback');
+
+// Thawani server-to-server webhook (CSRF excluded via bootstrap/app.php).
+Route::post('/shop/payment/webhook/thawani', [PosOrderPaymentController::class, 'thawaniWebhook'])
+    ->name('shop.payment.webhook.thawani');
+
+// NBO browser-redirect callback (CSRF excluded via bootstrap/app.php).
+Route::post('/shop/payment/callback/nbo', [PosOrderPaymentController::class, 'nboCallback'])
+    ->name('shop.payment.callback.nbo');
+
+// CCAvenue: full-page GET that renders the auto-submit POST form to the gateway.
+Route::get('/shop/payment/ccavenue/{orderNumber}', [PosOrderPaymentController::class, 'ccavenueRedirect'])
+    ->name('shop.payment.redirect.ccavenue');
+
+// CCAvenue browser-redirect callback (CSRF excluded via bootstrap/app.php).
+Route::post('/shop/payment/callback/ccavenue', [PosOrderPaymentController::class, 'ccavenueCallback'])
+    ->name('shop.payment.callback.ccavenue');
 
 // Language switching
 Route::get('/lang/{locale}', function ($locale) {

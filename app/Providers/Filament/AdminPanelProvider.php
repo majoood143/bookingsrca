@@ -14,6 +14,7 @@ use Filament\Support\Colors\Color;
 use App\Filament\Widgets\BalanceDueBookingsWidget;
 use App\Filament\Widgets\BookingOverviewWidget;
 use App\Filament\Widgets\LowStockAlertsWidget;
+use App\Filament\Widgets\PosOverviewWidget;
 use App\Filament\Widgets\RecentBookingsWidget;
 use App\Filament\Widgets\RevenueChartWidget;
 use App\Filament\Widgets\TicketStockWidget;
@@ -105,7 +106,7 @@ class AdminPanelProvider extends PanelProvider
                 UpcomingEventsWidget::class,
                 RecentBookingsWidget::class,
                 BalanceDueBookingsWidget::class,
-                
+                PosOverviewWidget::class,
 
             ])
             ->middleware([

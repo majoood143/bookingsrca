@@ -81,6 +81,25 @@ class BookingSetting extends Model
         return 'data:image/svg+xml;base64,' . base64_encode(Storage::disk('public')->get($path));
     }
 
+    /**
+     * The gateways enabled for online checkout, falling back to the legacy
+     * single active_gateway value for installs that haven't saved the
+     * payment gateways settings page since the multi-gateway option was
+     * introduced. Shared by every online-payment flow (event booking, POS
+     * shop checkout) so they all read the same admin-configured gateway list.
+     */
+    public static function enabledGateways(): array
+    {
+        $stored = self::get('enabled_gateways');
+        $decoded = $stored ? json_decode($stored, true) : null;
+
+        if (is_array($decoded) && !empty($decoded)) {
+            return array_values($decoded);
+        }
+
+        return [(string) self::get('active_gateway', 'free')];
+    }
+
     public static function clearCache(): void
     {
         foreach (self::getCacheKeys() as $key) {
@@ -130,6 +149,7 @@ class BookingSetting extends Model
             'module_commission_enabled',
             'module_cms_enabled',
             'module_pos_enabled',
+            'module_pos_shop_enabled',
             'pos_vat_registration_number',
             'pos_discount_approval_threshold',
             'pos_shift_variance_tolerance',

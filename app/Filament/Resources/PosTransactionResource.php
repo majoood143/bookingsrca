@@ -11,8 +11,12 @@ use App\Services\Printing\ThermalPrintService;
 use App\Services\PosTransactionService;
 use Exception;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
@@ -20,6 +24,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Response;
+use Spatie\LaravelPdf\Facades\Pdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PosTransactionResource extends Resource
 {
@@ -74,6 +81,11 @@ class PosTransactionResource extends Resource
                     ->label(__('pos.transaction.fields.cashier'))
                     ->sortable(),
 
+                TextColumn::make('customer.display_name')
+                    ->label(__('pos.customer.label'))
+                    ->default(__('pos.customer.walk_in'))
+                    ->sortable(),
+
                 TextColumn::make('status')
                     ->label(__('pos.transaction.fields.status'))
                     ->badge()
@@ -124,59 +136,218 @@ class PosTransactionResource extends Resource
             ->recordActions([
                 ViewAction::make(),
 
-                Action::make('reprint')
-                    ->label(__('pos.transaction.actions.reprint'))
-                    ->icon('heroicon-o-printer')
-                    ->color('gray')
-                    ->action(function (PosTransaction $record) {
-                        try {
-                            app(ThermalPrintService::class)->enqueuePosReceipt($record);
-                            Notification::make()->success()->title(__('pos.transaction.actions.reprint'))->send();
-                        } catch (Exception $e) {
-                            Notification::make()->danger()->title($e->getMessage())->send();
-                        }
-                    }),
+                ActionGroup::make([
+                    Action::make('void')
+                        ->label(__('pos.transaction.actions.void'))
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->visible(fn (PosTransaction $record) => $record->status === 'completed'
+                            && ($record->shift->isOpen() || static::canManagerOverride()))
+                        ->requiresConfirmation()
+                        ->schema([
+                            Textarea::make('reason')->required(),
+                        ])
+                        ->action(function (PosTransaction $record, array $data) {
+                            try {
+                                app(PosTransactionService::class)->voidTransaction($record, $data['reason']);
+                                Notification::make()->success()->title(__('pos.transaction.notifications.voided'))->send();
+                            } catch (Exception $e) {
+                                Notification::make()->danger()->title($e->getMessage())->send();
+                            }
+                        }),
 
-                Action::make('void')
-                    ->label(__('pos.transaction.actions.void'))
-                    ->icon('heroicon-o-x-circle')
-                    ->color('warning')
-                    ->visible(fn (PosTransaction $record) => $record->status === 'completed'
-                        && ($record->shift->isOpen() || static::canManagerOverride()))
-                    ->requiresConfirmation()
-                    ->schema([
-                        Textarea::make('reason')->required(),
-                    ])
-                    ->action(function (PosTransaction $record, array $data) {
-                        try {
-                            app(PosTransactionService::class)->voidTransaction($record, $data['reason']);
-                            Notification::make()->success()->title(__('pos.transaction.notifications.voided'))->send();
-                        } catch (Exception $e) {
-                            Notification::make()->danger()->title($e->getMessage())->send();
-                        }
-                    }),
+                    Action::make('refund')
+                        ->label(__('pos.transaction.actions.refund'))
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('danger')
+                        ->visible(fn (PosTransaction $record) => $record->status === 'completed' && static::canManagerOverride())
+                        ->requiresConfirmation()
+                        ->schema([
+                            Textarea::make('reason')
+                                ->label(__('pos.transaction.actions.refund_reason'))
+                                ->required(),
+                        ])
+                        ->action(function (PosTransaction $record, array $data) {
+                            try {
+                                app(PosTransactionService::class)->refundTransaction($record, $data['reason']);
+                                Notification::make()->success()->title(__('pos.transaction.notifications.refunded'))->send();
+                            } catch (Exception $e) {
+                                Notification::make()->danger()->title($e->getMessage())->send();
+                            }
+                        }),
+                ])
+                    ->label(__('pos.transaction.actions.group_status'))
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray'),
 
-                Action::make('refund')
-                    ->label(__('pos.transaction.actions.refund'))
-                    ->icon('heroicon-o-arrow-uturn-left')
-                    ->color('danger')
-                    ->visible(fn (PosTransaction $record) => $record->status === 'completed' && static::canManagerOverride())
-                    ->requiresConfirmation()
-                    ->schema([
-                        Textarea::make('reason')
-                            ->label(__('pos.transaction.actions.refund_reason'))
-                            ->required(),
-                    ])
-                    ->action(function (PosTransaction $record, array $data) {
-                        try {
-                            app(PosTransactionService::class)->refundTransaction($record, $data['reason']);
-                            Notification::make()->success()->title(__('pos.transaction.notifications.refunded'))->send();
-                        } catch (Exception $e) {
-                            Notification::make()->danger()->title($e->getMessage())->send();
-                        }
-                    }),
+                ActionGroup::make([
+                    Action::make('reprint')
+                        ->label(__('pos.transaction.actions.reprint'))
+                        ->icon('heroicon-o-printer')
+                        ->action(function (PosTransaction $record) {
+                            try {
+                                app(ThermalPrintService::class)->enqueuePosReceipt($record);
+                                Notification::make()->success()->title(__('pos.transaction.actions.reprint'))->send();
+                            } catch (Exception $e) {
+                                Notification::make()->danger()->title($e->getMessage())->send();
+                            }
+                        }),
+
+                    Action::make('editShipping')
+                        ->label(__('pos.transaction.actions.edit_shipping'))
+                        ->icon('heroicon-o-map-pin')
+                        ->schema([
+                            Textarea::make('shipping_details')->label(__('pos.screen.shipping_modal.details')),
+                            Textarea::make('shipping_address')->label(__('pos.screen.shipping_modal.address')),
+                            TextInput::make('shipping_charges')->label(__('pos.screen.shipping_modal.charges'))->numeric(),
+                            Select::make('shipping_status')
+                                ->label(__('pos.screen.shipping_modal.status'))
+                                ->options([
+                                    'pending' => __('pos.screen.shipping_modal.statuses.pending'),
+                                    'shipped' => __('pos.screen.shipping_modal.statuses.shipped'),
+                                    'delivered' => __('pos.screen.shipping_modal.statuses.delivered'),
+                                    'cancelled' => __('pos.screen.shipping_modal.statuses.cancelled'),
+                                ])
+                                ->native(false),
+                            TextInput::make('delivered_to')->label(__('pos.screen.shipping_modal.delivered_to')),
+                            Select::make('delivery_person_id')
+                                ->label(__('pos.screen.shipping_modal.delivery_person'))
+                                ->relationship('deliveryPerson', 'name')
+                                ->searchable()
+                                ->preload(),
+                        ])
+                        ->fillForm(fn (PosTransaction $record) => $record->only([
+                            'shipping_details', 'shipping_address', 'shipping_charges', 'shipping_status', 'delivered_to', 'delivery_person_id',
+                        ]))
+                        ->action(function (PosTransaction $record, array $data) {
+                            $record->update($data);
+
+                            Notification::make()->success()->title(__('pos.transaction.notifications.shipping_updated'))->send();
+                        }),
+
+                    Action::make('viewPayments')
+                        ->label(__('pos.transaction.actions.view_payments'))
+                        ->icon('heroicon-o-banknotes')
+                        ->modalHeading(fn (PosTransaction $record) => __('pos.transaction.actions.view_payments') . ' - ' . $record->transaction_number)
+                        ->modalContent(fn (PosTransaction $record) => view('filament.modals.pos-payments', [
+                            'payments' => $record->payments,
+                        ]))
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel(__('pos.screen.cancel'))
+                        ->modalWidth('2xl'),
+
+                    Action::make('invoiceUrl')
+                        ->label(__('pos.transaction.actions.invoice_url'))
+                        ->icon('heroicon-o-document-text')
+                        ->action(fn (PosTransaction $record) => static::downloadInvoice($record)),
+
+                    Action::make('packagingSlip')
+                        ->label(__('pos.transaction.actions.packaging_slip'))
+                        ->icon('heroicon-o-archive-box')
+                        ->action(fn (PosTransaction $record) => static::downloadPackagingSlip($record)),
+
+                    Action::make('deliveryNote')
+                        ->label(__('pos.transaction.actions.delivery_note'))
+                        ->icon('heroicon-o-truck')
+                        ->action(fn (PosTransaction $record) => static::downloadDeliveryNote($record)),
+
+                    DeleteAction::make()
+                        ->label(__('pos.transaction.actions.delete'))
+                        ->before(function (PosTransaction $record) {
+                            if (!$record->canBeDeleted()) {
+                                Notification::make()->danger()->title(__('pos.transaction.notifications.cannot_delete'))->send();
+
+                                return false;
+                            }
+                        })
+                        ->successNotificationTitle(__('pos.transaction.notifications.deleted')),
+                ])
+                    ->label(__('pos.transaction.actions.group_more'))
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->color('gray'),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    protected static function downloadInvoice(PosTransaction $record): StreamedResponse
+    {
+        $locale = app()->getLocale();
+        $record->loadMissing(['items.itemable', 'terminal', 'cashier', 'customer']);
+
+        $filename = __('pos.transaction.invoice.filename', ['number' => $record->transaction_number], $locale) . '.pdf';
+
+        $pdf = Pdf::view('reports.pos-transaction-invoice-pdf', [
+            'transaction' => $record,
+            'locale' => $locale,
+        ])->format('a4');
+
+        return Response::streamDownload(
+            fn () => print($pdf->generatePdfContent()),
+            $filename,
+            ['Content-Type' => 'application/pdf'],
+        );
+    }
+
+    protected static function downloadPackagingSlip(PosTransaction $record): StreamedResponse
+    {
+        $locale = app()->getLocale();
+        $record->loadMissing(['items.itemable', 'customer']);
+
+        $filename = __('pos.packaging_slip.filename', ['number' => $record->transaction_number], $locale) . '.pdf';
+
+        $pdf = Pdf::view('reports.pos-packaging-slip-pdf', [
+            'documentTitle' => __('pos.packaging_slip.document_title', [], $locale),
+            'number' => $record->transaction_number,
+            'date' => $record->created_at,
+            'customerName' => $record->customer?->display_name ?? __('pos.customer.walk_in', [], $locale),
+            'customerPhone' => $record->customer?->mobile,
+            'address' => $record->shipping_address,
+            'items' => static::itemLines($record, $locale),
+            'locale' => $locale,
+        ])->format('a4');
+
+        return Response::streamDownload(
+            fn () => print($pdf->generatePdfContent()),
+            $filename,
+            ['Content-Type' => 'application/pdf'],
+        );
+    }
+
+    protected static function downloadDeliveryNote(PosTransaction $record): StreamedResponse
+    {
+        $locale = app()->getLocale();
+        $record->loadMissing(['items.itemable', 'customer', 'deliveryPerson']);
+
+        $filename = __('pos.delivery_note.filename', ['number' => $record->transaction_number], $locale) . '.pdf';
+
+        $pdf = Pdf::view('reports.pos-delivery-note-pdf', [
+            'documentTitle' => __('pos.delivery_note.document_title', [], $locale),
+            'number' => $record->transaction_number,
+            'date' => $record->created_at,
+            'customerName' => $record->delivered_to ?: ($record->customer?->display_name ?? __('pos.customer.walk_in', [], $locale)),
+            'customerPhone' => $record->customer?->mobile,
+            'address' => $record->shipping_address,
+            'deliveryPerson' => $record->deliveryPerson?->name,
+            'status' => $record->shipping_status ? __('pos.screen.shipping_modal.statuses.' . $record->shipping_status, [], $locale) : null,
+            'items' => static::itemLines($record, $locale),
+            'locale' => $locale,
+        ])->format('a4');
+
+        return Response::streamDownload(
+            fn () => print($pdf->generatePdfContent()),
+            $filename,
+            ['Content-Type' => 'application/pdf'],
+        );
+    }
+
+    protected static function itemLines(PosTransaction $record, string $locale)
+    {
+        return $record->items->map(fn ($item) => [
+            'name' => $item->isTicket()
+                ? ($item->itemable?->ticketType?->getTranslation('name', $locale) ?? '')
+                : ($item->itemable?->name ?? ''),
+            'qty' => $item->quantity,
+        ]);
     }
 
     public static function getRelations(): array

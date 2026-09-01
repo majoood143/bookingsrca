@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'booking/payment/webhook/thawani',
             'booking/payment/callback/nbo',
             'booking/payment/callback/ccavenue',
+            'shop/payment/webhook/thawani',
+            'shop/payment/callback/nbo',
+            'shop/payment/callback/ccavenue',
             'kiosk/*/heartbeat',
             'print-agent/*',
         ]);

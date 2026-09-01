@@ -94,6 +94,7 @@ class GeneralSettings extends Page implements HasForms
             'module_commission_enabled' => (bool) BookingSetting::get('module_commission_enabled', true),
             'module_cms_enabled' => (bool) BookingSetting::get('module_cms_enabled', true),
             'module_pos_enabled' => (bool) BookingSetting::get('module_pos_enabled', true),
+            'module_pos_shop_enabled' => (bool) BookingSetting::get('module_pos_shop_enabled', true),
 
             'social_facebook_url' => BookingSetting::get('social_facebook_url', ''),
             'social_instagram_url' => BookingSetting::get('social_instagram_url', ''),
@@ -413,6 +414,10 @@ class GeneralSettings extends Page implements HasForms
                                         Toggle::make('module_pos_enabled')
                                             ->label(__('general_settings.fields.module_pos_enabled'))
                                             ->helperText(__('general_settings.fields.module_pos_enabled_helper')),
+
+                                        Toggle::make('module_pos_shop_enabled')
+                                            ->label(__('general_settings.fields.module_pos_shop_enabled'))
+                                            ->helperText(__('general_settings.fields.module_pos_shop_enabled_helper')),
                                     ]),
                             ]),
 
@@ -593,6 +598,7 @@ class GeneralSettings extends Page implements HasForms
             'module_commission_enabled',
             'module_cms_enabled',
             'module_pos_enabled',
+            'module_pos_shop_enabled',
         ] as $key) {
             BookingSetting::set($key, !empty($state[$key]) ? 'true' : 'false');
         }

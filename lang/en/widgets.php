@@ -87,6 +87,7 @@ return [
     'balance_due_bookings' => [
         'heading'        => 'Bookings with Balance Due',
         'reference'      => 'Reference',
+        'mobile'         => 'Mobile Number',
         'event'          => 'Event',
         'event_date'     => 'Event Date',
         'total'          => 'Total',
@@ -135,6 +136,23 @@ return [
         'trend_heading'             => 'Bookings & Revenue Trend (Last 30 Days)',
         'ticket_breakdown_heading'  => 'Ticket Type Breakdown',
         'remaining_stock'          => 'Remaining Stock',
+    ],
+
+    'pos_overview' => [
+        'stock_alert'             => 'Product Stock Alert',
+        'stock_alert_desc'        => 'Products at or below their restock threshold',
+        'sales_order'             => 'Sales Order',
+        'sales_order_desc'        => 'Online store orders placed',
+        'pending_shipments'       => 'Pending Shipments',
+        'pending_shipments_desc'  => 'Orders & deliveries awaiting dispatch',
+        'sell_return'             => 'Total POS Sell Return',
+        'sell_return_desc'        => 'Refunded & partially refunded sales',
+        'invoice_due'             => 'POS Invoice Due',
+        'invoice_due_desc'        => 'Unpaid online store orders',
+        'net'                     => 'POS Net',
+        'net_desc'                => 'Total sale − invoice due − expense',
+        'total_sales'             => 'Total Sales',
+        'total_sales_desc'        => 'Counter transactions & online store orders',
     ],
 
     'user_insights' => [

@@ -45,7 +45,7 @@ class BalanceDueBookingsWidget extends BaseWidget
         return $table
             ->query(
                 Booking::query()
-                    ->with(['event', 'ticketType'])
+                    ->with(['event', 'ticketType', 'firstAttendee'])
                     ->whereIn('status', ['confirmed', 'checked_in'])
                     ->whereRaw('total_price > (' . $this->paidAmountSubquery()->toSql() . ')')
                     ->addSelect('bookings.*')
@@ -58,6 +58,12 @@ class BalanceDueBookingsWidget extends BaseWidget
                     ->weight('bold')
                     ->copyable()
                     ->searchable(),
+
+                TextColumn::make('firstAttendee.phone')
+                    ->label(__('widgets.balance_due_bookings.mobile'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->copyable(),
 
                 TextColumn::make('event.title')
                     ->label(__('widgets.balance_due_bookings.event'))

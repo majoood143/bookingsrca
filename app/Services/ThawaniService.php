@@ -6,6 +6,8 @@ use RuntimeException;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\PaymentGatewayLog;
+use App\Models\PosOrder;
+use App\Models\PosOrderGatewayLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -39,21 +41,14 @@ class ThawaniService
      * @return array<string, mixed>
      * @throws RuntimeException
      */
-    public function createSession(array $params, ?Booking $booking = null): array
+    public function createSession(array $params, Booking|PosOrder|null $payable = null): array
     {
         $response = Http::withHeaders([
             'thawani-api-key' => $this->secretKey,
             'Content-Type'    => 'application/json',
         ])->post("{$this->baseUrl}/api/v1/checkout/session", $params);
 
-        PaymentGatewayLog::log(
-            $booking,
-            'thawani',
-            'create_session',
-            $params,
-            $response->json() ?? ['raw' => $response->body()],
-            $response->status(),
-        );
+        $this->logGatewayCall($payable, 'create_session', $params, $response->json() ?? ['raw' => $response->body()], $response->status());
 
         if (!$response->successful()) {
             Log::error('Thawani createSession failed', [
@@ -72,20 +67,13 @@ class ThawaniService
      * @return array<string, mixed>
      * @throws RuntimeException
      */
-    public function getSession(string $sessionId, ?Booking $booking = null): array
+    public function getSession(string $sessionId, Booking|PosOrder|null $payable = null): array
     {
         $response = Http::withHeaders([
             'thawani-api-key' => $this->secretKey,
         ])->get("{$this->baseUrl}/api/v1/checkout/session/{$sessionId}");
 
-        PaymentGatewayLog::log(
-            $booking,
-            'thawani',
-            'get_session',
-            ['session_id' => $sessionId],
-            $response->json() ?? ['raw' => $response->body()],
-            $response->status(),
-        );
+        $this->logGatewayCall($payable, 'get_session', ['session_id' => $sessionId], $response->json() ?? ['raw' => $response->body()], $response->status());
 
         if (!$response->successful()) {
             Log::error('Thawani getSession failed', [
@@ -146,5 +134,20 @@ class ThawaniService
         $expected = hash_hmac('sha256', $payload, $secret);
 
         return hash_equals($expected, $signature);
+    }
+
+    // Routes the log entry to the right table depending on which kind of
+    // payable initiated the call — event bookings and POS shop orders keep
+    // separate gateway-log tables (see PosOrderGatewayLog) so this session
+    // creation/lookup logic can stay shared between both flows.
+    private function logGatewayCall(Booking|PosOrder|null $payable, string $event, mixed $request, mixed $response, ?int $statusCode): void
+    {
+        if ($payable instanceof PosOrder) {
+            PosOrderGatewayLog::log($payable, 'thawani', $event, $request, $response, $statusCode);
+
+            return;
+        }
+
+        PaymentGatewayLog::log($payable, 'thawani', $event, $request, $response, $statusCode);
     }
 }

@@ -118,8 +118,13 @@
                                         ? 'border-gray-200 bg-white hover:border-brand-hover/45 hover:shadow-sm cursor-pointer'
                                         : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50') }}">
                             <div class="{{ $capacityOk ? 'flex justify-between items-start mb-3' : '' }}">
-                                <span
-                                    class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : $slot->start_time->format('H:i') }}</span>
+                                <span>
+                                    <span
+                                        class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : $slot->start_time->format('H:i') }}</span>
+                                    @if (($kioskMode ?? false) ? $slot->showsLabelAtKiosk() : $slot->showsLabelOnline())
+                                        <span class="block text-sm font-medium text-gray-500">{{ $slot->label }}</span>
+                                    @endif
+                                </span>
                                 @if ($capacityOk)
                                     @php
                                         $remaining = $slot->getRemainingCapacity();
@@ -675,6 +680,10 @@
                                         <p class="font-medium text-gray-800">
                                             {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i') }}
                                         </p>
+                                        @php $summarySlot = $timeSlots->find($selectedSlot); @endphp
+                                        @if ($summarySlot && (($kioskMode ?? false) ? $summarySlot->showsLabelAtKiosk() : $summarySlot->showsLabelOnline()))
+                                            <p class="text-sm text-gray-500">{{ $summarySlot->label }}</p>
+                                        @endif
                                     </div>
                                 </div>
 

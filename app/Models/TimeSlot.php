@@ -19,6 +19,8 @@ class TimeSlot extends Model
         'start_time',
         'end_time',
         'label',
+        'show_label_online',
+        'show_label_kiosk',
         'max_attendees',
         'current_bookings',
         'is_active',
@@ -38,6 +40,8 @@ class TimeSlot extends Model
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
         'is_active' => 'boolean',
+        'show_label_online' => 'boolean',
+        'show_label_kiosk' => 'boolean',
     ];
 
     // MySQL's native DATE column silently truncates a full "Y-m-d H:i:s"
@@ -96,6 +100,19 @@ class TimeSlot extends Model
     public function isBookableAtKiosk(): bool
     {
         return in_array($this->booking_channel, ['both', 'kiosk']);
+    }
+
+    // Whether the custom `label` (e.g. "Bus 2") should be shown to customers
+    // on the given booking flow. Only meaningful when a label was actually
+    // set — the auto-numbered fallback is admin-facing only.
+    public function showsLabelOnline(): bool
+    {
+        return filled($this->label) && $this->show_label_online;
+    }
+
+    public function showsLabelAtKiosk(): bool
+    {
+        return filled($this->label) && $this->show_label_kiosk;
     }
 
     // A slot is overnight when its end time is not strictly after its start

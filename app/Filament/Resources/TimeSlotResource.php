@@ -165,7 +165,24 @@ class TimeSlotResource extends Resource
                             ->label(__('time_slot.fields.label'))
                             ->maxLength(255)
                             ->placeholder(__('time_slot.fields.label_placeholder'))
-                            ->helperText(__('time_slot.fields.label_helper')),
+                            ->helperText(__('time_slot.fields.label_helper'))
+                            ->live(onBlur: true),
+
+                        Grid::make(2)
+                            ->schema([
+                                Toggle::make('show_label_online')
+                                    ->label(__('time_slot.fields.show_label_online'))
+                                    ->helperText(__('time_slot.fields.show_label_online_helper'))
+                                    ->default(true)
+                                    ->inline(false),
+
+                                Toggle::make('show_label_kiosk')
+                                    ->label(__('time_slot.fields.show_label_kiosk'))
+                                    ->helperText(__('time_slot.fields.show_label_kiosk_helper'))
+                                    ->default(true)
+                                    ->inline(false),
+                            ])
+                            ->visible(fn(Get $get) => filled($get('label'))),
 
                         Grid::make(2)
                             ->schema([

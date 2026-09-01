@@ -75,23 +75,30 @@ class BalanceDueBookingsWidget extends BaseWidget
                     ->date('M j, Y')
                     ->sortable(),
 
+                TextColumn::make('created_at')
+                    ->label(__('widgets.balance_due_bookings.booking_date'))
+                    ->dateTime('M j, Y g:i A')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('total_price')
                     ->label(__('widgets.balance_due_bookings.total'))
                     ->html()
-                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                    ->searchable()
+                    ->formatStateUsing(fn($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->sortable(),
 
                 TextColumn::make('paid_amount')
                     ->label(__('widgets.balance_due_bookings.paid'))
                     ->html()
-                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                    ->formatStateUsing(fn($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->color('success'),
 
                 TextColumn::make('balance_due')
                     ->label(__('widgets.balance_due_bookings.balance_due'))
-                    ->state(fn (Booking $record): float => max(0, (float) $record->total_price - (float) $record->paid_amount))
+                    ->state(fn(Booking $record): float => max(0, (float) $record->total_price - (float) $record->paid_amount))
                     ->html()
-                    ->formatStateUsing(fn ($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
+                    ->formatStateUsing(fn($state) => view('partials.currency-amount', ['amount' => (float) $state])->render())
                     ->weight('bold')
                     ->color('danger'),
 
@@ -105,7 +112,7 @@ class BalanceDueBookingsWidget extends BaseWidget
 
                 BadgeColumn::make('source')
                     ->label(__('widgets.balance_due_bookings.source'))
-                    ->formatStateUsing(fn ($state) => __('booking.options.source')[$state] ?? $state)
+                    ->formatStateUsing(fn($state) => __('booking.options.source')[$state] ?? $state)
                     ->sortable()
                     ->colors([
                         'info'    => 'online',
@@ -141,16 +148,16 @@ class BalanceDueBookingsWidget extends BaseWidget
                             TextInput::make('amount')
                                 ->label(__('booking.payments.fields.amount'))
                                 ->numeric()
-                                ->prefix(fn () => new HtmlString(view('partials.currency-label')->render()))
+                                ->prefix(fn() => new HtmlString(view('partials.currency-label')->render()))
                                 ->minValue(0.01)
                                 ->required()
-                                ->default(fn (Booking $record) => round($record->balance_due, 2))
-                                ->helperText(fn (Booking $record) => __('booking.payments.summary.balance_due') . ': ' . BookingSetting::currencySymbol() . ' ' . number_format($record->balance_due, 2)),
+                                ->default(fn(Booking $record) => round($record->balance_due, 2))
+                                ->helperText(fn(Booking $record) => __('booking.payments.summary.balance_due') . ': ' . BookingSetting::currencySymbol() . ' ' . number_format($record->balance_due, 2)),
                         ]),
 
                         TextInput::make('reference')
                             ->label(__('booking.payments.fields.reference'))
-                            ->required(fn (Get $get) => $get('payment_method') === 'credit_debit')
+                            ->required(fn(Get $get) => $get('payment_method') === 'credit_debit')
                             ->maxLength(255),
 
                         Textarea::make('notes')
@@ -173,13 +180,14 @@ class BalanceDueBookingsWidget extends BaseWidget
                     })
                     ->requiresConfirmation()
                     ->modalHeading(__('widgets.balance_due_bookings.record_payment_heading'))
-                    ->modalDescription(fn (Booking $record) => __('widgets.balance_due_bookings.record_payment_description', ['amount' => number_format($record->balance_due, 2)]))
+                    ->modalDescription(fn(Booking $record) => __('widgets.balance_due_bookings.record_payment_description', ['amount' => number_format($record->balance_due, 2)]))
                     ->modalSubmitActionLabel(__('widgets.balance_due_bookings.record_payment_submit')),
 
                 Action::make('view')
                     ->label(__('widgets.balance_due_bookings.action_view'))
                     ->icon('heroicon-m-eye')
-                    ->url(fn (Booking $record): string =>
+                    ->url(
+                        fn(Booking $record): string =>
                         route('filament.admin.resources.bookings.view', $record)
                     ),
             ])

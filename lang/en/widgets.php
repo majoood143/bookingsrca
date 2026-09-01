@@ -90,6 +90,7 @@ return [
         'mobile'         => 'Mobile Number',
         'event'          => 'Event',
         'event_date'     => 'Event Date',
+        'booking_date'   => 'Booking Date',
         'total'          => 'Total',
         'paid'           => 'Paid',
         'balance_due'    => 'Balance Due',

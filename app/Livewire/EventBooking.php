@@ -160,7 +160,7 @@ class EventBooking extends Component
                 'client_reference_id' => $booking->booking_reference,
                 'products'            => $products,
                 'success_url'         => route('payment.callback') . '?reference=' . $booking->booking_reference,
-                'cancel_url'          => route('event.booking', $booking->event->slug),
+                'cancel_url'          => route('payment.cancel') . '?reference=' . $booking->booking_reference,
                 'metadata'            => ['booking_id' => $booking->id],
             ], $booking);
 

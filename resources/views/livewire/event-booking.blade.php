@@ -454,8 +454,8 @@
                                         wire:loading.attr="disabled" wire:target="submitBooking"
                                         class="px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors
                                             {{ $selectedPaymentMethod === $gateway
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50' }}">
+                                                ? 'border-brand-hover bg-brand-hover/10 text-brand-hover'
+                                                : 'border-gray-200 text-gray-600 hover:border-brand-hover/45 hover:bg-gray-50' }}">
                                         {{ $gatewayLabels[$gateway] ?? $gateway }}
                                     </button>
                                 @endforeach
@@ -466,12 +466,12 @@
                     {{-- Gateway card --}}
                     @if ($selectedPaymentMethod === 'thawani')
                         <div
-                            class="p-6 border-2 border-blue-500 bg-blue-50 rounded-2xl shadow-md shadow-blue-100 mb-6">
+                            class="p-6 border-2 border-brand-hover bg-brand-hover/10 rounded-2xl shadow-md shadow-brand-hover/20 mb-6">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-blue-100 shrink-0">
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-brand-hover/30 shrink-0">
                                     {{-- Thawani icon placeholder --}}
-                                    <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor"
+                                    <svg class="w-7 h-7 text-brand-hover" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -485,20 +485,20 @@
                                 </div>
                                 <div class="ml-auto">
                                     <span
-                                        class="inline-block w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-200"></span>
+                                        class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
                             </div>
-                            <p class="mt-4 text-sm text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
+                            <p class="mt-4 text-sm text-brand-hover bg-brand-hover/10 rounded-lg px-3 py-2">
                                 {{ __('event_booking.step6.thawani_redirect_note') }}
                             </p>
                         </div>
                     @elseif ($selectedPaymentMethod === 'nbo')
                         <div
-                            class="p-6 border-2 border-indigo-500 bg-indigo-50 rounded-2xl shadow-md shadow-indigo-100 mb-6">
+                            class="p-6 border-2 border-brand-hover bg-brand-hover/10 rounded-2xl shadow-md shadow-brand-hover/20 mb-6">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-indigo-100 shrink-0">
-                                    <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor"
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-brand-hover/30 shrink-0">
+                                    <svg class="w-7 h-7 text-brand-hover" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -511,20 +511,20 @@
                                 </div>
                                 <div class="ml-auto">
                                     <span
-                                        class="inline-block w-3 h-3 rounded-full bg-indigo-500 ring-4 ring-indigo-200"></span>
+                                        class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
                             </div>
-                            <p class="mt-4 text-sm text-indigo-700 bg-indigo-100 rounded-lg px-3 py-2">
+                            <p class="mt-4 text-sm text-brand-hover bg-brand-hover/10 rounded-lg px-3 py-2">
                                 {{ __('event_booking.step6.nbo_redirect_note') }}
                             </p>
                         </div>
                     @elseif ($selectedPaymentMethod === 'ccavenue')
                         <div
-                            class="p-6 border-2 border-teal-500 bg-teal-50 rounded-2xl shadow-md shadow-teal-100 mb-6">
+                            class="p-6 border-2 border-brand-hover bg-brand-hover/10 rounded-2xl shadow-md shadow-brand-hover/20 mb-6">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-teal-100 shrink-0">
-                                    <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor"
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-brand-hover/30 shrink-0">
+                                    <svg class="w-7 h-7 text-brand-hover" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -538,19 +538,19 @@
                                 </div>
                                 <div class="ml-auto">
                                     <span
-                                        class="inline-block w-3 h-3 rounded-full bg-teal-500 ring-4 ring-teal-200"></span>
+                                        class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
                             </div>
-                            <p class="mt-4 text-sm text-teal-700 bg-teal-100 rounded-lg px-3 py-2">
+                            <p class="mt-4 text-sm text-brand-hover bg-brand-hover/10 rounded-lg px-3 py-2">
                                 {{ __('event_booking.step6.ccavenue_redirect_note') }}
                             </p>
                         </div>
                     @elseif ($selectedPaymentMethod === 'cash')
-                        <div class="p-6 border-2 border-amber-400 bg-amber-50 rounded-2xl mb-6">
+                        <div class="p-6 border-2 border-brand-hover bg-brand-hover/10 rounded-2xl shadow-md shadow-brand-hover/20 mb-6">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-amber-100 shrink-0">
-                                    <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor"
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-brand-hover/30 shrink-0">
+                                    <svg class="w-7 h-7 text-brand-hover" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -566,11 +566,11 @@
                         </div>
                     @else
                         {{-- Free / no payment required --}}
-                        <div class="p-6 border-2 border-green-400 bg-green-50 rounded-2xl mb-6">
+                        <div class="p-6 border-2 border-brand-hover bg-brand-hover/10 rounded-2xl shadow-md shadow-brand-hover/20 mb-6">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-green-100 shrink-0">
-                                    <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor"
+                                    class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-brand-hover/30 shrink-0">
+                                    <svg class="w-7 h-7 text-brand-hover" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -587,7 +587,7 @@
                     @endif
                     <div class="flex items-start gap-3">
                         <input type="checkbox" wire:model="agreedToTerms" id="agreedToTerms1"
-                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0
+                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-hover focus:ring-brand-hover cursor-pointer shrink-0
                                         {{ $errors->has('agreedToTerms') ? 'border-red-400 ring-1 ring-red-300' : '' }}">
                         <label for="agreedToTerms" class="text-sm text-gray-700 cursor-pointer leading-snug">
                             {{ __('event_booking.step5.terms_agree') }}
@@ -608,7 +608,7 @@
 
                         @if ($selectedPaymentMethod === 'thawani')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-blue-600 text-white font-bold text-base rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_thawani_btn') }}
@@ -625,7 +625,7 @@
                             </button>
                         @elseif ($selectedPaymentMethod === 'nbo')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-indigo-600 text-white font-bold text-base rounded-xl hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_nbo_btn') }}
@@ -642,7 +642,7 @@
                             </button>
                         @elseif ($selectedPaymentMethod === 'ccavenue')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-teal-600 text-white font-bold text-base rounded-xl hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_ccavenue_btn') }}
@@ -659,7 +659,7 @@
                             </button>
                         @else
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-green-600 text-white font-bold text-base rounded-xl hover:bg-green-700 transition-colors shadow-md shadow-green-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     ✓ {{ __('event_booking.step6.confirm_booking') }}
@@ -826,7 +826,7 @@
                                 <span
                                     class="font-bold text-gray-900 text-base">{{ __('event_booking.summary.total') }}</span>
                                 <span
-                                    class="font-black text-2xl text-blue-600">@include('partials.currency-amount', ['amount' => $this->finalTotal()])</span>
+                                    class="font-black text-2xl text-brand-hover">@include('partials.currency-amount', ['amount' => $this->finalTotal()])</span>
                             </div>
 
                             @if ($selectedPaymentMethod === 'thawani')

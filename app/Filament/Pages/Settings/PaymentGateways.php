@@ -135,8 +135,8 @@ class PaymentGateways extends Page implements HasForms
                             ->helperText(__('payment_gateways.fields.url_override_helper'))
                             ->url()
                             ->placeholder(fn ($get) => $get('thawani.test_mode')
-                                ? 'https://uatcheckout.thawani.om'
-                                : 'https://checkout.thawani.om')
+                                ? 'https://uatcheckout.thawani.om/api/v1'
+                                : 'https://checkout.thawani.om/api/v1')
                             ->maxLength(255),
 
                         TextInput::make('thawani.webhook_secret')

@@ -15,8 +15,8 @@ class ThawaniCallbackController extends Controller
 
     // ──────────────────────────────────────────────────────────────────────────
     // GET /booking/payment/callback
-    // Thawani redirects here after the user completes / cancels payment.
-    // Query params: ?session_id=<id>   (always present)
+    // Thawani redirects here after the user completes payment.
+    // Query params: ?reference=<booking_reference>
     // ──────────────────────────────────────────────────────────────────────────
     public function callback(Request $request)
     {
@@ -38,39 +38,30 @@ class ThawaniCallbackController extends Controller
             return redirect()->route('booking.success', $booking->booking_reference);
         }
 
-        // Webhook hasn't fired yet: verify with Thawani using the stored session id.
-        $sessionId = $booking->payment_session_id;
-
-        if (!$sessionId) {
+        if (!$booking->payment_session_id) {
             Log::warning('Thawani callback: missing session id on booking', ['reference' => $reference]);
             return redirect()->route('event.booking', $booking->event->slug)
                 ->with('error', __('Payment session not found. Please contact support.'));
         }
 
         try {
-            $response      = $this->thawani->getSession($sessionId, $booking);
-            $paymentStatus = $response['data']['payment_status'] ?? null;
+            $paymentStatus = $this->thawani->reconcileBooking($booking);
 
             if ($paymentStatus === 'paid') {
-                $reference = $response['data']['payment_ref'] ?? null;
-
-                $booking->update([
-                    'payment_status'    => 'paid',
-                    'payment_reference' => $reference,
-                ]);
-
-                $booking->payments()->firstOrCreate(
-                    ['payment_method' => 'thawani'],
-                    [
-                        'amount'    => $booking->total_price,
-                        'reference' => $reference,
-                        'notes'     => 'Online payment via Thawani.',
-                    ]
-                );
-
-                $booking->confirm();
-
                 return redirect()->route('booking.success', $booking->booking_reference);
+            }
+
+            // Thawani reports the session itself as cancelled (user clicked "Cancel"
+            // on the hosted page but landed on the success URL, or the cancel_url
+            // redirect was intercepted) — release the hold immediately rather than
+            // waiting for the pending-booking expiry sweep.
+            if ($paymentStatus === 'cancelled') {
+                $booking->update(['payment_status' => 'failed']);
+                $booking->cancel();
+
+                return redirect()
+                    ->route('event.booking', $booking->event->slug)
+                    ->with('error', __('Payment was cancelled. Please try again.'));
             }
 
             $booking->update(['payment_status' => 'failed']);
@@ -82,7 +73,7 @@ class ThawaniCallbackController extends Controller
         } catch (Exception $e) {
             Log::error('Thawani callback error', [
                 'reference'  => $reference,
-                'session_id' => $sessionId,
+                'session_id' => $booking->payment_session_id,
                 'error'      => $e->getMessage(),
             ]);
 
@@ -90,6 +81,44 @@ class ThawaniCallbackController extends Controller
                 ->route('event.booking', $booking->event->slug)
                 ->with('error', __('An error occurred while verifying your payment. Please contact support.'));
         }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // GET /booking/payment/cancel
+    // Thawani redirects here when the user cancels on the hosted checkout page.
+    // Query params: ?reference=<booking_reference>
+    // ──────────────────────────────────────────────────────────────────────────
+    public function cancel(Request $request)
+    {
+        $reference = $request->query('reference');
+
+        if (!$reference) {
+            return redirect('/')->with('error', __('Invalid payment callback.'));
+        }
+
+        $booking = Booking::where('booking_reference', $reference)->first();
+
+        if (!$booking) {
+            Log::warning('Thawani cancel: no booking found for reference', ['reference' => $reference]);
+            return redirect('/')->with('error', __('Booking not found.'));
+        }
+
+        // A webhook may have confirmed the booking in the moment between the
+        // user cancelling and this redirect landing — don't clobber a paid booking.
+        if ($booking->status === 'confirmed') {
+            return redirect()->route('booking.success', $booking->booking_reference);
+        }
+
+        PaymentGatewayLog::log($booking, 'thawani', 'cancel', ['session_id' => $booking->payment_session_id], ['reason' => 'user_cancelled']);
+
+        if ($booking->status === 'pending') {
+            $booking->update(['payment_status' => 'failed']);
+            $booking->cancel();
+        }
+
+        return redirect()
+            ->route('event.booking', $booking->event->slug)
+            ->with('error', __('Payment was cancelled. Please try again.'));
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -117,26 +146,27 @@ class ThawaniCallbackController extends Controller
 
         PaymentGatewayLog::log($booking, 'thawani', 'webhook', $data, ['event_type' => $event, 'session_id' => $sessionId]);
 
-        if ($event === 'payment_completed' && $sessionId) {
-            if ($booking && $booking->status !== 'confirmed') {
-                $reference = $data['data']['payment_ref'] ?? null;
+        if (!$booking || $booking->status !== 'pending') {
+            return response()->json(['message' => 'ok']);
+        }
 
-                $booking->update([
-                    'payment_status'    => 'paid',
-                    'payment_reference' => $reference,
-                ]);
+        // Don't trust the event name or payload alone (Thawani's full set of
+        // webhook event names isn't reliably documented, and signature
+        // verification is skipped entirely when no webhook secret is
+        // configured) — resync against the session itself via our own
+        // authenticated API call and act on its actual payment_status.
+        try {
+            $paymentStatus = $this->thawani->reconcileBooking($booking);
 
-                $booking->payments()->firstOrCreate(
-                    ['payment_method' => 'thawani'],
-                    [
-                        'amount'    => $booking->total_price,
-                        'reference' => $reference,
-                        'notes'     => 'Online payment via Thawani.',
-                    ]
-                );
-
-                $booking->confirm();
+            if ($paymentStatus === 'cancelled') {
+                $booking->update(['payment_status' => 'failed']);
+                $booking->cancel();
             }
+        } catch (Exception $e) {
+            Log::error('Thawani webhook resync failed', [
+                'session_id' => $sessionId,
+                'error'      => $e->getMessage(),
+            ]);
         }
 
         return response()->json(['message' => 'ok']);

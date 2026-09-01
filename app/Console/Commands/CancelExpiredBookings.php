@@ -5,8 +5,11 @@ namespace App\Console\Commands;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\Kiosk;
+use App\Services\ThawaniService;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CancelExpiredBookings extends Command
 {
@@ -14,7 +17,7 @@ class CancelExpiredBookings extends Command
 
     protected $description = 'Cancel pending bookings that have sat awaiting payment past the configured timeout, releasing the slot/ticket capacity they were holding.';
 
-    public function handle(): int
+    public function handle(ThawaniService $thawani): int
     {
         $globalExpiryMinutes = (int) BookingSetting::get('pending_booking_expiry_minutes', 15);
 
@@ -33,6 +36,25 @@ class CancelExpiredBookings extends Command
         $cancelled = 0;
 
         foreach ($staleBookingIds as $id) {
+            // Resync with Thawani before expiring, outside the row lock below —
+            // a booking whose browser callback and webhook both failed to land
+            // (dropped connection, worker down) would otherwise sit "paid" at
+            // Thawani but get wrongly cancelled here once it goes stale.
+            $booking = Booking::find($id);
+
+            if ($booking && $booking->status === 'pending' && $booking->payment_method === 'thawani' && $booking->payment_session_id) {
+                try {
+                    if ($thawani->reconcileBooking($booking) === 'paid') {
+                        continue;
+                    }
+                } catch (Exception $e) {
+                    Log::warning('CancelExpiredBookings: Thawani resync failed, proceeding to expire on schedule', [
+                        'booking_id' => $id,
+                        'error'      => $e->getMessage(),
+                    ]);
+                }
+            }
+
             DB::transaction(function () use ($id, $globalExpiryMinutes, &$cancelled) {
                 // Re-check under lock: a webhook may confirm this booking concurrently.
                 $booking = Booking::with('kiosk')->where('id', $id)->lockForUpdate()->first();

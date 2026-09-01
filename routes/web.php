@@ -52,9 +52,13 @@ Route::get('/booking/success/{reference}', function ($reference) {
 })->name('booking.success');
 
 // ── Payment routes ────────────────────────────────────────────────────────────
-// Thawani redirects the user back here after checkout (success or cancel).
+// Thawani redirects the user back here after a successful payment.
 Route::get('/booking/payment/callback', [ThawaniCallbackController::class, 'callback'])
     ->name('payment.callback');
+
+// Thawani redirects the user back here when they cancel on the hosted checkout page.
+Route::get('/booking/payment/cancel', [ThawaniCallbackController::class, 'cancel'])
+    ->name('payment.cancel');
 
 // Thawani server-to-server webhook (CSRF excluded via bootstrap/app.php).
 Route::post('/booking/payment/webhook/thawani', [ThawaniCallbackController::class, 'webhook'])

@@ -47,8 +47,20 @@ class ThawaniCallbackController extends Controller
         try {
             $paymentStatus = $this->thawani->reconcileBooking($booking);
 
-            if ($paymentStatus === 'paid') {
+            // Check the booking's own status rather than $paymentStatus alone —
+            // reconcileBooking() only confirms a booking that was still 'pending'
+            // when the payment landed. A 'paid' status here with the booking
+            // still not 'confirmed' means it had already expired/been cancelled
+            // (see ThawaniService::reconcileBooking), so don't send the customer
+            // to a success page for a booking that isn't actually confirmed.
+            if ($booking->status === 'confirmed') {
                 return redirect()->route('booking.success', $booking->booking_reference);
+            }
+
+            if ($paymentStatus === 'paid') {
+                return redirect()
+                    ->route('event.booking', $booking->event->slug)
+                    ->with('error', __('Your payment was received, but this booking had already expired. Please contact support to resolve this.'));
             }
 
             // Thawani reports the session itself as cancelled (user clicked "Cancel"
@@ -146,7 +158,7 @@ class ThawaniCallbackController extends Controller
 
         PaymentGatewayLog::log($booking, 'thawani', 'webhook', $data, ['event_type' => $event, 'session_id' => $sessionId]);
 
-        if (!$booking || $booking->status !== 'pending') {
+        if (!$booking || $booking->status === 'confirmed') {
             return response()->json(['message' => 'ok']);
         }
 
@@ -155,10 +167,13 @@ class ThawaniCallbackController extends Controller
         // verification is skipped entirely when no webhook secret is
         // configured) — resync against the session itself via our own
         // authenticated API call and act on its actual payment_status.
+        // Note: reconcileBooking() only confirms a booking that's still
+        // 'pending' — a booking already cancelled by the expiry sweep is left
+        // alone (and logged for manual reconciliation) rather than resurrected.
         try {
             $paymentStatus = $this->thawani->reconcileBooking($booking);
 
-            if ($paymentStatus === 'cancelled') {
+            if ($paymentStatus === 'cancelled' && $booking->status === 'pending') {
                 $booking->update(['payment_status' => 'failed']);
                 $booking->cancel();
             }

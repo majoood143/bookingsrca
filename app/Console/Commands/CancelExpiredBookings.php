@@ -71,6 +71,10 @@ class CancelExpiredBookings extends Command
                     return;
                 }
 
+                if ($booking->payment_status === 'pending') {
+                    $booking->update(['payment_status' => 'failed']);
+                }
+
                 $booking->cancel();
                 $cancelled++;
             });

@@ -117,7 +117,7 @@ class ThawaniService
         $response      = $this->getSession($booking->payment_session_id, $booking);
         $paymentStatus = $response['data']['payment_status'] ?? null;
 
-        if ($paymentStatus === 'paid' && $booking->status !== 'confirmed') {
+        if ($paymentStatus === 'paid' && $booking->status === 'pending') {
             $reference = $response['data']['payment_ref'] ?? null;
 
             $booking->update([
@@ -135,6 +135,20 @@ class ThawaniService
             );
 
             $booking->confirm();
+        } elseif ($paymentStatus === 'paid' && $booking->status !== 'confirmed') {
+            // Thawani captured payment on a session whose booking is no longer
+            // pending — most likely the expiry sweep already cancelled it while
+            // the customer's checkout tab stayed open and they paid anyway.
+            // Don't silently resurrect it: its slot/ticket capacity may already
+            // be held by someone else. Surface this loudly for manual
+            // reconciliation/refund instead.
+            Log::critical('Thawani payment captured for a non-pending booking — needs manual reconciliation', [
+                'booking_id'        => $booking->id,
+                'booking_reference' => $booking->booking_reference,
+                'booking_status'    => $booking->status,
+                'session_id'        => $booking->payment_session_id,
+                'payment_ref'       => $response['data']['payment_ref'] ?? null,
+            ]);
         }
 
         return $paymentStatus;

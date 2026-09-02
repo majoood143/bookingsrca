@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'RCA Booking'),
+    'name' => env('APP_NAME', 'Digital Spark'),
 
     /*
     |--------------------------------------------------------------------------

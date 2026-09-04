@@ -64,6 +64,37 @@ class BookingSetting extends Model
     }
 
     /**
+     * Whether times should be displayed in 12-hour (with AM/PM) rather than
+     * 24-hour format. Applies to every time display across the admin panel,
+     * reports/exports, online booking, and kiosk/signage screens.
+     */
+    public static function is12HourTime(): bool
+    {
+        return self::get('time_format', '24') === '12';
+    }
+
+    /**
+     * The Carbon/date() format string matching the configured time format.
+     */
+    public static function timeFormat(): string
+    {
+        return self::is12HourTime() ? 'g:i A' : 'H:i';
+    }
+
+    /**
+     * Format a time value for display using the configured time format.
+     * Accepts anything Carbon::parse() understands (Carbon instance, string, etc).
+     */
+    public static function formatTime($time): string
+    {
+        if (!$time) {
+            return '';
+        }
+
+        return \Illuminate\Support\Carbon::parse($time)->format(self::timeFormat());
+    }
+
+    /**
      * Base64 data URI of the uploaded currency SVG icon, or null if none is
      * configured. Embedding as a data URI (rather than linking the storage
      * URL) means it renders the same whether the caller is a browser page,
@@ -135,6 +166,7 @@ class BookingSetting extends Model
             'primary_color',
             'secondary_color',
             'timezone',
+            'time_format',
             'currency_code',
             'currency_symbol',
             'currency_icon',

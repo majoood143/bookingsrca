@@ -706,7 +706,7 @@
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         {{ __('event_booking.summary.time') }}</p>
                                     <p class="font-medium text-gray-800">
-                                        {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i') }}</p>
+                                        {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : \App\Models\BookingSetting::formatTime($timeSlots->find($selectedSlot)?->start_time) }}</p>
                                 </div>
                             </div>
 

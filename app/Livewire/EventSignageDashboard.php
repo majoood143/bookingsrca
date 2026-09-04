@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\GuardsPrivateEvents;
+use App\Models\BookingSetting;
 use App\Models\Event;
 use App\Models\EventSignageSetting;
 use App\Models\TimeSlot;
@@ -83,7 +84,7 @@ class EventSignageDashboard extends Component
                 'en' => $slot->displayLabel($ordinal, 'en'),
                 'ar' => $slot->displayLabel($ordinal, 'ar'),
             ],
-            'time_range' => $slot->start_time->format('H:i'),
+            'time_range' => BookingSetting::formatTime($slot->start_time),
             'starts_at' => $startsAt->toIso8601String(),
             'booked_count' => $slot->getActiveBookedQuantity(),
             'remaining_seats' => $slot->getRemainingCapacity(),
@@ -99,6 +100,7 @@ class EventSignageDashboard extends Component
 
         return view('livewire.event-signage-dashboard', [
             'signage' => $this->signage(),
+            'use12HourClock' => BookingSetting::is12HourTime(),
         ]);
     }
 }

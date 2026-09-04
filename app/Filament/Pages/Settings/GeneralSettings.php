@@ -53,6 +53,7 @@ class GeneralSettings extends Page implements HasForms
             'site_name_en' => BookingSetting::get('site_name_en', 'Bookings'),
             'site_name_ar' => BookingSetting::get('site_name_ar', 'الحجوزات'),
             'timezone' => BookingSetting::get('timezone', 'Asia/Muscat'),
+            'time_format' => BookingSetting::get('time_format', '24'),
             'currency_code' => BookingSetting::get('currency_code', 'OMR'),
             'currency_symbol' => BookingSetting::get('currency_symbol', 'OMR'),
             'currency_icon' => BookingSetting::get('currency_icon'),
@@ -149,6 +150,15 @@ class GeneralSettings extends Page implements HasForms
                                                 ->options(collect(\DateTimeZone::listIdentifiers())
                                                     ->mapWithKeys(fn ($tz) => [$tz => $tz]))
                                                 ->searchable()
+                                                ->required()
+                                                ->native(false),
+
+                                            Select::make('time_format')
+                                                ->label(__('general_settings.fields.time_format'))
+                                                ->options([
+                                                    '24' => __('general_settings.fields.time_format_24'),
+                                                    '12' => __('general_settings.fields.time_format_12'),
+                                                ])
                                                 ->required()
                                                 ->native(false),
 
@@ -545,6 +555,7 @@ class GeneralSettings extends Page implements HasForms
             'site_name_en',
             'site_name_ar',
             'timezone',
+            'time_format',
             'currency_code',
             'currency_symbol',
             'currency_icon',

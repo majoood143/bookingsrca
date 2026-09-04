@@ -120,7 +120,7 @@
                             <div class="{{ $capacityOk ? 'flex justify-between items-start mb-3' : '' }}">
                                 <span>
                                     <span
-                                        class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : $slot->start_time->format('H:i') }}</span>
+                                        class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : \App\Models\BookingSetting::formatTime($slot->start_time) }}</span>
                                     @if (($kioskMode ?? false) ? $slot->showsLabelAtKiosk() : $slot->showsLabelOnline())
                                         <span class="block text-sm font-medium text-gray-500">{{ $slot->getTranslation('label', app()->getLocale()) }}</span>
                                     @endif
@@ -678,7 +678,7 @@
                                         <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                             {{ __('event_booking.summary.time') }}</p>
                                         <p class="font-medium text-gray-800">
-                                            {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : $timeSlots->find($selectedSlot)?->start_time->format('H:i') }}
+                                            {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : \App\Models\BookingSetting::formatTime($timeSlots->find($selectedSlot)?->start_time) }}
                                         </p>
                                         @php $summarySlot = $timeSlots->find($selectedSlot); @endphp
                                         @if ($summarySlot && (($kioskMode ?? false) ? $summarySlot->showsLabelAtKiosk() : $summarySlot->showsLabelOnline()))

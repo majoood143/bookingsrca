@@ -88,7 +88,7 @@
             _advancing: false,
             tick() {
                 const now = new Date();
-                this.clockTime = now.toLocaleTimeString(this.lang === 'ar' ? 'ar-OM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                this.clockTime = now.toLocaleTimeString(this.lang === 'ar' ? 'ar-OM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: {{ $use12HourClock ? 'true' : 'false' }} });
                 this.clockDate = now.toLocaleDateString(this.lang === 'ar' ? 'ar-OM-u-ca-gregory' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                 const startsAt = this.$el.dataset.nextTripStartsAt;
                 if (startsAt) {

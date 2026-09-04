@@ -35,6 +35,7 @@ use App\Filament\Resources\TimeSlotResource\Pages\ListTimeSlotActivities;
 use App\Filament\Resources\TimeSlotResource\Pages;
 use App\Models\TimeSlot;
 use App\Models\Event;
+use App\Models\BookingSetting;
 use App\Exports\TimeSlotAttendeesExport;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -149,7 +150,7 @@ class TimeSlotResource extends Resource
                                     ->required()
                                     ->seconds(false)
                                     ->native(false)
-                                    ->displayFormat('H:i')
+                                    ->displayFormat(BookingSetting::timeFormat())
                                     ->helperText(__('time_slot.fields.start_time_helper')),
 
                                 TimePicker::make('end_time')
@@ -157,7 +158,7 @@ class TimeSlotResource extends Resource
                                     ->required()
                                     ->seconds(false)
                                     ->native(false)
-                                    ->displayFormat('H:i')
+                                    ->displayFormat(BookingSetting::timeFormat())
                                     ->helperText(__('time_slot.fields.end_time_helper')),
                             ]),
 
@@ -297,7 +298,7 @@ class TimeSlotResource extends Resource
 
                 TextColumn::make('start_time')
                     ->label(__('time_slot.columns.start_time'))
-                    ->time('H:i')
+                    ->time(BookingSetting::timeFormat())
                     ->sortable()
                     ->badge()
                     ->searchable()
@@ -648,13 +649,13 @@ class TimeSlotResource extends Resource
                                 ->required()
                                 ->seconds(false)
                                 ->native(false)
-                                ->displayFormat('H:i'),
+                                ->displayFormat(BookingSetting::timeFormat()),
                             TimePicker::make('end_time')
                                 ->label(__('time_slot.fields.end_time'))
                                 ->required()
                                 ->seconds(false)
                                 ->native(false)
-                                ->displayFormat('H:i')
+                                ->displayFormat(BookingSetting::timeFormat())
                                 ->helperText(__('time_slot.fields.end_time_helper')),
                         ])
                         ->modalHeading(__('time_slot.modals.edit_time_range_heading'))

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TimeSlotResource\Pages;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
 use App\Filament\Resources\TimeSlotResource;
+use App\Models\BookingSetting;
 use App\Models\Event;
 use App\Models\TimeSlot;
 use Filament\Actions;
@@ -54,14 +55,14 @@ class ListTimeSlots extends ListRecords
                         ->required()
                         ->seconds(false)
                         ->native(false)
-                        ->displayFormat('H:i'),
+                        ->displayFormat(BookingSetting::timeFormat()),
 
                     TimePicker::make('end_time')
                         ->label(__('time_slot.fields.end_time'))
                         ->required()
                         ->seconds(false)
                         ->native(false)
-                        ->displayFormat('H:i')
+                        ->displayFormat(BookingSetting::timeFormat())
                         ->helperText(__('time_slot.fields.end_time_helper')),
 
                     TextInput::make('label.en')

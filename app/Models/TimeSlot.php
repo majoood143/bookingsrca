@@ -149,14 +149,14 @@ class TimeSlot extends Model
     // when the slot rolls over midnight (e.g. "00:30 (next day)").
     public function getEndTimeLabel(): string
     {
-        $label = $this->end_time->format('H:i');
+        $label = BookingSetting::formatTime($this->end_time);
 
         return $this->isOvernight() ? $label . ' ' . __('time_slot.suffix.next_day') : $label;
     }
 
     public function getTimeRange()
     {
-        return $this->start_time->format('H:i') . ' - ' . $this->getEndTimeLabel();
+        return BookingSetting::formatTime($this->start_time) . ' - ' . $this->getEndTimeLabel();
     }
 
     // Admin-facing label for this slot (e.g. "Bus 2"), falling back to an

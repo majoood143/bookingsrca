@@ -68,6 +68,11 @@ class EventBooking extends Component
 
     public function submitBooking()
     {
+        // Livewire exposes every public method as a directly-callable endpoint,
+        // so this can be invoked without ever having passed through step 5's
+        // goToPaymentStep() — re-validate here rather than trusting that flow.
+        $this->validate();
+
         try {
             $booking = $this->persistBooking(function (float $ticketPrice, float $servicesPrice, float $discountAmount) {
                 $isFree = ($ticketPrice + $servicesPrice - $discountAmount) <= 0;
@@ -251,8 +256,11 @@ class EventBooking extends Component
             return view('livewire.event-booking')->title($pageTitle);
         }
 
-        $availableDates = collect($this->event->getBookableDates());
-        $soldOutDates   = collect($this->event->getSoldOutDates());
+        // Only step 1's calendar view reads these — both walk every future
+        // time slot on the event, so skip them on every other step's render
+        // (ticket/extras/attendee/payment steps re-render on each wire:click).
+        $availableDates = $this->step === 1 ? collect($this->event->getBookableDates()) : collect();
+        $soldOutDates   = $this->step === 1 ? collect($this->event->getSoldOutDates()) : collect();
         $timeSlots      = $this->selectedDate
             ? $this->event->timeSlots()->where('is_active', true)->where('date', $this->selectedDate)->get()->filter(fn ($slot) => $this->isSlotBookable($slot))->values()
             : collect();

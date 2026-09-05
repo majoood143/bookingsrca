@@ -50,7 +50,11 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Personal access tokens (e.g. the users API) never expired by default —
+    // a leaked token stayed valid forever. Defaults to 90 days; set
+    // SANCTUM_EXPIRATION=null in .env to restore the old no-expiry behavior
+    // for an integration that genuinely needs it.
+    'expiration' => env('SANCTUM_EXPIRATION', 60 * 24 * 90),
 
     /*
     |--------------------------------------------------------------------------

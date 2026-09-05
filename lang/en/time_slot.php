@@ -36,6 +36,8 @@ return [
         'show_label_online_helper' => 'Display this label on the public online booking page.',
         'show_label_kiosk'         => 'Show Label at Kiosk',
         'show_label_kiosk_helper'  => 'Display this label on the kiosk booking screen.',
+        'show_capacity_online'        => 'Show Availability Online',
+        'show_capacity_online_helper' => 'Display the remaining-spots count, fill bar, and availability badge on the public online booking page. Turn off for slots meant for a single booking, where showing the count is unnecessary.',
         'max_attendees'            => 'Maximum Attendees',
         'max_attendees_helper'     => 'Maximum number of bookings for this time slot',
         'current_bookings'         => 'Current Bookings',

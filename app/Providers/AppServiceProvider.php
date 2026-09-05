@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Password;
 use RickDBCN\FilamentEmail\Models\Email;
 use App\Policies\EmailPolicy;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
@@ -39,6 +40,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Applied wherever a validation rule references Password::default() —
+        // the Filament user form and the users API create/update requests.
+        Password::defaults(function () {
+            return Password::min(10)->mixedCase()->numbers()->uncompromised();
+        });
+
         Gate::policy(Email::class, EmailPolicy::class);
         Gate::policy(QueueMonitor::class, QueueMonitorPolicy::class);
 

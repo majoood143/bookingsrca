@@ -241,7 +241,7 @@ class Event extends Model
     {
         $now = now();
 
-        return $this->timeSlots()
+        $slots = $this->timeSlots()
             ->where('is_active', true)
             ->get()
             ->filter(function ($slot) use ($now) {
@@ -249,9 +249,31 @@ class Event extends Model
                     $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
                 );
                 return $slotStart->gt($now) && !$this->isBookingCutoffPassed($slot);
+            });
+
+        if ($slots->isEmpty()) {
+            return [];
+        }
+
+        // getRemainingCapacity() would run one booked-quantity query per slot
+        // here (this method checks every future slot on every calendar
+        // render) — batch it into a single grouped sum instead.
+        $bookedBySlot = Booking::whereIn('time_slot_id', $slots->pluck('id'))
+            ->where(function ($query) {
+                $query->where('status', 'confirmed')
+                    ->orWhere(function ($query) {
+                        $query->where('status', 'pending')->where('payment_status', '!=', 'failed');
+                    });
             })
+            ->groupBy('time_slot_id')
+            ->selectRaw('time_slot_id, sum(quantity) as total_qty')
+            ->pluck('total_qty', 'time_slot_id');
+
+        return $slots
             ->groupBy(fn ($slot) => $slot->date->format('Y-m-d'))
-            ->filter(fn ($slots) => $slots->every(fn ($slot) => !$slot->isAvailable()))
+            ->filter(fn ($slotsForDate) => $slotsForDate->every(
+                fn ($slot) => max(0, $slot->max_attendees - (int) ($bookedBySlot[$slot->id] ?? 0)) < 1
+            ))
             ->keys()
             ->all();
     }

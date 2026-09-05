@@ -270,6 +270,11 @@ class KioskBooking extends Component
 
         $this->awaitingCardTap = false;
 
+        // Every public Livewire method is directly callable, so this can be
+        // invoked without having stepped through confirmAttendee() for each
+        // attendee first — re-validate rather than trusting the wizard flow.
+        $this->validate();
+
         try {
             $booking = $this->persistBooking(
                 function (float $ticketPrice, float $servicesPrice) {
@@ -321,6 +326,9 @@ class KioskBooking extends Component
 
     public function payAtCounter(): void
     {
+        // Same direct-call concern as onCardTapped() above.
+        $this->validate();
+
         try {
             $booking = $this->persistBooking(function (float $ticketPrice, float $servicesPrice) {
                 $isFree = ($ticketPrice + $servicesPrice) <= 0;

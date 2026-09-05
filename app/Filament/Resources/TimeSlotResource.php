@@ -217,6 +217,12 @@ class TimeSlotResource extends Resource
                                     ->visible(fn($record) => $record !== null),
                             ]),
 
+                        Toggle::make('show_capacity_online')
+                            ->label(__('time_slot.fields.show_capacity_online'))
+                            ->helperText(__('time_slot.fields.show_capacity_online_helper'))
+                            ->default(true)
+                            ->inline(false),
+
                         Toggle::make('is_active')
                             ->label(__('time_slot.fields.is_active'))
                             ->helperText(__('time_slot.fields.is_active_helper'))

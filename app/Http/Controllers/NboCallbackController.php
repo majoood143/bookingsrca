@@ -109,7 +109,15 @@ class NboCallbackController extends Controller
 
             PaymentGatewayLog::log($booking, 'nbo', 'callback', $this->loggableRequest($request), $data);
 
-            if ($result === 'CAPTURED' || $result === 'APPROVED') {
+            // Security check: never trust a captured/approved result unless the
+            // amount matches — NBO's callback body is unencrypted and carries
+            // no signature (see the note above), so the amount is the only
+            // check standing between a forged POST and a "paid" booking.
+            $amount        = $data['amt'] ?? null;
+            $amountMatches = $amount !== null
+                && round((float) $amount, 2) === round((float) $booking->total_price, 2);
+
+            if (($result === 'CAPTURED' || $result === 'APPROVED') && $amountMatches) {
                 $booking->update([
                     'payment_status'    => 'paid',
                     'payment_reference' => $paymentId,
@@ -127,6 +135,14 @@ class NboCallbackController extends Controller
                 $booking->confirm();
 
                 return redirect()->route('booking.success', $booking->booking_reference);
+            }
+
+            if (($result === 'CAPTURED' || $result === 'APPROVED') && !$amountMatches) {
+                Log::warning('NBO callback: amount mismatch, treating as failed', [
+                    'booking_id' => $booking->id,
+                    'expected'   => $booking->total_price,
+                    'received'   => $amount,
+                ]);
             }
 
             $booking->update(['payment_status' => 'failed']);

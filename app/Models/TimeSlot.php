@@ -24,6 +24,7 @@ class TimeSlot extends Model
         'label',
         'show_label_online',
         'show_label_kiosk',
+        'show_capacity_online',
         'max_attendees',
         'current_bookings',
         'is_active',
@@ -45,6 +46,7 @@ class TimeSlot extends Model
         'is_active' => 'boolean',
         'show_label_online' => 'boolean',
         'show_label_kiosk' => 'boolean',
+        'show_capacity_online' => 'boolean',
     ];
 
     // MySQL's native DATE column silently truncates a full "Y-m-d H:i:s"
@@ -116,6 +118,15 @@ class TimeSlot extends Model
     public function showsLabelAtKiosk(): bool
     {
         return filled($this->label) && $this->show_label_kiosk;
+    }
+
+    // Whether the remaining-spots count, fill bar, and availability badge
+    // should be shown to customers on the public online booking page. Slots
+    // configured for a single booking (e.g. capacity 1) often want this
+    // hidden since exposing the exact count is just noise.
+    public function showsCapacityOnline(): bool
+    {
+        return $this->show_capacity_online;
     }
 
     // A slot is overnight when its end time is not strictly after its start

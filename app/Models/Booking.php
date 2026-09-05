@@ -17,6 +17,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -386,15 +387,19 @@ class Booking extends Model
     }
 
     // Base64-encoded ticket header artwork used as the summary PDF banner background.
+    // Cached since this static file is read and re-encoded once per attendee
+    // ticket (queued one job per attendee) plus once per summary PDF.
     public function getHeaderBackgroundBase64(): ?string
     {
-        $path = storage_path('app/public/avatars/MasarTicket.png');
+        return Cache::remember('ticket_header_background_base64', now()->addDay(), function () {
+            $path = storage_path('app/public/avatars/MasarTicket.png');
 
-        if (! is_file($path)) {
-            return null;
-        }
+            if (! is_file($path)) {
+                return null;
+            }
 
-        return 'data:image/png;base64,' . base64_encode(file_get_contents($path));
+            return 'data:image/png;base64,' . base64_encode(file_get_contents($path));
+        });
     }
 
     // Renders the booking summary PDF with mPDF and returns the raw PDF binary.

@@ -35,6 +35,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -88,7 +89,10 @@ class UserResource extends Resource
                         TextInput::make('password')
                             ->label(__('user.fields.password'))
                             ->password()
-                            ->required()
+                            ->revealable()
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->rule(Password::default())
+                            ->dehydrated(fn ($state) => filled($state))
                             ->maxLength(255),
 
                         Select::make('roles')

@@ -1,6 +1,6 @@
         {{-- Error Flash --}}
         @if (session()->has('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-start gap-3">
+            <div class="flex items-start gap-3 p-4 mb-6 text-red-700 border border-red-200 bg-red-50 rounded-xl">
                 <svg class="w-5 h-5 mt-0.5 shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -15,17 +15,17 @@
         ════════════════════════════ --}}
         @if ($step === 1)
             <div wire:loading.class="opacity-50 pointer-events-none">
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step1.heading') }}</h2>
-                <p class="text-gray-500 mb-6">{{ __('event_booking.step1.subheading') }}</p>
+                <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ __('event_booking.step1.heading') }}</h2>
+                <p class="mb-6 text-gray-500">{{ __('event_booking.step1.subheading') }}</p>
 
                 @if ($availableDates->isEmpty())
-                    <div class="text-center py-16 bg-white rounded-2xl border border-gray-200">
-                        <div class="text-5xl mb-4">📅</div>
+                    <div class="py-16 text-center bg-white border border-gray-200 rounded-2xl">
+                        <div class="mb-4 text-5xl">📅</div>
                         <h3 class="text-lg font-semibold text-gray-700">{{ __('event_booking.step1.no_dates') }}</h3>
-                        <p class="text-gray-400 mt-1">{{ __('event_booking.step1.no_dates_body') }}</p>
+                        <p class="mt-1 text-gray-400">{{ __('event_booking.step1.no_dates_body') }}</p>
                     </div>
                 @else
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                         @foreach ($availableDates as $date)
                             @php
                                 $d = \Carbon\Carbon::parse($date)->locale(app()->getLocale());
@@ -34,7 +34,7 @@
                             <button wire:key="date-{{ $date }}"
                                 wire:click="{{ $isSoldOut ? '' : "selectDate('{$date}')" }}"
                                 {{ $isSoldOut ? 'disabled' : '' }}
-                                class="group relative p-4 border-2 rounded-2xl text-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover overflow-hidden
+                                class="group relative p-4 border-2 rounded-2xl text-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover overflow-hidden touch-manipulation
                                     {{ $isSoldOut
                                         ? 'border-gray-100 bg-gray-50 cursor-not-allowed'
                                         : ($selectedDate === $date
@@ -62,7 +62,7 @@
                                 @endif
                                 @if ($isSoldOut)
                                     <div
-                                        class="pointer-events-none absolute inset-0 flex items-center justify-center bg-gray-50/70">
+                                        class="absolute inset-0 flex items-center justify-center pointer-events-none bg-gray-50/70">
                                         <span
                                             class="-rotate-12 text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-500/90 border-2 border-red-400/80 rounded-md px-2 py-0.5 bg-white/80">
                                             {{ __('event_booking.step1.sold_out') }}
@@ -76,8 +76,8 @@
             </div>
 
             <div wire:loading wire:target="selectDate"
-                class="fixed inset-0 bg-white/60 flex items-center justify-center z-50">
-                <svg class="animate-spin w-8 h-8 text-brand-hover" fill="none" viewBox="0 0 24 24">
+                class="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
+                <svg class="w-8 h-8 animate-spin text-brand-hover" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                         stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -90,14 +90,14 @@
         ════════════════════════════ --}}
         @if ($step === 2)
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step2.heading') }}</h2>
-                <p class="text-gray-500 mb-6">
+                <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ __('event_booking.step2.heading') }}</h2>
+                <p class="mb-6 text-gray-500">
                     {{ __('event_booking.step2.subheading') }}
                     <strong
                         class="text-gray-700">{{ \Carbon\Carbon::parse($selectedDate)->locale(app()->getLocale())->translatedFormat('l, F j, Y') }}</strong>
                 </p>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" wire:loading.class="opacity-50 pointer-events-none">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" wire:loading.class="opacity-50 pointer-events-none">
                     @php $capacityOk = $enforceCapacity ?? true; @endphp
                     @foreach ($timeSlots as $slot)
                         {{-- Kiosk doesn't enforce capacity (walk-ins are never turned away —
@@ -108,16 +108,17 @@
                              renders any of it. --}}
                         @php
                             $clickable = $capacityOk ? $slot->isAvailable() : true;
+                            $showCapacity = $capacityOk && $slot->showsCapacityOnline();
                         @endphp
                         <button wire:click="{{ $clickable ? 'selectSlot(' . $slot->id . ')' : '' }}"
                             {{ !$clickable ? 'disabled' : '' }}
-                            class="w-full p-5 border-2 rounded-2xl text-left transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover
+                            class="w-full p-5 border-2 rounded-2xl text-left transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-hover touch-manipulation
                                 {{ $selectedSlot == $slot->id
                                     ? 'border-brand-hover bg-brand-hover/10 shadow-md shadow-brand-hover/20'
                                     : ($clickable
                                         ? 'border-gray-200 bg-white hover:border-brand-hover/45 hover:shadow-sm cursor-pointer'
                                         : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50') }}">
-                            <div class="{{ $capacityOk ? 'flex justify-between items-start mb-3' : '' }}">
+                            <div class="{{ $showCapacity ? 'flex justify-between items-start mb-3' : '' }}">
                                 <span>
                                     <span
                                         class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : \App\Models\BookingSetting::formatTime($slot->start_time) }}</span>
@@ -125,7 +126,7 @@
                                         <span class="block text-sm font-medium text-gray-500">{{ $slot->getTranslation('label', app()->getLocale()) }}</span>
                                     @endif
                                 </span>
-                                @if ($capacityOk)
+                                @if ($showCapacity)
                                     @php
                                         $remaining = $slot->getRemainingCapacity();
                                         $capacity = $slot->capacity ?? ($slot->max_capacity ?? 0);
@@ -146,8 +147,8 @@
                                     @endif
                                 @endif
                             </div>
-                            @if ($capacityOk)
-                                <p class="text-sm text-gray-500 mb-2">
+                            @if ($showCapacity)
+                                <p class="mb-2 text-sm text-gray-500">
                                     {{ $remaining }} {{ __('event_booking.step2.spots_remaining') }}
                                 </p>
                                 <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -159,9 +160,9 @@
                         </button>
                     @endforeach
                 </div>
-                <div class="mt-6 flex items-center gap-4">
+                <div class="flex items-center gap-4 mt-6">
                     <button wire:click="previousStep"
-                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
+                        class="touch-manipulation inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                         ← {{ __('event_booking.back') }}
                     </button>
                 </div>
@@ -173,8 +174,8 @@
         ════════════════════════════ --}}
         @if ($step === 3)
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step3.heading') }}</h2>
-                <p class="text-gray-500 mb-6">{{ __('event_booking.step3.subheading') }}</p>
+                <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ __('event_booking.step3.heading') }}</h2>
+                <p class="mb-6 text-gray-500">{{ __('event_booking.step3.subheading') }}</p>
 
                 @php $capacityOk = $enforceCapacity ?? true; @endphp
                 <div class="space-y-4" wire:loading.class="opacity-50 pointer-events-none">
@@ -205,7 +206,7 @@
 
                                 {{-- Info --}}
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="flex flex-wrap items-center gap-2">
                                         <h3 class="font-bold text-gray-900">
                                             {{ $ticketType->getTranslation('name', app()->getLocale()) }}
                                         </h3>
@@ -267,13 +268,13 @@
                                     <div class="flex items-center gap-3 shrink-0">
                                         <button type="button" wire:click="decrementQuantity({{ $ticketType->id }})"
                                             {{ $qty <= 0 ? 'disabled' : '' }}
-                                            class="kiosk-qty-btn w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
+                                            class="kiosk-qty-btn touch-manipulation w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
                                                 {{ $qty <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover' }}">
                                             −
                                         </button>
                                         <span wire:key="qty-{{ $ticketType->id }}-{{ $qty }}"
                                             @if ($kioskMode ?? false) x-data x-init="window.gsap && gsap.from($el, { scale: 1.5, duration: 0.3, ease: 'back.out(3)' })" @endif
-                                            class="kiosk-qty-value text-2xl font-black text-gray-900 w-8 text-center tabular-nums">{{ $qty }}</span>
+                                            class="w-8 text-2xl font-black text-center text-gray-900 kiosk-qty-value tabular-nums">{{ $qty }}</span>
                                         @php
                                             $atMax =
                                                 $qty >= $maxTickets ||
@@ -284,7 +285,7 @@
                                         @endphp
                                         <button type="button" wire:click="incrementQuantity({{ $ticketType->id }})"
                                             {{ $atMax ? 'disabled' : '' }}
-                                            class="kiosk-qty-btn w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
+                                            class="kiosk-qty-btn touch-manipulation w-10 h-10 rounded-full border-2 flex items-center justify-center text-xl font-bold transition-colors
                                                 {{ $atMax ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover' }}">
                                             +
                                         </button>
@@ -323,22 +324,22 @@
                 </div>
 
                 @error('ticketQuantities')
-                    <p class="mt-3 text-red-500 text-sm">{{ $message }}</p>
+                    <p class="mt-3 text-sm text-red-500">{{ $message }}</p>
                 @enderror
 
                 @if ($capacityOk && array_sum($ticketQuantities) >= $slotRemainingCapacity)
-                    <p class="mt-3 text-amber-600 text-sm">{{ __('event_booking.step3.slot_limit_reached') }}</p>
+                    <p class="mt-3 text-sm text-amber-600">{{ __('event_booking.step3.slot_limit_reached') }}</p>
                 @endif
 
                 {{-- Running total --}}
                 @php $totalQty = array_sum($ticketQuantities); @endphp
                 @if ($totalQty > 0)
-                    <div class="mt-6 p-4 sm:p-5 bg-gray-900 text-white rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center justify-between p-4 mt-6 text-white bg-gray-900 sm:p-5 rounded-2xl">
                         <div>
                             <span
                                 class="font-medium text-gray-300">{{ __('event_booking.step3.running_total') }}</span>
                             <span
-                                class="ml-2 text-xs text-gray-500">{{ __('event_booking.step3.n_tickets', ['n' => $totalQty]) }}</span>
+                                class="text-xs text-gray-500 ms-2">{{ __('event_booking.step3.n_tickets', ['n' => $totalQty]) }}</span>
                         </div>
                         <span wire:key="running-total-{{ $totalPrice }}"
                             @if ($kioskMode ?? false) x-data x-init="window.gsap && gsap.from($el, { scale: 1.15, duration: 0.35, ease: 'back.out(2)' })" @endif
@@ -348,12 +349,12 @@
 
                 <div class="mt-6 flex items-center gap-4 {{ $kioskMode ?? false ? 'justify-between' : '' }}">
                     <button wire:click="previousStep"
-                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
+                        class="touch-manipulation inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                         ← {{ __('event_booking.back') }}
                     </button>
                     @if ($totalQty >= $minTickets)
                         <button wire:click="nextStep"
-                            class="px-7 py-2.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                            class="touch-manipulation px-7 py-2.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
                             {{ __('event_booking.continue') }} →
                         </button>
                     @else
@@ -370,12 +371,12 @@
         ════════════════════════════ --}}
         @if ($step === 4)
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step4.heading') }}</h2>
-                <p class="text-gray-500 mb-6">{{ __('event_booking.step4.subheading') }}</p>
+                <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ __('event_booking.step4.heading') }}</h2>
+                <p class="mb-6 text-gray-500">{{ __('event_booking.step4.subheading') }}</p>
 
                 @if ($extraServices->isEmpty())
-                    <div class="text-center py-14 bg-white rounded-2xl border border-gray-200 mb-6">
-                        <div class="text-5xl mb-3">✨</div>
+                    <div class="mb-6 text-center bg-white border border-gray-200 py-14 rounded-2xl">
+                        <div class="mb-3 text-5xl">✨</div>
                         <p class="text-gray-500">{{ __('event_booking.step4.no_extras') }}</p>
                     </div>
                 @else
@@ -386,13 +387,13 @@
                                 <div>
                                     {{-- Ticket type section header --}}
                                     <div class="flex items-center gap-3 mb-3">
-                                        <div class="h-px flex-1 bg-gray-200"></div>
+                                        <div class="flex-1 h-px bg-gray-200"></div>
                                         <span
-                                            class="text-sm font-bold text-gray-700 px-3 py-1 bg-gray-100 rounded-full">
+                                            class="px-3 py-1 text-sm font-bold text-gray-700 bg-gray-100 rounded-full">
                                             {{ $ticketType->getTranslation('name', app()->getLocale()) }}
-                                            <span class="text-gray-400 font-normal ml-1">× {{ $qty }}</span>
+                                            <span class="font-normal text-gray-400 ms-1">× {{ $qty }}</span>
                                         </span>
-                                        <div class="h-px flex-1 bg-gray-200"></div>
+                                        <div class="flex-1 h-px bg-gray-200"></div>
                                     </div>
 
                                     <div class="space-y-3">
@@ -410,7 +411,7 @@
                                                         <p class="text-sm text-gray-500 mt-0.5">
                                                             {{ $service->getTranslation('description', app()->getLocale()) }}
                                                         </p>
-                                                        <p class="text-xs text-gray-400 mt-1">
+                                                        <p class="mt-1 text-xs text-gray-400">
                                                             @include('partials.currency-amount', [
                                                                 'amount' => $service->price,
                                                             ])
@@ -428,24 +429,24 @@
                                                             <button type="button"
                                                                 wire:click="decrementServiceQty({{ $ticketType->id }}, {{ $service->id }})"
                                                                 {{ $selectedCount <= 0 ? 'disabled' : '' }}
-                                                                class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
+                                                                class="touch-manipulation w-10 h-10 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
                                                                     {{ $selectedCount <= 0 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover' }}">
                                                                 −
                                                             </button>
                                                             <span
-                                                                class="text-base font-black text-gray-900 w-12 text-center tabular-nums">
+                                                                class="w-12 text-base font-black text-center text-gray-900 tabular-nums">
                                                                 {{ $selectedCount }}/{{ $qty }}
                                                             </span>
                                                             <button type="button"
                                                                 wire:click="incrementServiceQty({{ $ticketType->id }}, {{ $service->id }})"
                                                                 {{ $selectedCount >= $qty ? 'disabled' : '' }}
-                                                                class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
+                                                                class="touch-manipulation w-10 h-10 rounded-full border-2 flex items-center justify-center text-base font-bold transition-colors
                                                                     {{ $selectedCount >= $qty ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-600 hover:border-brand-hover hover:text-brand-hover' }}">
                                                                 +
                                                             </button>
                                                         </div>
                                                         @if ($selectedCount > 0)
-                                                            <div class="text-xs text-brand-hover font-medium">
+                                                            <div class="text-xs font-medium text-brand-hover">
                                                                 = @include('partials.currency-amount', [
                                                                     'amount' => $service->price * $selectedCount,
                                                                 ])
@@ -463,7 +464,7 @@
                 @endif
 
                 {{-- Running Total --}}
-                <div class="mt-6 p-4 sm:p-5 bg-gray-900 text-white rounded-2xl flex justify-between items-center">
+                <div class="flex items-center justify-between p-4 mt-6 text-white bg-gray-900 sm:p-5 rounded-2xl">
                     <span class="font-medium text-gray-300">{{ __('event_booking.step3.running_total') }}</span>
                     <span wire:key="running-total-4-{{ $totalPrice }}"
                         @if ($kioskMode ?? false) x-data x-init="window.gsap && gsap.from($el, { scale: 1.15, duration: 0.35, ease: 'back.out(2)' })" @endif
@@ -472,11 +473,11 @@
 
                 <div class="mt-6 flex items-center gap-4 {{ $kioskMode ?? false ? 'justify-between' : '' }}">
                     <button wire:click="previousStep"
-                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
+                        class="touch-manipulation inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                         ← {{ __('event_booking.back') }}
                     </button>
                     <button wire:click="nextStep"
-                        class="px-7 py-2.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                        class="touch-manipulation px-7 py-2.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
                         {{ __('event_booking.continue') }} →
                     </button>
                 </div>
@@ -490,21 +491,21 @@
             @if ($progressiveAttendees ?? false)
                 @include('livewire.partials.attendee-flow-progressive')
             @else
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
                     {{-- Form (2/3 width) --}}
                     <div class="lg:col-span-2">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ __('event_booking.step5.heading') }}</h2>
-                        <p class="text-gray-500 mb-6">{{ __('event_booking.step5.subheading') }}</p>
+                        <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ __('event_booking.step5.heading') }}</h2>
+                        <p class="mb-6 text-gray-500">{{ __('event_booking.step5.subheading') }}</p>
 
                         {{-- Copy-contact banner (shown only when > 1 attendee) --}}
                         @if (count($attendees) > 1 && ($showEmail || $showPhone))
                             <div
-                                class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-start gap-3">
+                                class="flex items-start gap-3 p-4 mb-6 border border-indigo-200 bg-indigo-50 rounded-xl">
                                 <input type="checkbox" wire:model.live="copyContactToAll" id="copyContactToAll"
                                     class="mt-0.5 h-4 w-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
                                 <label for="copyContactToAll"
-                                    class="text-sm text-indigo-800 cursor-pointer leading-snug">
+                                    class="text-sm leading-snug text-indigo-800 cursor-pointer">
                                     <span class="font-semibold">{{ __('event_booking.step5.copy_contact') }}</span>
                                     <span class="block text-indigo-500 text-xs mt-0.5">
                                         {{ __('event_booking.step5.email_label') }}{{ $showPhone ? ' & ' . __('event_booking.step5.phone_label') : '' }}
@@ -536,12 +537,12 @@
                                             {{ __('event_booking.step5.attendee_n', ['n' => $i + 1]) }}
                                             @if ($i === 0)
                                                 <span
-                                                    class="text-xs text-brand-hover font-normal ml-1">({{ __('event_booking.step5.primary') }})</span>
+                                                    class="text-xs font-normal text-brand-hover ms-1">({{ __('event_booking.step5.primary') }})</span>
                                             @endif
                                         </span>
                                         @if ($attendeeTicketType)
                                             <span
-                                                class="text-xs bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full ml-auto">
+                                                class="text-xs bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full ms-auto">
                                                 {{ $attendeeTicketType->getTranslation('name', app()->getLocale()) }}
                                             </span>
                                         @endif
@@ -558,12 +559,12 @@
 
                             {{-- Terms and Conditions --}}
                             @if ($termsEn || $termsAr)
-                                <div class="rounded-xl border border-gray-200 overflow-hidden"
+                                <div class="overflow-hidden border border-gray-200 rounded-xl"
                                     x-data="{ open: false }">
                                     <button type="button"
-                                        class="w-full flex items-center justify-between bg-gray-50 px-4 py-3 text-left focus:outline-none"
+                                        class="flex items-center justify-between w-full px-4 py-3 text-left bg-gray-50 focus:outline-none"
                                         @click="open = !open" :aria-expanded="open">
-                                        <h4 class="font-semibold text-gray-800 text-sm">
+                                        <h4 class="text-sm font-semibold text-gray-800">
                                             {{ __('event_booking.step5.terms_heading') }}</h4>
                                         <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
                                             :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg"
@@ -579,17 +580,17 @@
                                         x-transition:leave="transition-all duration-150 ease-in"
                                         x-transition:leave-start="opacity-100 max-h-96"
                                         x-transition:leave-end="opacity-0 max-h-0"
-                                        class="border-t border-gray-200 overflow-hidden">
+                                        class="overflow-hidden border-t border-gray-200">
                                         @if (app()->getLocale() === 'ar' && $termsAr)
                                             <div class="px-4 py-3">
-                                                <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
+                                                <div class="overflow-y-auto text-sm leading-relaxed prose-sm prose text-gray-600 max-w-none max-h-48"
                                                     dir="rtl">
                                                     {!! $termsAr !!}
                                                 </div>
                                             </div>
                                         @elseif ($termsEn)
                                             <div class="px-4 py-3">
-                                                <div class="prose prose-sm max-w-none text-gray-600 max-h-48 overflow-y-auto text-sm leading-relaxed"
+                                                <div class="overflow-y-auto text-sm leading-relaxed prose-sm prose text-gray-600 max-w-none max-h-48"
                                                     dir="ltr">
                                                     {!! $termsEn !!}
                                                 </div>
@@ -603,7 +604,7 @@
                                         class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-hover focus:ring-brand-hover cursor-pointer shrink-0
                                         {{ $errors->has('agreedToTerms') ? 'border-red-400 ring-1 ring-red-300' : '' }}">
                                     <label for="agreedToTerms"
-                                        class="text-sm text-gray-700 cursor-pointer leading-snug">
+                                        class="text-sm leading-snug text-gray-700 cursor-pointer">
                                         {{ __('event_booking.step5.terms_agree') }}
                                         @php
                                             $termsUrl = app()->getLocale() === 'ar' ? $termsUrlAr : $termsUrlEn;
@@ -614,30 +615,30 @@
                                         @else
                                             <span class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
                                         @endif
-                                        <span class="text-red-500 ml-0.5">*</span>
+                                        <span class="text-red-500 ms-0.5">*</span>
                                     </label>
                                 </div>
                                 @error('agreedToTerms')
-                                    <p class="text-red-500 text-sm -mt-3">{{ __('event_booking.step5.terms_required') }}
+                                    <p class="-mt-3 text-sm text-red-500">{{ __('event_booking.step5.terms_required') }}
                                     </p>
                                 @enderror
                             @endif
 
                             {{-- Nav + Continue to Payment --}}
-                            <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <div class="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center">
                                 <button type="button" wire:click="previousStep"
-                                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
+                                    class="touch-manipulation inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                                     ← {{ __('event_booking.back') }}
                                 </button>
                                 <button type="submit"
-                                    class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    class="flex-1 px-8 py-3 text-base font-bold text-white transition-colors shadow-md touch-manipulation sm:flex-none bg-brand rounded-xl hover:bg-brand-hover shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                     wire:loading.attr="disabled" wire:target="goToPaymentStep">
                                     <span wire:loading.remove wire:target="goToPaymentStep">
                                         {{ __('event_booking.step5.continue_to_payment') }} →
                                     </span>
                                     <span wire:loading wire:target="goToPaymentStep"
                                         class="inline-flex items-center gap-2">
-                                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10"
                                                 stroke="currentColor" stroke-width="4" />
                                             <path class="opacity-75" fill="currentColor"
@@ -653,20 +654,20 @@
                     {{-- Sticky Summary Sidebar (1/3 width) --}}
                     <div class="lg:col-span-1">
                         <div
-                            class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden lg:sticky lg:top-24">
-                            <div class="bg-gradient-to-r from-brand to-brand-hover text-white px-5 py-4">
-                                <h3 class="font-bold text-base">{{ __('event_booking.step5.booking_summary') }}</h3>
+                            class="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl lg:sticky lg:top-24">
+                            <div class="px-5 py-4 text-white bg-gradient-to-r from-brand to-brand-hover">
+                                <h3 class="text-base font-bold">{{ __('event_booking.step5.booking_summary') }}</h3>
                             </div>
                             <div class="p-5 space-y-4 text-sm">
 
                                 <div>
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                         {{ __('event_booking.summary.event') }}</p>
-                                    <p class="font-semibold text-gray-900 leading-tight">
+                                    <p class="font-semibold leading-tight text-gray-900">
                                         {{ $event->getTranslation('title', app()->getLocale()) }}</p>
                                 </div>
 
-                                <div class="pt-3 border-t border-gray-100 grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
                                     <div>
                                         <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-0.5">
                                             {{ __('event_booking.summary.date') }}</p>
@@ -691,18 +692,18 @@
 
                                 {{-- Tickets breakdown --}}
                                 <div class="pt-3 border-t border-gray-100">
-                                    <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2">
+                                    <p class="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
                                         {{ __('event_booking.summary.tickets') }}</p>
                                     @foreach ($ticketTypes as $ticketType)
                                         @php $qty = $ticketQuantities[$ticketType->id] ?? 0; @endphp
                                         @if ($qty > 0)
-                                            <div class="flex justify-between items-center text-gray-700 mb-1">
+                                            <div class="flex items-center justify-between mb-1 text-gray-700">
                                                 <span
-                                                    class="truncate pr-2">{{ $ticketType->getTranslation('name', app()->getLocale()) }}</span>
-                                                <span class="shrink-0 text-gray-400 text-xs">×
+                                                    class="truncate pe-2">{{ $ticketType->getTranslation('name', app()->getLocale()) }}</span>
+                                                <span class="text-xs text-gray-400 shrink-0">×
                                                     {{ $qty }}</span>
                                             </div>
-                                            <div class="flex justify-between text-gray-500 text-xs mb-2">
+                                            <div class="flex justify-between mb-2 text-xs text-gray-500">
                                                 @if ($ticketType->price > 0)
                                                     <span>@include('partials.currency-amount', [
                                                         'amount' => $ticketType->price,
@@ -722,13 +723,13 @@
                                 {{-- Attendees breakdown --}}
                                 @if (count($attendees))
                                     <div class="pt-3 border-t border-gray-100">
-                                        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2">
+                                        <p class="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
                                             {{ __('event_booking.summary.attendees') }}</p>
                                         @foreach ($attendees as $attendee)
                                             @php $attendeeTicketType = $ticketTypes->find($attendee['ticket_type_id'] ?? null); @endphp
-                                            <div class="flex justify-between items-center text-gray-700 mb-1">
+                                            <div class="flex items-center justify-between mb-1 text-gray-700">
                                                 <span
-                                                    class="truncate pr-2">{{ trim(($attendee['first_name'] ?? '') . ' ' . ($attendee['last_name'] ?? '')) ?: '—' }}</span>
+                                                    class="truncate pe-2">{{ trim(($attendee['first_name'] ?? '') . ' ' . ($attendee['last_name'] ?? '')) ?: '—' }}</span>
                                                 <span
                                                     class="shrink-0 text-gray-400 text-xs truncate max-w-[40%]">{{ $attendeeTicketType?->getTranslation('name', app()->getLocale()) }}</span>
                                             </div>
@@ -742,7 +743,7 @@
                                 @endphp
                                 @if ($hasServices)
                                     <div class="pt-3 border-t border-gray-100">
-                                        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2">
+                                        <p class="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
                                             {{ __('event_booking.summary.extra_services') }}</p>
                                         @foreach ($ticketTypes as $ticketType)
                                             @php
@@ -750,14 +751,14 @@
                                                 $serviceCounts = $ticketTypeServices[$ticketType->id] ?? [];
                                             @endphp
                                             @if ($qty > 0 && !empty($serviceCounts))
-                                                <p class="text-xs text-gray-400 mb-1">
+                                                <p class="mb-1 text-xs text-gray-400">
                                                     {{ $ticketType->getTranslation('name', app()->getLocale()) }}</p>
                                                 @foreach ($serviceCounts as $serviceId => $count)
                                                     @php $svc = $count > 0 ? $extraServices->find($serviceId) : null; @endphp
                                                     @if ($svc)
-                                                        <div class="flex justify-between text-gray-600 text-xs mb-1">
+                                                        <div class="flex justify-between mb-1 text-xs text-gray-600">
                                                             <span
-                                                                class="truncate pr-2">{{ $svc->getTranslation('name', app()->getLocale()) }}
+                                                                class="truncate pe-2">{{ $svc->getTranslation('name', app()->getLocale()) }}
                                                                 × {{ $count }}</span>
                                                             <span class="shrink-0">@include('partials.currency-amount', [
                                                                 'amount' => $svc->price * $count,
@@ -770,11 +771,11 @@
                                     </div>
                                 @endif
 
-                                <div class="pt-3 border-t-2 border-gray-200 flex justify-between items-baseline">
+                                <div class="flex items-baseline justify-between pt-3 border-t-2 border-gray-200">
                                     <span
-                                        class="font-bold text-gray-900 text-base">{{ __('event_booking.summary.total') }}</span>
+                                        class="text-base font-bold text-gray-900">{{ __('event_booking.summary.total') }}</span>
                                     <span
-                                        class="font-black text-2xl text-green-700">@include('partials.currency-amount', ['amount' => $totalPrice])</span>
+                                        class="text-2xl font-black text-green-700">@include('partials.currency-amount', ['amount' => $totalPrice])</span>
                                 </div>
 
                             </div>

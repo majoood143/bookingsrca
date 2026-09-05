@@ -108,7 +108,7 @@
                 @endif
 
                 <button type="submit"
-                    class="mt-4 w-full inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                    class="touch-manipulation mt-4 w-full inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
                     {{ __('event_booking.private.submit') }}
                 </button>
             </form>
@@ -225,6 +225,85 @@
                         📞 {{ $event->organizer_phone }}
                     </a>
                 @endif
+            </div>
+
+            {{-- Social sharing --}}
+            <div
+                x-data="{
+                    shareUrl: '{{ $canonicalUrl }}',
+                    shareTitle: @js($eventTitle),
+                    copied: false,
+                    hasNativeShare: typeof navigator !== 'undefined' && !!navigator.share,
+                    async share() {
+                        const nav = window.navigator;
+                        if (nav.share) {
+                            try {
+                                await nav.share({ title: this.shareTitle, url: this.shareUrl });
+                            } catch (e) {}
+                        } else {
+                            this.copyLink();
+                        }
+                    },
+                    copyLink() {
+                        const nav = window.navigator;
+                        nav.clipboard.writeText(this.shareUrl).then(() => {
+                            this.copied = true;
+                            setTimeout(() => this.copied = false, 2000);
+                        });
+                    },
+                }"
+                class="mt-5 flex flex-wrap items-center gap-2">
+                <span class="text-sm text-blue-100 font-medium">{{ __('event_booking.share.label') }}</span>
+
+                <button type="button" @click="share()" x-show="hasNativeShare"
+                    x-cloak
+                    class="touch-manipulation inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors"
+                    aria-label="{{ __('event_booking.share.share') }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.684 13.342a3 3 0 100-2.684m0 2.684a3 3 0 100 2.684m0-2.684l6.632 3.316m0-6l-6.632 3.316m6.632-3.316a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 6.632a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    </svg>
+                </button>
+
+                <a href="https://wa.me/?text={{ urlencode($eventTitle . ' - ' . $canonicalUrl) }}" target="_blank"
+                    rel="noopener noreferrer"
+                    class="touch-manipulation inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors"
+                    aria-label="{{ __('event_booking.share.whatsapp') }}">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 004.74 1.21h.005c5.46 0 9.9-4.45 9.9-9.91C21.93 6.45 17.5 2 12.04 2zm5.8 14.07c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.8-.11-.42-.13-.95-.31-1.65-.6-2.9-1.25-4.79-4.17-4.94-4.36-.15-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.28.57-.35.76-.35.19 0 .38 0 .55.01.18.01.42-.07.65.5.24.58.82 2 .89 2.14.07.15.11.32.02.51-.09.2-.14.32-.27.49-.14.17-.29.38-.41.51-.14.14-.28.3-.12.58.15.28.68 1.13 1.47 1.83 1.01.9 1.87 1.18 2.15 1.31.28.14.44.12.6-.07.17-.19.71-.83.9-1.11.19-.29.38-.24.63-.14.26.09 1.63.77 1.91.91.28.14.47.21.53.33.07.13.07.7-.17 1.38z" />
+                    </svg>
+                </a>
+
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($canonicalUrl) }}"
+                    target="_blank" rel="noopener noreferrer"
+                    class="touch-manipulation inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors"
+                    aria-label="{{ __('event_booking.share.facebook') }}">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z" />
+                    </svg>
+                </a>
+
+                <a href="https://twitter.com/intent/tweet?text={{ urlencode($eventTitle) }}&url={{ urlencode($canonicalUrl) }}"
+                    target="_blank" rel="noopener noreferrer"
+                    class="touch-manipulation inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors"
+                    aria-label="{{ __('event_booking.share.twitter') }}">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.9 2H22l-7.6 8.68L23.3 22h-7.2l-5.63-6.94L3.9 22H.8l8.1-9.27L.9 2h7.37l5.09 6.35L18.9 2zm-1.26 18h1.98L7.5 3.9H5.38L17.64 20z" />
+                    </svg>
+                </a>
+
+                <button type="button" @click="copyLink()"
+                    class="touch-manipulation inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors relative"
+                    aria-label="{{ __('event_booking.share.copy_link') }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 01-5.656-5.656l1.5-1.5m5.656-5.656l1.5-1.5a4 4 0 115.656 5.656l-3 3a4 4 0 01-5.656 0" />
+                    </svg>
+                    <span x-show="copied" x-cloak x-transition
+                        class="absolute -top-9 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs px-2 py-1 rounded-md">
+                        {{ __('event_booking.share.copied') }}
+                    </span>
+                </button>
             </div>
         </div>
     </div>
@@ -452,7 +531,7 @@
                                 @foreach ($enabledGateways as $gateway)
                                     <button type="button" wire:click="selectGateway('{{ $gateway }}')"
                                         wire:loading.attr="disabled" wire:target="submitBooking"
-                                        class="px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors
+                                        class="touch-manipulation px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors
                                             {{ $selectedPaymentMethod === $gateway
                                                 ? 'border-brand-hover bg-brand-hover/10 text-brand-hover'
                                                 : 'border-gray-200 text-gray-600 hover:border-brand-hover/45 hover:bg-gray-50' }}">
@@ -483,7 +562,7 @@
                                     <p class="text-sm text-gray-500">{{ __('event_booking.step6.thawani_subtitle') }}
                                     </p>
                                 </div>
-                                <div class="ml-auto">
+                                <div class="ms-auto">
                                     <span
                                         class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
@@ -509,7 +588,7 @@
                                         {{ __('event_booking.step6.nbo_title') }}</p>
                                     <p class="text-sm text-gray-500">{{ __('event_booking.step6.nbo_subtitle') }}</p>
                                 </div>
-                                <div class="ml-auto">
+                                <div class="ms-auto">
                                     <span
                                         class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
@@ -536,7 +615,7 @@
                                     <p class="text-sm text-gray-500">{{ __('event_booking.step6.ccavenue_subtitle') }}
                                     </p>
                                 </div>
-                                <div class="ml-auto">
+                                <div class="ms-auto">
                                     <span
                                         class="inline-block w-3 h-3 rounded-full bg-brand-hover ring-4 ring-brand-hover/20"></span>
                                 </div>
@@ -593,7 +672,7 @@
                             {{ __('event_booking.step5.terms_agree') }}
                             <span
                                 class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
-                            <span class="text-red-500 ml-0.5">*</span>
+                            <span class="text-red-500 ms-0.5">*</span>
                         </label>
                     </div>
                     @error('agreedToTerms1')
@@ -602,13 +681,13 @@
                     {{-- Nav + Confirm --}}
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <button type="button" wire:click="previousStep"
-                            class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
+                            class="touch-manipulation inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors border border-gray-200 rounded-xl hover:bg-gray-50 sm:w-auto">
                             ← {{ __('event_booking.back') }}
                         </button>
 
                         @if ($selectedPaymentMethod === 'thawani')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="touch-manipulation flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_thawani_btn') }}
@@ -625,7 +704,7 @@
                             </button>
                         @elseif ($selectedPaymentMethod === 'nbo')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="touch-manipulation flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_nbo_btn') }}
@@ -642,7 +721,7 @@
                             </button>
                         @elseif ($selectedPaymentMethod === 'ccavenue')
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="touch-manipulation flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     🔒 {{ __('event_booking.step6.pay_ccavenue_btn') }}
@@ -659,7 +738,7 @@
                             </button>
                         @else
                             <button type="button" wire:click="submitBooking"
-                                class="flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                class="touch-manipulation flex-1 sm:flex-none px-8 py-3 bg-brand text-white font-bold text-base rounded-xl hover:bg-brand-hover transition-colors shadow-md shadow-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
                                 wire:loading.attr="disabled" wire:target="submitBooking">
                                 <span wire:loading.remove wire:target="submitBooking">
                                     ✓ {{ __('event_booking.step6.confirm_booking') }}
@@ -719,7 +798,7 @@
                                     @if ($qty > 0)
                                         <div class="flex justify-between text-gray-600 text-xs mb-1">
                                             <span
-                                                class="truncate pr-2">{{ $ticketType->getTranslation('name', app()->getLocale()) }}
+                                                class="truncate pe-2">{{ $ticketType->getTranslation('name', app()->getLocale()) }}
                                                 × {{ $qty }}</span>
                                             <span
                                                 class="shrink-0">@if ($ticketType->price > 0)@include('partials.currency-amount', ['amount' => $ticketType->price * $qty])@else{{ __('event_booking.step3.free') }}@endif</span>
@@ -737,7 +816,7 @@
                                         @php $attendeeTicketType = $ticketTypes->find($attendee['ticket_type_id'] ?? null); @endphp
                                         <div class="flex justify-between items-center text-gray-700 mb-1">
                                             <span
-                                                class="truncate pr-2">{{ trim(($attendee['first_name'] ?? '') . ' ' . ($attendee['last_name'] ?? '')) ?: '—' }}</span>
+                                                class="truncate pe-2">{{ trim(($attendee['first_name'] ?? '') . ' ' . ($attendee['last_name'] ?? '')) ?: '—' }}</span>
                                             <span
                                                 class="shrink-0 text-gray-400 text-xs truncate max-w-[40%]">{{ $attendeeTicketType?->getTranslation('name', app()->getLocale()) }}</span>
                                         </div>
@@ -765,7 +844,7 @@
                                                 @if ($svc)
                                                     <div class="flex justify-between text-gray-600 text-xs mb-1">
                                                         <span
-                                                            class="truncate pr-2">{{ $svc->getTranslation('name', app()->getLocale()) }}
+                                                            class="truncate pe-2">{{ $svc->getTranslation('name', app()->getLocale()) }}
                                                             × {{ $count }}</span>
                                                         <span
                                                             class="shrink-0">@include('partials.currency-amount', ['amount' => $svc->price * $count])</span>
@@ -831,7 +910,7 @@
 
                             @if ($selectedPaymentMethod === 'thawani')
                                 <div class="pt-2 text-center text-xs text-gray-400">
-                                    <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
+                                    <svg class="inline w-4 h-4 me-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
                                             d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -841,7 +920,7 @@
                                 </div>
                             @elseif ($selectedPaymentMethod === 'nbo')
                                 <div class="pt-2 text-center text-xs text-gray-400">
-                                    <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
+                                    <svg class="inline w-4 h-4 me-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
                                             d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -851,7 +930,7 @@
                                 </div>
                             @elseif ($selectedPaymentMethod === 'ccavenue')
                                 <div class="pt-2 text-center text-xs text-gray-400">
-                                    <svg class="inline w-4 h-4 mr-1 text-green-500" fill="currentColor"
+                                    <svg class="inline w-4 h-4 me-1 text-green-500" fill="currentColor"
                                         viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
                                             d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"

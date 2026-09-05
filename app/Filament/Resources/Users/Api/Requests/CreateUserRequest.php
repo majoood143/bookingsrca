@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Api\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class CreateUserRequest extends FormRequest
 {
@@ -27,7 +28,7 @@ class CreateUserRequest extends FormRequest
 			'email' => 'required',
 			'email_verified_at' => 'required',
 			'is_active' => 'required',
-			'password' => 'required',
+			'password' => ['required', Password::default()],
 			'remember_token' => 'required',
 			'custom_fields' => 'required',
 			'avatar_url' => 'required',

@@ -169,7 +169,13 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Falls back to true whenever APP_URL is https:// so the cookie is
+    // HTTPS-only without needing SESSION_SECURE_COOKIE set explicitly. Keyed
+    // off the URL scheme rather than APP_ENV — this app runs with
+    // APP_ENV=production even on a plain-HTTP local install (see
+    // AppServiceProvider's docs route comment), so APP_ENV alone isn't a
+    // reliable signal for whether the request is actually served over HTTPS.
+    'secure' => env('SESSION_SECURE_COOKIE', str_starts_with((string) env('APP_URL'), 'https://')),
 
     /*
     |--------------------------------------------------------------------------

@@ -35,7 +35,15 @@ class UpdateHandler extends Handlers {
 
         if (!$model) return static::sendNotFoundResponse();
 
-        $model->fill($request->all());
+        $data = $request->all();
+
+        // A blank/omitted password must leave the existing hash untouched
+        // rather than overwrite it with an empty (or unhashed) value.
+        if (blank($data['password'] ?? null)) {
+            unset($data['password']);
+        }
+
+        $model->fill($data);
 
         $model->save();
 

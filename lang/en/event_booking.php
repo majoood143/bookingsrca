@@ -38,6 +38,17 @@ return [
         'incorrect'        => 'Incorrect password. Please try again.',
     ],
 
+    // ── Social sharing ────────────────────────────────────────────────────────
+    'share' => [
+        'label'     => 'Share:',
+        'share'     => 'Share',
+        'whatsapp'  => 'Share on WhatsApp',
+        'facebook'  => 'Share on Facebook',
+        'twitter'   => 'Share on X (Twitter)',
+        'copy_link' => 'Copy link',
+        'copied'    => 'Link copied!',
+    ],
+
     // ── Event details panel (timeline / FAQ / promo video) ───────────────────
     'details' => [
         'timeline'    => 'Event Timeline',

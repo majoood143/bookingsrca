@@ -43,7 +43,7 @@
                                 <div
                                     class="text-xs font-bold uppercase tracking-widest
                                     {{ $isSoldOut ? 'text-gray-300' : ($selectedDate === $date ? 'text-gray-400' : 'text-gray-400') }}">
-                                    {{ $d->translatedFormat('D') }}
+                                    {{ $d->translatedFormat('l') }}
                                 </div>
                                 <div
                                     class="text-4xl font-black my-1
@@ -122,8 +122,9 @@
                                 <span>
                                     <span
                                         class="text-xl font-bold text-gray-900">{{ $showSlotEndTime ? $slot->getTimeRange() : \App\Models\BookingSetting::formatTime($slot->start_time) }}</span>
-                                    @if (($kioskMode ?? false) ? $slot->showsLabelAtKiosk() : $slot->showsLabelOnline())
-                                        <span class="block text-sm font-medium text-gray-500">{{ $slot->getTranslation('label', app()->getLocale()) }}</span>
+                                    @if ($kioskMode ?? false ? $slot->showsLabelAtKiosk() : $slot->showsLabelOnline())
+                                        <span
+                                            class="block text-sm font-medium text-gray-500">{{ $slot->getTranslation('label', app()->getLocale()) }}</span>
                                     @endif
                                 </span>
                                 @if ($showCapacity)
@@ -613,7 +614,8 @@
                                             <a href="{{ $termsUrl }}" target="_blank" rel="noopener noreferrer"
                                                 class="font-semibold text-gray-900 underline hover:text-brand">{{ __('event_booking.step5.terms_heading') }}</a>
                                         @else
-                                            <span class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
+                                            <span
+                                                class="font-semibold text-gray-900">{{ __('event_booking.step5.terms_heading') }}</span>
                                         @endif
                                         <span class="text-red-500 ms-0.5">*</span>
                                     </label>
@@ -682,8 +684,9 @@
                                             {{ $showSlotEndTime ? $timeSlots->find($selectedSlot)?->getTimeRange() : \App\Models\BookingSetting::formatTime($timeSlots->find($selectedSlot)?->start_time) }}
                                         </p>
                                         @php $summarySlot = $timeSlots->find($selectedSlot); @endphp
-                                        @if ($summarySlot && (($kioskMode ?? false) ? $summarySlot->showsLabelAtKiosk() : $summarySlot->showsLabelOnline()))
-                                            <p class="text-sm text-gray-500">{{ $summarySlot->getTranslation('label', app()->getLocale()) }}</p>
+                                        @if ($summarySlot && ($kioskMode ?? false ? $summarySlot->showsLabelAtKiosk() : $summarySlot->showsLabelOnline()))
+                                            <p class="text-sm text-gray-500">
+                                                {{ $summarySlot->getTranslation('label', app()->getLocale()) }}</p>
                                         @endif
                                     </div>
                                 </div>

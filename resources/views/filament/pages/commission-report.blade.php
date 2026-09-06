@@ -9,7 +9,6 @@
         $report = $this->getReportData();
         $from   = $report['from'];
         $to     = $report['to'];
-        $currency = \App\Models\BookingSetting::get('currency_code') ?: __('commission_report.currency');
     @endphp
 
     <p class="text-sm text-gray-500 dark:text-gray-400 -mt-2">
@@ -19,8 +18,8 @@
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
         @php
             $stats = [
-                ['label' => __('commission_report.stats.total_revenue'), 'value' => $currency . ' ' . number_format($report['totalRevenue'], 3), 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-800 dark:text-gray-100'],
-                ['label' => __('commission_report.stats.total_commission'), 'value' => $currency . ' ' . number_format($report['totalCommission'], 3), 'color' => 'bg-violet-100 dark:bg-violet-900/40', 'text' => 'text-violet-700 dark:text-violet-300'],
+                ['label' => __('commission_report.stats.total_revenue'), 'value' => view('partials.currency-amount', ['amount' => $report['totalRevenue']])->render(), 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-800 dark:text-gray-100'],
+                ['label' => __('commission_report.stats.total_commission'), 'value' => view('partials.currency-amount', ['amount' => $report['totalCommission']])->render(), 'color' => 'bg-violet-100 dark:bg-violet-900/40', 'text' => 'text-violet-700 dark:text-violet-300'],
                 ['label' => __('commission_report.stats.booking_count'), 'value' => $report['bookingCount'], 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
                 ['label' => __('commission_report.stats.avg_rate'), 'value' => number_format($report['avgRate'], 2) . '%', 'color' => 'bg-blue-100 dark:bg-blue-900/40', 'text' => 'text-blue-700 dark:text-blue-300'],
             ];
@@ -28,7 +27,7 @@
         @foreach ($stats as $stat)
             <div class="rounded-xl p-4 {{ $stat['color'] }} flex flex-col gap-1 shadow-sm">
                 <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide leading-tight">{{ $stat['label'] }}</span>
-                <span class="text-2xl font-bold {{ $stat['text'] }}">{{ $stat['value'] }}</span>
+                <span class="text-2xl font-bold {{ $stat['text'] }}">{!! $stat['value'] !!}</span>
             </div>
         @endforeach
     </div>
@@ -60,8 +59,8 @@
                                 <td class="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{{ $row['label'] }}</td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['count'] }}</td>
                                 <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['rate'] }}</td>
-                                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">{{ $currency }} {{ number_format($row['revenue'], 3) }}</td>
-                                <td class="py-3 px-4 text-right font-semibold text-violet-600 dark:text-violet-400">{{ $currency }} {{ number_format($row['commission'], 3) }}</td>
+                                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">@include('partials.currency-amount', ['amount' => $row['revenue']])</td>
+                                <td class="py-3 px-4 text-right font-semibold text-violet-600 dark:text-violet-400">@include('partials.currency-amount', ['amount' => $row['commission']])</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -87,8 +86,8 @@
                         @foreach ($report['commissionTrend'] as $row)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{{ $row['date'] }}</td>
-                                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">{{ $currency }} {{ number_format($row['revenue'], 3) }}</td>
-                                <td class="py-3 px-4 text-right font-semibold text-violet-600 dark:text-violet-400">{{ $currency }} {{ number_format($row['commission'], 3) }}</td>
+                                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">@include('partials.currency-amount', ['amount' => $row['revenue']])</td>
+                                <td class="py-3 px-4 text-right font-semibold text-violet-600 dark:text-violet-400">@include('partials.currency-amount', ['amount' => $row['commission']])</td>
                             </tr>
                         @endforeach
                     </tbody>

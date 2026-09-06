@@ -1,7 +1,6 @@
 @php
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
-    $currency = \App\Models\BookingSetting::get('currency_code') ?: __('expenses_report.currency', [], $locale);
 
     $trendLabels = $expenseTrend->pluck('date')->values();
     $trendData = $expenseTrend->pluck('amount')->values();
@@ -16,7 +15,7 @@
     $statusData = $byPaymentStatus->pluck('amount')->values();
     $statusColors = ['#059669', '#f59e0b', '#0891b2', '#dc2626', '#9ca3af'];
 
-    $fmt = fn ($n) => number_format((float) $n, 3) . ' ' . $currency;
+    $fmt = fn ($n) => view('partials.currency-amount', ['amount' => (float) $n])->render();
 @endphp
 <!DOCTYPE html>
 <html dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
@@ -85,19 +84,19 @@
         <div class="section-title">{{ __('expenses_report.sections.summary', [], $locale) }}</div>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalAmount) }}</div>
+                <div class="stat-value">{!! $fmt($totalAmount) !!}</div>
                 <div class="stat-label">{{ __('expenses_report.stats.total_amount', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalTax) }}</div>
+                <div class="stat-value">{!! $fmt($totalTax) !!}</div>
                 <div class="stat-label">{{ __('expenses_report.stats.total_tax', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalPaid) }}</div>
+                <div class="stat-value">{!! $fmt($totalPaid) !!}</div>
                 <div class="stat-label">{{ __('expenses_report.stats.total_paid', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalPending) }}</div>
+                <div class="stat-value">{!! $fmt($totalPending) !!}</div>
                 <div class="stat-label">{{ __('expenses_report.stats.total_pending', [], $locale) }}</div>
             </div>
             <div class="stat-card">
@@ -105,7 +104,7 @@
                 <div class="stat-label">{{ __('expenses_report.stats.expense_count', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($avgExpense) }}</div>
+                <div class="stat-value">{!! $fmt($avgExpense) !!}</div>
                 <div class="stat-label">{{ __('expenses_report.stats.avg_expense', [], $locale) }}</div>
             </div>
         </div>
@@ -136,7 +135,7 @@
                     <tr>
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['count'] }}</td>
-                        <td class="text-end">{{ $fmt($row['amount']) }}</td>
+                        <td class="text-end">{!! $fmt($row['amount']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -159,7 +158,7 @@
                     <tr>
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['count'] }}</td>
-                        <td class="text-end">{{ $fmt($row['amount']) }}</td>
+                        <td class="text-end">{!! $fmt($row['amount']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -180,7 +179,7 @@
                 @foreach ($byPaymentStatus as $row)
                     <tr>
                         <td>{{ $row['label'] }}</td>
-                        <td class="text-end">{{ $fmt($row['amount']) }}</td>
+                        <td class="text-end">{!! $fmt($row['amount']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>

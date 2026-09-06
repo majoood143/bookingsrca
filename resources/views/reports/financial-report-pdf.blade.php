@@ -1,7 +1,6 @@
 @php
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
-    $currency = \App\Models\BookingSetting::get('currency_code') ?: __('financial_report.currency', [], $locale);
 
     $trendLabels = $revenueTrend->pluck('date')->values();
     $trendData = $revenueTrend->pluck('revenue')->values();
@@ -20,7 +19,7 @@
     $sourceData = $bySource->pluck('revenue')->values();
     $sourceColors = ['#0891b2', '#b45309', '#059669', '#9ca3af', '#7c3aed'];
 
-    $fmt = fn($n) => number_format((float) $n, 3) . ' ' . $currency;
+    $fmt = fn($n) => view('partials.currency-amount', ['amount' => (float) $n])->render();
 @endphp
 <!DOCTYPE html>
 <html dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
@@ -89,19 +88,19 @@
         <div class="section-title">{{ __('financial_report.sections.summary', [], $locale) }}</div>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalRevenue) }}</div>
+                <div class="stat-value">{!! $fmt($totalRevenue) !!}</div>
                 <div class="stat-label">{{ __('financial_report.stats.total_revenue', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalPaid) }}</div>
+                <div class="stat-value">{!! $fmt($totalPaid) !!}</div>
                 <div class="stat-label">{{ __('financial_report.stats.total_paid', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($balanceDue) }}</div>
+                <div class="stat-value">{!! $fmt($balanceDue) !!}</div>
                 <div class="stat-label">{{ __('financial_report.stats.balance_due', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalRefunded) }}</div>
+                <div class="stat-value">{!! $fmt($totalRefunded) !!}</div>
                 <div class="stat-label">{{ __('financial_report.stats.total_refunded', [], $locale) }}</div>
             </div>
             <div class="stat-card">
@@ -109,7 +108,7 @@
                 <div class="stat-label">{{ __('financial_report.stats.total_bookings', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($avgBooking) }}</div>
+                <div class="stat-value">{!! $fmt($avgBooking) !!}</div>
                 <div class="stat-label">{{ __('financial_report.stats.avg_booking', [], $locale) }}</div>
             </div>
         </div>
@@ -140,7 +139,7 @@
                     <tr>
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['bookings'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -163,7 +162,7 @@
                     <tr>
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['bookings'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -186,7 +185,7 @@
                     <tr>
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['bookings'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -207,7 +206,7 @@
                 @foreach ($byPaymentMethod as $row)
                     <tr>
                         <td>{{ $row['label'] }}</td>
-                        <td class="text-end">{{ $fmt($row['amount']) }}</td>
+                        <td class="text-end">{!! $fmt($row['amount']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -9,7 +9,6 @@
         $report = $this->getReportData();
         $from   = $report['from'];
         $to     = $report['to'];
-        $currency = \App\Models\BookingSetting::get('currency_code') ?: __('expenses_report.currency');
     @endphp
 
     <p class="text-sm text-gray-500 dark:text-gray-400 -mt-2">
@@ -19,18 +18,18 @@
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         @php
             $stats = [
-                ['label' => __('expenses_report.stats.total_amount'), 'value' => $currency . ' ' . number_format($report['totalAmount'], 3), 'color' => 'bg-amber-100 dark:bg-amber-900/40', 'text' => 'text-amber-700 dark:text-amber-300'],
-                ['label' => __('expenses_report.stats.total_tax'), 'value' => $currency . ' ' . number_format($report['totalTax'], 3), 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-600 dark:text-gray-300'],
-                ['label' => __('expenses_report.stats.total_paid'), 'value' => $currency . ' ' . number_format($report['totalPaid'], 3), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
-                ['label' => __('expenses_report.stats.total_pending'), 'value' => $currency . ' ' . number_format($report['totalPending'], 3), 'color' => 'bg-red-100 dark:bg-red-900/40', 'text' => 'text-red-700 dark:text-red-300'],
+                ['label' => __('expenses_report.stats.total_amount'), 'value' => view('partials.currency-amount', ['amount' => $report['totalAmount']])->render(), 'color' => 'bg-amber-100 dark:bg-amber-900/40', 'text' => 'text-amber-700 dark:text-amber-300'],
+                ['label' => __('expenses_report.stats.total_tax'), 'value' => view('partials.currency-amount', ['amount' => $report['totalTax']])->render(), 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-600 dark:text-gray-300'],
+                ['label' => __('expenses_report.stats.total_paid'), 'value' => view('partials.currency-amount', ['amount' => $report['totalPaid']])->render(), 'color' => 'bg-emerald-100 dark:bg-emerald-900/40', 'text' => 'text-emerald-700 dark:text-emerald-300'],
+                ['label' => __('expenses_report.stats.total_pending'), 'value' => view('partials.currency-amount', ['amount' => $report['totalPending']])->render(), 'color' => 'bg-red-100 dark:bg-red-900/40', 'text' => 'text-red-700 dark:text-red-300'],
                 ['label' => __('expenses_report.stats.expense_count'), 'value' => $report['expenseCount'], 'color' => 'bg-gray-100 dark:bg-gray-800', 'text' => 'text-gray-800 dark:text-gray-100'],
-                ['label' => __('expenses_report.stats.avg_expense'), 'value' => $currency . ' ' . number_format($report['avgExpense'], 3), 'color' => 'bg-blue-100 dark:bg-blue-900/40', 'text' => 'text-blue-700 dark:text-blue-300'],
+                ['label' => __('expenses_report.stats.avg_expense'), 'value' => view('partials.currency-amount', ['amount' => $report['avgExpense']])->render(), 'color' => 'bg-blue-100 dark:bg-blue-900/40', 'text' => 'text-blue-700 dark:text-blue-300'],
             ];
         @endphp
         @foreach ($stats as $stat)
             <div class="rounded-xl p-4 {{ $stat['color'] }} flex flex-col gap-1 shadow-sm">
                 <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide leading-tight">{{ $stat['label'] }}</span>
-                <span class="text-2xl font-bold {{ $stat['text'] }}">{{ $stat['value'] }}</span>
+                <span class="text-2xl font-bold {{ $stat['text'] }}">{!! $stat['value'] !!}</span>
             </div>
         @endforeach
     </div>
@@ -58,7 +57,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{{ $row['label'] }}</td>
                                     <td class="py-3 px-4 text-center text-gray-700 dark:text-gray-300">{{ $row['count'] }}</td>
-                                    <td class="py-3 px-4 text-right font-semibold text-amber-600 dark:text-amber-400">{{ $currency }} {{ number_format($row['amount'], 3) }}</td>
+                                    <td class="py-3 px-4 text-right font-semibold text-amber-600 dark:text-amber-400">@include('partials.currency-amount', ['amount' => $row['amount']])</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -84,7 +83,7 @@
                         @foreach ($report['byPaymentStatus'] as $row)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{{ $row['label'] }}</td>
-                                <td class="py-3 px-4 text-right font-semibold text-amber-600 dark:text-amber-400">{{ $currency }} {{ number_format($row['amount'], 3) }}</td>
+                                <td class="py-3 px-4 text-right font-semibold text-amber-600 dark:text-amber-400">@include('partials.currency-amount', ['amount' => $row['amount']])</td>
                             </tr>
                         @endforeach
                     </tbody>

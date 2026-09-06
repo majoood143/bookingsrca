@@ -23,7 +23,7 @@ return [
         'bookings'  => 'عدد الحجوزات',
         'filter_revenue'   => 'الإيرادات',
         'filter_bookings'  => 'عدد الحجوزات',
-        'dataset_revenue'  => 'الإيرادات ($)',
+        'dataset_revenue'  => 'الإيرادات (OMR)',
         'dataset_bookings' => 'الحجوزات',
     ],
 

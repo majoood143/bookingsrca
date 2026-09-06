@@ -1,7 +1,6 @@
 @php
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
-    $currency = \App\Models\BookingSetting::get('currency_code') ?: __('commission_report.currency', [], $locale);
 
     $trendLabels = $commissionTrend->pluck('date')->values();
     $trendCommissionData = $commissionTrend->pluck('commission')->values();
@@ -10,7 +9,7 @@
     $eventLabels = $byEvent->pluck('label')->values();
     $eventCommissionData = $byEvent->pluck('commission')->values();
 
-    $fmt = fn ($n) => number_format((float) $n, 3) . ' ' . $currency;
+    $fmt = fn ($n) => view('partials.currency-amount', ['amount' => (float) $n])->render();
 @endphp
 <!DOCTYPE html>
 <html dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
@@ -79,11 +78,11 @@
         <div class="section-title">{{ __('commission_report.sections.summary', [], $locale) }}</div>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalRevenue) }}</div>
+                <div class="stat-value">{!! $fmt($totalRevenue) !!}</div>
                 <div class="stat-label">{{ __('commission_report.stats.total_revenue', [], $locale) }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ $fmt($totalCommission) }}</div>
+                <div class="stat-value">{!! $fmt($totalCommission) !!}</div>
                 <div class="stat-label">{{ __('commission_report.stats.total_commission', [], $locale) }}</div>
             </div>
             <div class="stat-card">
@@ -125,8 +124,8 @@
                         <td>{{ $row['label'] }}</td>
                         <td class="text-center">{{ $row['count'] }}</td>
                         <td class="text-center">{{ $row['rate'] }}</td>
-                        <td class="text-end">{{ $fmt($row['revenue']) }}</td>
-                        <td class="text-end">{{ $fmt($row['commission']) }}</td>
+                        <td class="text-end">{!! $fmt($row['revenue']) !!}</td>
+                        <td class="text-end">{!! $fmt($row['commission']) !!}</td>
                     </tr>
                 @endforeach
             </tbody>

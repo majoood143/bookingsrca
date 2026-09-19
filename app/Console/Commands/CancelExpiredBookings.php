@@ -40,6 +40,9 @@ class CancelExpiredBookings extends Command
             // a booking whose browser callback and webhook both failed to land
             // (dropped connection, worker down) would otherwise sit "paid" at
             // Thawani but get wrongly cancelled here once it goes stale.
+            // Expiring is not final either: the Thawani session stays payable for
+            // 24 hours, and bookings:recover-late-payments revives a booking whose
+            // session is paid after we gave up on it.
             $booking = Booking::find($id);
 
             if ($booking && $booking->status === 'pending' && $booking->payment_method === 'thawani' && $booking->payment_session_id) {
@@ -75,7 +78,7 @@ class CancelExpiredBookings extends Command
                     $booking->update(['payment_status' => 'failed']);
                 }
 
-                $booking->cancel();
+                $booking->cancel('expired');
                 $cancelled++;
             });
         }

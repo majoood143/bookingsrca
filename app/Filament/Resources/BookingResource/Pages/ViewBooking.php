@@ -100,7 +100,7 @@ class ViewBooking extends ViewRecord
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->action(function () {
-                    $this->record->cancel();
+                    $this->record->cancel('admin');
                     Notification::make()
                         ->success()
                         ->title(__('booking.notifications.booking_cancelled'))

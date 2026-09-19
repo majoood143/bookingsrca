@@ -26,6 +26,7 @@
 
 <head>
     <meta charset="utf-8">
+    @include('partials.gtm-head')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ $favicon ? asset('storage/' . $favicon) : asset('favicon.ico') }}" sizes="any">
     <title>{{ $siteName }} — {{ __('home.meta_title') }}</title>
@@ -59,6 +60,7 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen" style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};">
+    @include('partials.gtm-body')
 
     {{-- ── Header ── --}}
     <header class="bg-white border-b border-gray-100 sticky top-0 z-10">

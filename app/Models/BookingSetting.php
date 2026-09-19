@@ -194,6 +194,7 @@ class BookingSetting extends Model
             'social_whatsapp_url',
             'seo_meta_description',
             'seo_og_image',
+            'google_tag_manager_id',
             'success_page_back_url',
             'success_page_message_en',
             'success_page_message_ar',

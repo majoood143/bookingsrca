@@ -695,6 +695,14 @@ class BookingResource extends Resource
                         return $indicators;
                     }),
 
+                // Thawani took the money but the booking couldn't be revived (its
+                // seats were resold, or it had been cancelled by an admin) — these
+                // need a manual refund or a manual confirmation.
+                Filter::make('paid_but_cancelled')
+                    ->label(__('booking.filters.paid_but_cancelled'))
+                    ->toggle()
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'cancelled')->where('payment_status', 'paid')),
+
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -893,7 +901,7 @@ class BookingResource extends Resource
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->action(function (Booking $record) {
-                            $record->cancel();
+                            $record->cancel('admin');
                             Notification::make()
                                 ->success()
                                 ->title(__('booking.notifications.booking_cancelled'))

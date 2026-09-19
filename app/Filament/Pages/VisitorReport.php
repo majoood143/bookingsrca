@@ -166,6 +166,7 @@ class VisitorReport extends Page implements HasForms
         $ticketTypeCounts = [];
         $timeSlotCounts = [];
         $countryCounts = [];
+        $dayCounts = [];
 
         foreach ($bookings as $booking) {
             $eventIds[$booking->event_id] = true;
@@ -207,6 +208,9 @@ class VisitorReport extends Page implements HasForms
                     ];
                 }
                 $countryCounts[$countryCode]['count']++;
+
+                $dayKey = $booking->event_date->format('Y-m-d');
+                $dayCounts[$dayKey] = ($dayCounts[$dayKey] ?? 0) + 1;
             }
         }
 
@@ -246,6 +250,15 @@ class VisitorReport extends Page implements HasForms
             ]);
         }
 
+        $byDay = collect($dayCounts)
+            ->sortKeys()
+            ->map(fn($count, $date) => [
+                'label' => $this->forceLtr($date),
+                'count' => $count,
+                'percentage' => $totalVisitors > 0 ? round($count / $totalVisitors * 100, 1) : 0,
+            ])
+            ->values();
+
         $byGender = collect([
             ['key' => 'male', 'label' => __('visitor_report.gender.male', [], $locale), 'count' => $genderCounts['male']],
             ['key' => 'female', 'label' => __('visitor_report.gender.female', [], $locale), 'count' => $genderCounts['female']],
@@ -262,6 +275,7 @@ class VisitorReport extends Page implements HasForms
             'totalBookings' => $bookings->count(),
             'checkedInCount' => $checkedInCount,
             'eventsCovered' => count($eventIds),
+            'byDay' => $byDay,
             'byGender' => $byGender,
             'byTicket' => $byTicket,
             'byTimeSlot' => $byTimeSlot,
@@ -337,6 +351,13 @@ class VisitorReport extends Page implements HasForms
                         fputcsv($out, [__('visitor_report.stats.total_bookings', [], $locale), $report['totalBookings']]);
                         fputcsv($out, [__('visitor_report.stats.checked_in', [], $locale), $report['checkedInCount']]);
                         fputcsv($out, [__('visitor_report.stats.events_covered', [], $locale), $report['eventsCovered']]);
+                        fputcsv($out, []);
+
+                        fputcsv($out, [__('visitor_report.sections.by_day', [], $locale)]);
+                        fputcsv($out, [__('visitor_report.columns.date', [], $locale), __('visitor_report.columns.count', [], $locale), __('visitor_report.columns.percentage', [], $locale)]);
+                        foreach ($report['byDay'] as $row) {
+                            fputcsv($out, [$row['label'], $row['count'], $row['percentage'] . '%']);
+                        }
                         fputcsv($out, []);
 
                         fputcsv($out, [__('visitor_report.sections.by_gender', [], $locale)]);

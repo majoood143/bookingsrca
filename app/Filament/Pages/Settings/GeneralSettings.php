@@ -108,6 +108,8 @@ class GeneralSettings extends Page implements HasForms
             'seo_meta_description' => BookingSetting::get('seo_meta_description', ''),
             'seo_og_image' => BookingSetting::get('seo_og_image'),
 
+            'google_tag_manager_id' => BookingSetting::get('google_tag_manager_id', ''),
+
             'success_page_back_url' => BookingSetting::get('success_page_back_url', ''),
             'success_page_message_en' => BookingSetting::get('success_page_message_en', ''),
             'success_page_message_ar' => BookingSetting::get('success_page_message_ar', ''),
@@ -541,6 +543,22 @@ class GeneralSettings extends Page implements HasForms
                                             ->visibility('public'),
                                     ]),
                             ]),
+
+                        Tab::make(__('general_settings.tabs.integrations'))
+                            ->icon('heroicon-o-puzzle-piece')
+                            ->schema([
+                                Section::make(__('general_settings.sections.google_tag_manager'))
+                                    ->description(__('general_settings.sections.google_tag_manager_desc'))
+                                    ->schema([
+                                        TextInput::make('google_tag_manager_id')
+                                            ->label(__('general_settings.fields.google_tag_manager_id'))
+                                            ->helperText(__('general_settings.fields.google_tag_manager_id_helper'))
+                                            ->regex('/^GTM-[A-Za-z0-9]+$/')
+                                            ->maxLength(20)
+                                            ->placeholder('GTM-XXXXXXX')
+                                            ->extraInputAttributes(['dir' => 'ltr']),
+                                    ]),
+                            ]),
                     ])
                     ->columnSpanFull(),
             ])
@@ -584,6 +602,7 @@ class GeneralSettings extends Page implements HasForms
             'social_whatsapp_url',
             'seo_meta_description',
             'seo_og_image',
+            'google_tag_manager_id',
             'success_page_back_url',
             'success_page_message_en',
             'success_page_message_ar',

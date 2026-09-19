@@ -2,6 +2,7 @@
 
 use App\Console\Commands\CancelExpiredBookings;
 use App\Console\Commands\PublishScheduledCmsContent;
+use App\Console\Commands\RecoverLatePayments;
 use App\Console\Commands\SendScheduledEventReports;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -12,6 +13,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command(CancelExpiredBookings::class)->everyFiveMinutes();
+
+Schedule::command(RecoverLatePayments::class)->everyFiveMinutes()->withoutOverlapping();
 
 Schedule::command(SendScheduledEventReports::class)->everyMinute();
 

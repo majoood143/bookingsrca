@@ -79,9 +79,32 @@ class EditBooking extends EditRecord
         return $data;
     }
 
+    protected function beforeSave(): void
+    {
+        $this->statusBeforeSave = $this->record->status;
+    }
+
     protected function afterSave(): void
     {
         $booking = $this->record;
+
+        // Changing the status dropdown only rewrites the column, so give the
+        // booking what the Confirm / Cancel actions would have: confirmation
+        // timestamp, capacity counters, promo usage and the customer's email and
+        // tickets — or the cancellation stamp — instead of leaving it half-done.
+        if ($this->statusBeforeSave !== $booking->status) {
+            if ($booking->status === 'confirmed' && $booking->confirmed_at === null) {
+                $booking->update([
+                    'confirmed_at'        => now(),
+                    'cancelled_at'        => null,
+                    'cancellation_source' => null,
+                ]);
+                $booking->applyConfirmationCounters();
+                $booking->sendConfirmationNotifications();
+            } elseif ($booking->status === 'cancelled' && $booking->cancelled_at === null) {
+                $booking->update(['cancelled_at' => now(), 'cancellation_source' => 'admin']);
+            }
+        }
 
         // Sync extra services
         if (isset($this->extraServicesToSync)) {
@@ -100,4 +123,6 @@ class EditBooking extends EditRecord
     }
 
     protected $extraServicesToSync = [];
+
+    protected ?string $statusBeforeSave = null;
 }

@@ -34,6 +34,7 @@
 
     @php
         $tables = [
+            ['heading' => __('visitor_report.sections.by_day'), 'rows' => $report['byDay'], 'labelCol' => __('visitor_report.columns.date')],
             ['heading' => __('visitor_report.sections.by_gender'), 'rows' => $report['byGender'], 'labelCol' => __('visitor_report.columns.gender')],
             ['heading' => __('visitor_report.sections.by_ticket'), 'rows' => $report['byTicket'], 'labelCol' => __('visitor_report.columns.ticket_type')],
             ['heading' => __('visitor_report.sections.by_time_slot'), 'rows' => $report['byTimeSlot'], 'labelCol' => __('visitor_report.columns.time_slot')],

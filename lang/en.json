@@ -1,3 +1,4 @@
 {
-    "Payment was cancelled. Please try again.": "Payment was cancelled. Please try again."
+    "Payment was cancelled. Please try again.": "Payment was cancelled. Please try again.",
+    "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.": "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again."
 }

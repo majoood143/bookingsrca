@@ -7,6 +7,7 @@
 
 <head>
     <meta charset="utf-8">
+    @include('partials.gtm-head')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ $favicon ? asset('storage/' . $favicon) : asset('favicon.ico') }}" sizes="any">
     <title>{{ __('shop.order_success.heading') }} — {{ config('app.name') }}</title>
@@ -14,6 +15,7 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    @include('partials.gtm-body')
     <div class="w-full max-w-lg">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-10 text-center text-white">

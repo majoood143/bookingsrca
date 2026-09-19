@@ -1,3 +1,4 @@
 {
-    "Payment was cancelled. Please try again.": "تم إلغاء الدفع. يرجى المحاولة مرة أخرى."
+    "Payment was cancelled. Please try again.": "تم إلغاء الدفع. يرجى المحاولة مرة أخرى.",
+    "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.": "تم استلام دفعتك، لكن تعذّر تأكيد هذا الحجز لأنه لم يعد متاحاً. يرجى التواصل مع الدعم — ولا تقم بالدفع مرة أخرى."
 }

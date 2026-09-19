@@ -23,6 +23,7 @@ use App\Policies\EmailPolicy;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use App\Policies\QueueMonitorPolicy;
 use App\Models\BookingSetting;
+use App\Support\DatabaseTranslationLoader;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -32,7 +33,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Admin-saved translations override the lang files for every __() call.
+        $this->app->extend('translation.loader', fn ($loader) => new DatabaseTranslationLoader($loader));
     }
 
     /**

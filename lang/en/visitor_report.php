@@ -40,6 +40,7 @@ return [
     'sections' => [
         'filters'       => 'Filters',
         'summary'       => 'Summary',
+        'by_day'        => 'Visitors by Day',
         'by_gender'     => 'Visitors by Gender',
         'by_ticket'     => 'Visitors by Ticket Type',
         'by_time_slot'  => 'Visitors by Time Slot',
@@ -60,6 +61,7 @@ return [
     ],
 
     'columns' => [
+        'date'        => 'Date',
         'gender'      => 'Gender',
         'count'       => 'Visitors',
         'percentage'  => 'Percentage',

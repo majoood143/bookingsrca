@@ -79,6 +79,7 @@ return [
         'booked_date_from'  => 'Booking Date From',
         'booked_date_until' => 'Booking Date Until',
         'booked_at'         => 'Booked At',
+        'paid_but_cancelled' => 'Paid but cancelled (needs action)',
     ],
 
     'options' => [

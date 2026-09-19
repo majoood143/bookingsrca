@@ -49,6 +49,17 @@ class VisitorReportExport implements FromArray, WithStyles, WithTitle, ShouldAut
         $add([__('visitor_report.stats.events_covered', [], $this->locale), $this->report['eventsCovered']]);
         $add([]);
 
+        $addBold([__('visitor_report.sections.by_day', [], $this->locale)]);
+        $addBold([
+            __('visitor_report.columns.date', [], $this->locale),
+            __('visitor_report.columns.count', [], $this->locale),
+            __('visitor_report.columns.percentage', [], $this->locale),
+        ]);
+        foreach ($this->report['byDay'] as $row) {
+            $add([$row['label'], $row['count'], $row['percentage'] . '%']);
+        }
+        $add([]);
+
         $addBold([__('visitor_report.sections.by_gender', [], $this->locale)]);
         $addBold([
             __('visitor_report.columns.gender', [], $this->locale),

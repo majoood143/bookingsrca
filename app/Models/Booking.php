@@ -51,6 +51,7 @@ class Booking extends Model
         'status',
         'confirmed_at',
         'cancelled_at',
+        'cancellation_source',
         'refunded_at',
         'refunded_by',
         'refund_reason',
@@ -82,7 +83,7 @@ class Booking extends Model
             ->logOnly([
                 'status', 'payment_status', 'payment_method',
                 'quantity', 'ticket_price', 'services_price', 'total_price',
-                'event_date', 'source', 'locale', 'confirmed_at', 'cancelled_at',
+                'event_date', 'source', 'locale', 'confirmed_at', 'cancelled_at', 'cancellation_source',
                 'refunded_at', 'refund_reason',
             ])
             ->logOnlyDirty()
@@ -208,14 +209,28 @@ class Booking extends Model
         $this->confirm();
     }
 
-    // Updated confirm method
-    public function confirm()
+    // $notify = false confirms without emailing the customer (used when repairing
+    // old bookings whose event may already be over).
+    public function confirm(bool $notify = true)
     {
         $this->update([
             'status' => 'confirmed',
             'confirmed_at' => now(),
         ]);
 
+        $this->applyConfirmationCounters();
+
+        if ($notify) {
+            $this->sendConfirmationNotifications();
+        }
+    }
+
+    // Capacity counters and promo usage that a confirmation is responsible for.
+    // Split out of confirm() so a booking that was flipped to "confirmed" by
+    // editing its status directly (which skips all of this) can be brought back
+    // in line without re-sending anything.
+    public function applyConfirmationCounters(): void
+    {
         $this->timeSlot->increment('current_bookings', $this->quantity);
         $this->ticketType->increment('quantity_sold', $this->quantity);
 
@@ -226,11 +241,22 @@ class Booking extends Model
         if ($this->promo_code_id) {
             app(\App\Services\PromoCodeService::class)->recordUsage($this);
         }
+    }
 
-        // Send booking confirmation to the primary attendee
+    public function sendConfirmationNotifications(): void
+    {
+        // Send booking confirmation to the primary attendee. A mail failure must
+        // not undo the confirmation (the payment has already been taken).
         $primary = $this->attendees->first();
         if ($primary && !empty($primary->email)) {
-            Mail::to($primary->email)->send(new BookingConfirmation($this));
+            try {
+                Mail::to($primary->email)->send(new BookingConfirmation($this));
+            } catch (Exception $e) {
+                Log::error('Booking confirmation email failed', [
+                    'booking_id' => $this->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // Ticket assets are generated asynchronously (see BookingAttendee::boot())
@@ -276,7 +302,9 @@ class Booking extends Model
         }
     }
 
-    public function cancel()
+    // $source records why the booking was cancelled (customer | expired |
+    // gateway | admin | error) — see isSystemCancelled().
+    public function cancel(?string $source = null)
     {
         if ($this->status === 'confirmed') {
             $this->timeSlot->decrement('current_bookings', $this->quantity);
@@ -290,7 +318,19 @@ class Booking extends Model
         $this->update([
             'status' => 'cancelled',
             'cancelled_at' => now(),
+            'cancellation_source' => $source,
         ]);
+    }
+
+    // True when the system (not an admin) cancelled this online booking, so a
+    // later "paid" report from the gateway means the customer genuinely completed
+    // checkout and the booking should be revived. Only bookings cancelled since
+    // cancellation_source was introduced carry a source; older cancellations have
+    // none and are deliberately left alone.
+    public function isSystemCancelled(): bool
+    {
+        return $this->status === 'cancelled'
+            && in_array($this->cancellation_source, ['customer', 'expired', 'gateway'], true);
     }
 
     public function refund(?string $reason = null): void

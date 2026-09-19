@@ -2,6 +2,9 @@
     $isRtl = $locale === 'ar';
     $chartJs = file_get_contents(public_path('vendor/chartjs/chart.umd.js'));
 
+    $dayLabels = $byDay->pluck('label')->values();
+    $dayData = $byDay->pluck('count')->values();
+
     $genderLabels = $byGender->pluck('label')->values();
     $genderData = $byGender->pluck('count')->values();
     $genderColors = ['#10b981', '#f59e0b', '#9ca3af'];
@@ -104,6 +107,29 @@
     @else
 
     <div class="section">
+        <div class="section-title">{{ __('visitor_report.sections.by_day', [], $locale) }}</div>
+        <div class="chart-wrap"><canvas id="dayChart"></canvas></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('visitor_report.columns.date', [], $locale) }}</th>
+                    <th class="text-center">{{ __('visitor_report.columns.count', [], $locale) }}</th>
+                    <th class="text-center">{{ __('visitor_report.columns.percentage', [], $locale) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($byDay as $row)
+                    <tr>
+                        <td>{{ $row['label'] }}</td>
+                        <td class="text-center">{{ $row['count'] }}</td>
+                        <td class="text-center">{{ $row['percentage'] }}%</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section page-break">
         <div class="section-title">{{ __('visitor_report.sections.by_gender', [], $locale) }}</div>
         <div class="chart-wrap"><canvas id="genderChart"></canvas></div>
         <table>
@@ -203,6 +229,18 @@
     Chart.defaults.font.size = 11;
 
     @if ($totalVisitors > 0)
+    new Chart(document.getElementById('dayChart'), {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($dayLabels) !!},
+            datasets: [{ label: '{{ __('visitor_report.columns.count', [], $locale) }}', data: {!! json_encode($dayData) !!}, backgroundColor: '#2563eb' }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 15, maxRotation: 45, minRotation: 0 } } }
+        }
+    });
+
     new Chart(document.getElementById('genderChart'), {
         type: 'doughnut',
         data: {

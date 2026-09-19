@@ -79,6 +79,7 @@ return [
         'booked_date_from'  => 'تاريخ الحجز من',
         'booked_date_until' => 'تاريخ الحجز إلى',
         'booked_at'         => 'تاريخ الحجز',
+        'paid_but_cancelled' => 'مدفوع ولكن ملغى (يحتاج إجراء)',
     ],
 
     'options' => [

@@ -601,7 +601,8 @@ trait HandlesEventBookingFlow
             return;
         }
 
-        $result = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, (float) $this->totalPrice);
+        // The first attendee's phone: a game winner's voucher only works with the winner's mobile.
+        $result = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, (float) $this->totalPrice, $this->attendees[0]['phone'] ?? null);
 
         if (!$result['valid']) {
             $this->promoApplied    = false;
@@ -852,11 +853,15 @@ trait HandlesEventBookingFlow
             $promoCodeId    = null;
 
             if ($this->promoApplied && $this->promoCodeId) {
-                $promoResult = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, $subtotal);
+                $promoResult = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, $subtotal, $this->attendees[0]['phone'] ?? null);
 
                 if ($promoResult['valid']) {
                     $discountAmount = $promoResult['discount_amount'];
                     $promoCodeId    = $promoResult['promo_code_id'];
+                } elseif (($promoResult['reason'] ?? null) === 'restricted_mobile') {
+                    // A winner's voucher whose phone was changed after applying it: stop rather
+                    // than silently charging the full price.
+                    throw new Exception($promoResult['message']);
                 }
             }
 

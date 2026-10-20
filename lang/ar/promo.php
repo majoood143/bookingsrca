@@ -27,6 +27,10 @@ return [
     'field_is_active'            => 'مفعّل',
     'field_event'                 => 'الفعالية (اختياري)',
     'field_event_helper'          => 'اتركه فارغاً للسماح باستخدام الرمز على جميع الفعاليات.',
+    'field_restricted_mobile'          => 'لرقم هاتف محدد فقط',
+    'field_restricted_mobile_helper'   => 'اختياري. يعمل الرمز عندها فقط إذا كان رقم هاتف الحجز هو هذا الرقم (قسائم الفائزين في الألعاب).',
+    'field_max_discount_amount'        => 'الحد الأقصى للخصم',
+    'field_max_discount_amount_helper' => 'حد أعلى اختياري للخصم بالنسبة المئوية، مثل 50% بحد أقصى 20 ر.ع.',
 
     // Discount types
     'type_percentage' => 'نسبة مئوية (%)',
@@ -67,6 +71,7 @@ return [
     'code_not_started'  => 'رمز الخصم هذا لم يصبح صالحاً بعد.',
     'code_expired'      => 'انتهت صلاحية رمز الخصم هذا.',
     'code_used_up'      => 'وصل رمز الخصم هذا إلى الحد الأقصى للاستخدام.',
+    'code_restricted_mobile' => 'هذه القسيمة تعمل فقط برقم هاتف الفائز. أدخله كرقم هاتف الحاضر الأول.',
     'code_applied'      => 'تم تطبيق رمز الخصم! وفّرت :amount ريال عماني.',
 
     // Bookings relation manager

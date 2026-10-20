@@ -38,6 +38,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Models\BookingSetting;
 use MarcoGermani87\FilamentCaptcha\FilamentCaptcha;
 use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
+use WallaceMartinss\FilamentEvolution\FilamentEvolutionPlugin;
 use Rupadana\ApiService\ApiServicePlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -147,6 +148,12 @@ class AdminPanelProvider extends PanelProvider
                     ->enablePruning()
                     ->pruningRetention(7),
                 ApiServicePlugin::make(),
+                // WhatsApp through Evolution API: instances (QR connect), sent messages, webhook log.
+                // One-time codes and winner messages use it via App\Services\WhatsApp\WhatsAppNotifier.
+                FilamentEvolutionPlugin::make()
+                    ->whatsappInstanceResource()
+                    ->viewMessageHistory()
+                    ->viewWebhookLogs(),
 
             ])
             ->authMiddleware([

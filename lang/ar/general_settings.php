@@ -17,6 +17,7 @@ return [
         'seo' => 'تحسين محركات البحث',
         'integrations' => 'التكاملات',
         'success_page' => 'صفحة نجاح الحجز',
+        'messaging' => 'الرسائل',
     ],
 
     'sections' => [
@@ -47,6 +48,10 @@ return [
         'success_page_link_desc' => 'الوجهة التي يشير إليها زر "العودة إلى الفعاليات" في صفحة نجاح الحجز. اتركه فارغًا لاستخدام قائمة الفعاليات الافتراضية.',
         'success_page_message' => 'رسالة صفحة نجاح الحجز',
         'success_page_message_desc' => 'رسالة اختيارية تظهر أعلى الأزرار في صفحة نجاح الحجز.',
+        'whatsapp' => 'واتساب',
+        'whatsapp_desc' => 'تُرسل رسائل العملاء (رموز التسجيل في الألعاب وقسائم الفائزين) عبر واتساب من خلال Evolution API. اربط رقماً أولاً من واتساب ← المثيلات؛ ويُضبط عنوان الواجهة ومفتاحها في ملف ‎.env على الخادم (EVOLUTION_URL و EVOLUTION_API_KEY).',
+        'sms' => 'الرسائل النصية الاحتياطية',
+        'sms_desc' => 'عندما يكون واتساب متوقفاً أو يتعذر إرسال الرمز عبره، يُرسل الرمز برسالة نصية بدلاً منه.',
     ],
 
     'fields' => [
@@ -150,10 +155,34 @@ return [
         'color_red' => 'أحمر',
         'color_yellow' => 'أصفر',
         'color_purple' => 'بنفسجي',
+        'module_games_enabled' => 'الألعاب',
+        'module_games_enabled_helper' => 'يفعّل الألعاب مثل تحدي ركلات الجزاء: الحملات واللاعبين ولوحات الترتيب وقسائم الفائزين.',
+        'whatsapp_enabled' => 'إرسال رسائل العملاء عبر واتساب',
+        'whatsapp_enabled_helper' => 'تُرسل رموز التحقق وقسائم الفائزين عبر واتساب أولاً.',
+        'whatsapp_instance_id' => 'رقم الإرسال (المثيل)',
+        'whatsapp_instance_id_helper' => 'اتركه فارغاً لاستخدام أول مثيل متصل.',
+        'whatsapp_not_configured' => 'لم يتم إعداد Evolution API على هذا الخادم (EVOLUTION_URL و EVOLUTION_API_KEY في ‎.env).',
+        'otp_sms_fallback_enabled' => 'استخدام الرسائل النصية عندما يتعذر الإرسال عبر واتساب',
+        'otp_sms_fallback_enabled_helper' => 'وتُستخدم وحدها أيضاً عند إيقاف واتساب.',
+        'sms_driver' => 'بوابة الرسائل النصية',
+        'sms_tamimah_username' => 'اسم المستخدم',
+        'sms_tamimah_password' => 'كلمة المرور',
+        'sms_tamimah_password_helper' => 'تُحفظ مشفّرة. اتركها فارغة للإبقاء على كلمة المرور المحفوظة.',
+        'sms_tamimah_sender' => 'اسم المرسل',
+        'sms_tamimah_app_id' => 'معرّف التطبيق',
+        'sms_tamimah_endpoint' => 'عنوان الخدمة (اختياري)',
+        'sms_tamimah_success_codes' => 'رموز حالة النجاح (اختياري)',
+        'sms_tamimah_success_codes_helper' => 'مفصولة بفواصل. اتركها فارغة لاعتبار أي رسالة تمت معالجتها مرسلة.',
+        'sms_tamimah_priority' => 'الأولوية',
     ],
 
     'notifications' => [
         'updated' => 'تم تحديث الإعدادات بنجاح.',
+        'test_message' => 'إرسال رسالة تجريبية',
+        'test_phone' => 'رقم الهاتف',
+        'test_text' => 'رسالة تجريبية من :site. خدمة رسائل العملاء تعمل.',
+        'test_sent' => 'تم إرسال الرسالة التجريبية عبر :channel.',
+        'test_failed' => 'لم تُرسل الرسالة التجريبية: :error',
     ],
 
 ];

@@ -17,6 +17,7 @@ return [
         'seo' => 'SEO',
         'integrations' => 'Integrations',
         'success_page' => 'Success Page',
+        'messaging' => 'Messaging',
     ],
 
     'sections' => [
@@ -47,6 +48,10 @@ return [
         'success_page_link_desc' => 'Where the "Back to Events" button on the booking success page goes. Leave blank to use the default events list.',
         'success_page_message' => 'Success Page Message',
         'success_page_message_desc' => 'Optional message shown above the buttons on the booking success page.',
+        'whatsapp' => 'WhatsApp',
+        'whatsapp_desc' => 'Customer messages (game sign-up codes, winner vouchers) go by WhatsApp through the Evolution API. Connect a number under WhatsApp → Instances first; the API address and key are set in the server .env (EVOLUTION_URL, EVOLUTION_API_KEY).',
+        'sms' => 'SMS Fallback',
+        'sms_desc' => 'When WhatsApp is off or cannot deliver a one-time code, send it by SMS instead.',
     ],
 
     'fields' => [
@@ -150,10 +155,34 @@ return [
         'color_red' => 'Red',
         'color_yellow' => 'Yellow',
         'color_purple' => 'Purple',
+        'module_games_enabled' => 'Games',
+        'module_games_enabled_helper' => 'Enables games such as the Penalty Challenge: campaigns, players, leaderboards and winner vouchers.',
+        'whatsapp_enabled' => 'Send customer messages by WhatsApp',
+        'whatsapp_enabled_helper' => 'One-time codes and winner vouchers are sent by WhatsApp first.',
+        'whatsapp_instance_id' => 'Sending number (instance)',
+        'whatsapp_instance_id_helper' => 'Leave empty to use the first connected instance.',
+        'whatsapp_not_configured' => 'The Evolution API is not set up on this server (EVOLUTION_URL / EVOLUTION_API_KEY in .env).',
+        'otp_sms_fallback_enabled' => 'Use SMS when WhatsApp cannot send',
+        'otp_sms_fallback_enabled_helper' => 'Also used on its own when WhatsApp is switched off.',
+        'sms_driver' => 'SMS gateway',
+        'sms_tamimah_username' => 'Username',
+        'sms_tamimah_password' => 'Password',
+        'sms_tamimah_password_helper' => 'Stored encrypted. Leave empty to keep the saved password.',
+        'sms_tamimah_sender' => 'Sender name',
+        'sms_tamimah_app_id' => 'Application ID',
+        'sms_tamimah_endpoint' => 'Endpoint (optional)',
+        'sms_tamimah_success_codes' => 'Success status codes (optional)',
+        'sms_tamimah_success_codes_helper' => 'Comma separated. Leave empty to treat any processed message as sent.',
+        'sms_tamimah_priority' => 'Priority',
     ],
 
     'notifications' => [
         'updated' => 'Settings updated successfully.',
+        'test_message' => 'Send test message',
+        'test_phone' => 'Mobile number',
+        'test_text' => 'Test message from :site. Customer messaging works.',
+        'test_sent' => 'Test message sent by :channel.',
+        'test_failed' => 'The test message was not sent: :error',
     ],
 
 ];

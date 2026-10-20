@@ -27,6 +27,10 @@ return [
     'field_is_active'            => 'Active',
     'field_event'                 => 'Event (optional)',
     'field_event_helper'          => 'Leave empty to allow the code on all events.',
+    'field_restricted_mobile'          => 'Only for mobile number',
+    'field_restricted_mobile_helper'   => 'Optional. The code then works only when the booking\'s phone is this number (game winner vouchers).',
+    'field_max_discount_amount'        => 'Maximum discount',
+    'field_max_discount_amount_helper' => 'Optional cap for a percentage discount, e.g. 50% up to 20 OMR.',
 
     // Discount types
     'type_percentage' => 'Percentage (%)',
@@ -67,6 +71,7 @@ return [
     'code_not_started'  => 'This promo code is not valid yet.',
     'code_expired'      => 'This promo code has expired.',
     'code_used_up'      => 'This promo code has reached its usage limit.',
+    'code_restricted_mobile' => 'This voucher only works with the winner\'s mobile number. Enter it as the first attendee\'s phone.',
     'code_applied'      => 'Promo code applied! You save :amount OMR.',
 
     // Bookings relation manager

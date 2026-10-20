@@ -17,11 +17,20 @@ use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use RickDBCN\FilamentEmail\Models\Email;
 use App\Policies\EmailPolicy;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use App\Policies\QueueMonitorPolicy;
+use App\Policies\WhatsappInstancePolicy;
+use App\Policies\WhatsappMessagePolicy;
+use App\Policies\WhatsappWebhookPolicy;
+use WallaceMartinss\FilamentEvolution\Models\WhatsappInstance;
+use WallaceMartinss\FilamentEvolution\Models\WhatsappMessage;
+use WallaceMartinss\FilamentEvolution\Models\WhatsappWebhook;
 use App\Models\BookingSetting;
 use App\Support\DatabaseTranslationLoader;
 
@@ -50,6 +59,22 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Email::class, EmailPolicy::class);
         Gate::policy(QueueMonitor::class, QueueMonitorPolicy::class);
+
+        // Same for the WhatsApp plugin's models (Evolution API instances, messages, webhooks).
+        Gate::policy(WhatsappInstance::class, WhatsappInstancePolicy::class);
+        Gate::policy(WhatsappMessage::class, WhatsappMessagePolicy::class);
+        Gate::policy(WhatsappWebhook::class, WhatsappWebhookPolicy::class);
+
+        // Games: a crowd at a venue shares one IP (Wi-Fi, carrier NAT), so limits are per browser
+        // session with only a high ceiling per IP. One-time codes also have per-phone limits.
+        RateLimiter::for('games-code', fn (Request $request) => [
+            Limit::perMinute(6)->by('session:' . $request->session()->getId()),
+            Limit::perMinute(120)->by('ip:' . $request->ip()),
+        ]);
+        RateLimiter::for('games-api', fn (Request $request) => [
+            Limit::perMinute(90)->by('session:' . $request->session()->getId()),
+            Limit::perMinute(1500)->by('ip:' . $request->ip()),
+        ]);
 
         // shuvroroy/filament-spatie-laravel-backup checks this ability to show
         // the "Create Backup" button; tie it to the same permission that already

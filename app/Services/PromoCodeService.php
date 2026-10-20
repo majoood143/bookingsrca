@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\DB;
 class PromoCodeService
 {
     /**
-     * Validate a promo code against a specific event and subtotal.
+     * Validate a promo code against a specific event and subtotal, and against the booking's
+     * phone when the code is bound to a mobile (game vouchers).
      *
-     * @return array{valid: bool, message: string, promo_code_id?: int, discount_amount?: float, discount_type?: string, discount_value?: float}
+     * @return array{valid: bool, message: string, reason?: string, promo_code_id?: int, discount_amount?: float, discount_type?: string, discount_value?: float}
      */
-    public function validate(string $code, int $eventId, float $subtotal): array
+    public function validate(string $code, int $eventId, float $subtotal, ?string $phone = null): array
     {
         $promoCode = PromoCode::where('code', strtoupper(trim($code)))->first();
 
@@ -41,6 +42,10 @@ class PromoCodeService
         // Event-scoped code: reject if it doesn't match the booked event
         if ($promoCode->event_id !== null && $promoCode->event_id !== $eventId) {
             return ['valid' => false, 'message' => __('promo.invalid_code')];
+        }
+
+        if (!$promoCode->allowsMobile($phone)) {
+            return ['valid' => false, 'reason' => 'restricted_mobile', 'message' => __('promo.code_restricted_mobile')];
         }
 
         if ($subtotal <= 0) {

@@ -3,6 +3,10 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Models\BookingSetting;
+use App\Services\Messaging\CustomerMessenger;
+use App\Services\Sms\SmsManager;
+use App\Support\MessagingSettings;
+use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -21,6 +25,8 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use WallaceMartinss\FilamentEvolution\Models\WhatsappInstance;
+use WallaceMartinss\FilamentEvolution\Services\EvolutionClient;
 
 class GeneralSettings extends Page implements HasForms
 {
@@ -96,6 +102,19 @@ class GeneralSettings extends Page implements HasForms
             'module_cms_enabled' => (bool) BookingSetting::get('module_cms_enabled', true),
             'module_pos_enabled' => (bool) BookingSetting::get('module_pos_enabled', true),
             'module_pos_shop_enabled' => (bool) BookingSetting::get('module_pos_shop_enabled', true),
+            'module_games_enabled' => (bool) BookingSetting::get('module_games_enabled', true),
+
+            'whatsapp_enabled' => MessagingSettings::whatsappEnabled(),
+            'whatsapp_instance_id' => MessagingSettings::whatsappInstanceId(),
+            'otp_sms_fallback_enabled' => MessagingSettings::smsFallbackEnabled(),
+            'sms_driver' => MessagingSettings::smsDriver() ?: null,
+            'sms_tamimah_username' => BookingSetting::get('sms_tamimah_username', ''),
+            'sms_tamimah_password' => '',
+            'sms_tamimah_sender' => BookingSetting::get('sms_tamimah_sender', ''),
+            'sms_tamimah_app_id' => BookingSetting::get('sms_tamimah_app_id', ''),
+            'sms_tamimah_endpoint' => BookingSetting::get('sms_tamimah_endpoint', ''),
+            'sms_tamimah_success_codes' => BookingSetting::get('sms_tamimah_success_codes', ''),
+            'sms_tamimah_priority' => (string) BookingSetting::get('sms_tamimah_priority', 0),
 
             'social_facebook_url' => BookingSetting::get('social_facebook_url', ''),
             'social_instagram_url' => BookingSetting::get('social_instagram_url', ''),
@@ -430,6 +449,10 @@ class GeneralSettings extends Page implements HasForms
                                         Toggle::make('module_pos_shop_enabled')
                                             ->label(__('general_settings.fields.module_pos_shop_enabled'))
                                             ->helperText(__('general_settings.fields.module_pos_shop_enabled_helper')),
+
+                                        Toggle::make('module_games_enabled')
+                                            ->label(__('general_settings.fields.module_games_enabled'))
+                                            ->helperText(__('general_settings.fields.module_games_enabled_helper')),
                                     ]),
                             ]),
 
@@ -544,6 +567,84 @@ class GeneralSettings extends Page implements HasForms
                                     ]),
                             ]),
 
+                        Tab::make(__('general_settings.tabs.messaging'))
+                            ->icon('heroicon-o-chat-bubble-left-right')
+                            ->schema([
+                                Section::make(__('general_settings.sections.whatsapp'))
+                                    ->description(__('general_settings.sections.whatsapp_desc'))
+                                    ->schema([
+                                        Toggle::make('whatsapp_enabled')
+                                            ->label(__('general_settings.fields.whatsapp_enabled'))
+                                            ->helperText(fn () => $this->evolutionConfigured()
+                                                ? __('general_settings.fields.whatsapp_enabled_helper')
+                                                : __('general_settings.fields.whatsapp_not_configured'))
+                                            ->live(),
+
+                                        Select::make('whatsapp_instance_id')
+                                            ->label(__('general_settings.fields.whatsapp_instance_id'))
+                                            ->helperText(__('general_settings.fields.whatsapp_instance_id_helper'))
+                                            ->options(fn () => rescue(fn () => WhatsappInstance::query()->pluck('name', 'id')->all(), [], false))
+                                            ->visible(fn (Get $get) => (bool) $get('whatsapp_enabled'))
+                                            ->native(false),
+                                    ]),
+
+                                Section::make(__('general_settings.sections.sms'))
+                                    ->description(__('general_settings.sections.sms_desc'))
+                                    ->schema([
+                                        Toggle::make('otp_sms_fallback_enabled')
+                                            ->label(__('general_settings.fields.otp_sms_fallback_enabled'))
+                                            ->helperText(__('general_settings.fields.otp_sms_fallback_enabled_helper'))
+                                            ->live(),
+
+                                        Select::make('sms_driver')
+                                            ->label(__('general_settings.fields.sms_driver'))
+                                            ->options(SmsManager::driverOptions())
+                                            ->visible(fn (Get $get) => (bool) $get('otp_sms_fallback_enabled'))
+                                            ->required(fn (Get $get) => (bool) $get('otp_sms_fallback_enabled'))
+                                            ->live()
+                                            ->native(false),
+
+                                        Grid::make(2)
+                                            ->visible(fn (Get $get) => $get('otp_sms_fallback_enabled') && $get('sms_driver') === SmsManager::TAMIMAH)
+                                            ->schema([
+                                                TextInput::make('sms_tamimah_username')
+                                                    ->label(__('general_settings.fields.sms_tamimah_username'))
+                                                    ->maxLength(100),
+
+                                                TextInput::make('sms_tamimah_password')
+                                                    ->label(__('general_settings.fields.sms_tamimah_password'))
+                                                    ->helperText(__('general_settings.fields.sms_tamimah_password_helper'))
+                                                    ->password()
+                                                    ->revealable()
+                                                    ->maxLength(100),
+
+                                                TextInput::make('sms_tamimah_sender')
+                                                    ->label(__('general_settings.fields.sms_tamimah_sender'))
+                                                    ->maxLength(20),
+
+                                                TextInput::make('sms_tamimah_app_id')
+                                                    ->label(__('general_settings.fields.sms_tamimah_app_id'))
+                                                    ->maxLength(100),
+
+                                                TextInput::make('sms_tamimah_endpoint')
+                                                    ->label(__('general_settings.fields.sms_tamimah_endpoint'))
+                                                    ->url()
+                                                    ->maxLength(255),
+
+                                                TextInput::make('sms_tamimah_success_codes')
+                                                    ->label(__('general_settings.fields.sms_tamimah_success_codes'))
+                                                    ->helperText(__('general_settings.fields.sms_tamimah_success_codes_helper'))
+                                                    ->maxLength(100),
+
+                                                TextInput::make('sms_tamimah_priority')
+                                                    ->label(__('general_settings.fields.sms_tamimah_priority'))
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->maxValue(9),
+                                            ]),
+                                    ]),
+                            ]),
+
                         Tab::make(__('general_settings.tabs.integrations'))
                             ->icon('heroicon-o-puzzle-piece')
                             ->schema([
@@ -563,6 +664,42 @@ class GeneralSettings extends Page implements HasForms
                     ->columnSpanFull(),
             ])
             ->statePath('data');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('testMessage')
+                ->label(__('general_settings.notifications.test_message'))
+                ->icon('heroicon-o-paper-airplane')
+                ->color('gray')
+                ->schema([
+                    TextInput::make('phone')
+                        ->label(__('general_settings.notifications.test_phone'))
+                        ->placeholder('9XXXXXXX')
+                        ->required()
+                        ->maxLength(20),
+                ])
+                ->action(function (array $data, CustomerMessenger $messenger): void {
+                    $result = $messenger->send($data['phone'], __('general_settings.notifications.test_text', [
+                        'site' => BookingSetting::get('site_name_' . app()->getLocale(), config('app.name')),
+                    ]), 'test');
+
+                    $notification = Notification::make();
+
+                    $result->ok
+                        ? $notification->success()->title(__('general_settings.notifications.test_sent', ['channel' => $result->demo ? 'SMS (demo)' : strtoupper((string) $result->channel)]))
+                        : $notification->danger()->title(__('general_settings.notifications.test_failed', ['error' => $result->error]));
+
+                    $notification->send();
+                }),
+        ];
+    }
+
+    /** Whether EVOLUTION_URL / EVOLUTION_API_KEY are set; the WhatsApp switch is useless without them. */
+    protected function evolutionConfigured(): bool
+    {
+        return (bool) rescue(fn () => app(EvolutionClient::class)->isConfigured(), false, false);
     }
 
     public function save(): void
@@ -607,8 +744,22 @@ class GeneralSettings extends Page implements HasForms
             'success_page_message_en',
             'success_page_message_ar',
             'success_page_message_color',
+            'whatsapp_instance_id',
+            'sms_driver',
+            'sms_tamimah_username',
+            'sms_tamimah_sender',
+            'sms_tamimah_app_id',
+            'sms_tamimah_endpoint',
+            'sms_tamimah_success_codes',
+            'sms_tamimah_priority',
         ] as $key) {
             BookingSetting::set($key, (string) ($state[$key] ?? ''));
+        }
+
+        // A blank password field keeps the saved one; a new one is stored encrypted.
+        if (filled($state['sms_tamimah_password'] ?? null)) {
+            BookingSetting::set('sms_tamimah_password', MessagingSettings::encryptSecret((string) $state['sms_tamimah_password']));
+            $this->data['sms_tamimah_password'] = '';
         }
 
         foreach ([
@@ -629,6 +780,9 @@ class GeneralSettings extends Page implements HasForms
             'module_cms_enabled',
             'module_pos_enabled',
             'module_pos_shop_enabled',
+            'module_games_enabled',
+            'whatsapp_enabled',
+            'otp_sms_fallback_enabled',
         ] as $key) {
             BookingSetting::set($key, !empty($state[$key]) ? 'true' : 'false');
         }

@@ -25,6 +25,7 @@ use App\Filament\Resources\PromoCodeResource\RelationManagers\BookingsRelationMa
 use App\Models\BookingSetting;
 use App\Models\Event;
 use App\Models\PromoCode;
+use App\Support\PhoneNumber;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 
@@ -110,6 +111,16 @@ class PromoCodeResource extends Resource
                         ->maxValue(fn(Get $get): ?float => $get('discount_type') === 'percentage' ? 100 : null)
                         ->step(0.01)
                         ->suffix(fn(Get $get): string => $get('discount_type') === 'percentage' ? '%' : 'OMR'),
+
+                    TextInput::make('max_discount_amount')
+                        ->label(__('promo.field_max_discount_amount'))
+                        ->helperText(__('promo.field_max_discount_amount_helper'))
+                        ->nullable()
+                        ->numeric()
+                        ->minValue(0.001)
+                        ->step(0.001)
+                        ->suffix(BookingSetting::currencySymbol())
+                        ->visible(fn(Get $get): bool => $get('discount_type') === 'percentage'),
                 ]),
 
             Section::make(__('promo.section_validity'))
@@ -149,6 +160,16 @@ class PromoCodeResource extends Resource
                         ->native(false)
                         ->relationship('event', 'title')
                         ->getOptionLabelFromRecordUsing(fn($record) => $record->getTranslation('title', app()->getLocale())),
+
+                    TextInput::make('restricted_mobile')
+                        ->label(__('promo.field_restricted_mobile'))
+                        ->helperText(__('promo.field_restricted_mobile_helper'))
+                        ->nullable()
+                        ->maxLength(20)
+                        ->placeholder('9XXXXXXX')
+                        ->dehydrateStateUsing(fn(?string $state): ?string => PhoneNumber::normalize($state))
+                        ->formatStateUsing(fn(?string $state): ?string => $state ? PhoneNumber::local($state) : null)
+                        ->extraInputAttributes(['dir' => 'ltr']),
                 ]),
         ])
             ->columns(1);

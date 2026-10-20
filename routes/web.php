@@ -15,6 +15,8 @@ use App\Http\Controllers\NboCallbackController;
 use App\Http\Controllers\CCAvenueRedirectController;
 use App\Http\Controllers\CCAvenueCallbackController;
 use App\Http\Controllers\CmsFrontendController;
+use App\Http\Controllers\Games\GameApiController;
+use App\Http\Controllers\Games\GamePageController;
 use App\Http\Controllers\KioskHeartbeatController;
 use App\Http\Controllers\PosOrderPaymentController;
 use App\Http\Controllers\PrintAgentController;
@@ -104,6 +106,25 @@ Route::get('/shop/payment/ccavenue/{orderNumber}', [PosOrderPaymentController::c
 // CCAvenue browser-redirect callback (CSRF excluded via bootstrap/app.php).
 Route::post('/shop/payment/callback/ccavenue', [PosOrderPaymentController::class, 'ccavenueCallback'])
     ->name('shop.payment.callback.ccavenue');
+
+// ── Games (e.g. the penalty challenge) ────────────────────────────────────────
+// The page and leaderboard, and the JSON calls the game makes on the web session.
+// The server decides every shot. Limits are per session with a high per-IP ceiling
+// (AppServiceProvider): a crowd at a venue shares one IP.
+Route::prefix('play/{campaign:slug}')->group(function () {
+    Route::get('/', [GamePageController::class, 'play'])->name('games.play');
+    Route::get('/leaderboard', [GamePageController::class, 'leaderboard'])->name('games.leaderboard');
+
+    Route::prefix('api')->group(function () {
+        Route::post('/code', [GameApiController::class, 'requestCode'])->middleware('throttle:games-code')->name('games.api.code');
+        Route::post('/verify', [GameApiController::class, 'verifyCode'])->middleware('throttle:games-code')->name('games.api.verify');
+        Route::get('/me', [GameApiController::class, 'me'])->middleware('throttle:games-api')->name('games.api.me');
+        Route::post('/logout', [GameApiController::class, 'logout'])->name('games.api.logout');
+        Route::post('/attempts', [GameApiController::class, 'start'])->middleware('throttle:games-api')->name('games.api.start');
+        Route::post('/attempts/{attempt}/shots', [GameApiController::class, 'shoot'])->middleware('throttle:games-api')->name('games.api.shot');
+        Route::get('/leaderboard', [GameApiController::class, 'leaderboard'])->middleware('throttle:games-api')->name('games.api.leaderboard');
+    });
+});
 
 // Language switching
 Route::get('/lang/{locale}', function ($locale) {

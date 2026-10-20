@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,16 +20,20 @@ class PromoCode extends Model
         'description',
         'discount_type',
         'discount_value',
+        'max_discount_amount',
         'max_uses',
         'used_count',
         'valid_from',
         'valid_until',
         'is_active',
         'event_id',
+        'restricted_mobile',
+        'source',
     ];
 
     protected $casts = [
         'discount_value' => 'decimal:2',
+        'max_discount_amount' => 'decimal:3',
         'max_uses'       => 'integer',
         'used_count'     => 'integer',
         'is_active'      => 'boolean',
@@ -79,12 +84,28 @@ class PromoCode extends Model
     }
 
     /**
+     * Whether the code may be used by this phone. A code bound to a mobile (a game winner's
+     * voucher) only works when the booking's phone is that mobile, however it was typed.
+     */
+    public function allowsMobile(?string $phone): bool
+    {
+        if ($this->restricted_mobile === null || $this->restricted_mobile === '') {
+            return true;
+        }
+
+        return PhoneNumber::normalize($phone) === $this->restricted_mobile;
+    }
+
+    /**
      * Calculate the discount amount on the given subtotal.
      */
     public function calculateDiscount(float $subtotal): float
     {
         if ($this->discount_type === 'percentage') {
-            return round(($subtotal * (float) $this->discount_value) / 100, 2);
+            $discount = round(($subtotal * (float) $this->discount_value) / 100, 2);
+
+            // A capped percentage ("50% up to 20 OMR") never gives more than the cap
+            return $this->max_discount_amount !== null ? min($discount, (float) $this->max_discount_amount) : $discount;
         }
 
         // Fixed: cannot exceed the subtotal

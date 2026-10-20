@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CancelExpiredBookings;
+use App\Console\Commands\ExpireGameAttempts;
 use App\Console\Commands\PublishScheduledCmsContent;
 use App\Console\Commands\RecoverLatePayments;
 use App\Console\Commands\SendScheduledEventReports;
@@ -19,6 +20,12 @@ Schedule::command(RecoverLatePayments::class)->everyFiveMinutes()->withoutOverla
 Schedule::command(SendScheduledEventReports::class)->everyMinute();
 
 Schedule::command(PublishScheduledCmsContent::class)->everyFiveMinutes();
+
+Schedule::command(ExpireGameAttempts::class)->everyTenMinutes();
+
+// WhatsApp (Evolution API plugin): drop old webhook events and message history
+// (config/filament-evolution.php → cleanup; customer messages are also in message_logs).
+Schedule::command('evolution:cleanup')->dailyAt('03:30');
 
 Artisan::command('project:refresh', function () {
     $runIfAvailable = function (string $command) {

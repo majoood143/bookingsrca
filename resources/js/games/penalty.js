@@ -31,7 +31,7 @@ const stadium = createStadium({
     brand: C.brand,
     texts: { board: C.campaign.boardText, headline: C.campaign.headline, siteName: C.brand.site_name, prize: C.campaign.prizeText },
 });
-const { camera, ball, netBack, keeper, striker } = stadium;
+const { camera, ball, keeper, striker } = stadium;
 const trail = $('#gTrail'), tctx = trail.getContext('2d');
 
 const resize = () => {
@@ -50,9 +50,25 @@ let state = 'menu'; // menu | intro | aim | runup | flight | over
 let player = C.player;
 let attempt = null; // { id, shots, results: [], startedAt }
 let flight = null, intro = null, pts = null, pending = null;
-let timeScale = 1, shake = 0, netKick = 0, hintShown = true;
+let timeScale = 1, shake = 0, hintShown = true;
 const SFX = createAudio(() => state === 'aim' && !pts);
 const banner = $('#gBanner');
+
+// Browsers (iPhones especially) only start or wake audio inside a user gesture: every touch counts.
+['pointerdown', 'touchend', 'click', 'keydown'].forEach((type) => document.addEventListener(type, () => SFX.unlock(), { capture: true, passive: true }));
+document.addEventListener('visibilitychange', () => SFX.visibility(document.hidden));
+
+/** setTimeout that cannot leave the game frozen: a failing step sends the player back to the menu. */
+function later(fn, ms) {
+    return setTimeout(() => {
+        try {
+            fn();
+        } catch (e) {
+            console.error(e);
+            endToMenu(t('generic'));
+        }
+    }, ms);
+}
 
 /* ================= START SCREEN ================= */
 function renderStart() {
@@ -235,10 +251,7 @@ async function startAttempt() {
     keeper.reset();
     ball.position.copy(SPOT);
     state = 'intro';
-    striker.mode = 'intro';
-    striker.root.position.set(0, 0, 11.75);
-    striker.root.rotation.y = Math.PI;
-    striker.legL.rotation.x = striker.legR.rotation.x = 0;
+    striker.beginIntro();
     intro = { t: 0 };
     $('#gTime').textContent = fmt(0);
     showBanner('goal', player.firstName, t('steps_up'));
@@ -258,11 +271,7 @@ function introUpdate(dt) {
     const q = easeOut(clamp((tt - 1.7) / 1.1, 0, 1));
     camera.position.lerpVectors(IC0, CAM, q);
     camera.lookAt(new THREE.Vector3().lerpVectors(IL0, LOOK, q));
-    striker.root.position.lerpVectors(new THREE.Vector3(0, 0, 11.75), striker.REST, q);
-    striker.root.rotation.y = Math.PI - 0.35 * q;
-    const st = Math.sin(q * Math.PI * 4);
-    striker.legL.rotation.x = 0.4 * st;
-    striker.legR.rotation.x = -0.4 * st;
+    striker.introStep(q, dt);
     if (q >= 1) {
         intro = null;
         hintShown = true;
@@ -280,6 +289,8 @@ function resetShot() {
     camera.position.copy(CAM);
     camera.lookAt(LOOK);
     flight = null;
+    pending = null;
+    stadium.setTrail(false);
     state = 'aim';
     timeScale = 1;
     shake = 0;
@@ -336,15 +347,24 @@ cv.addEventListener('pointermove', (e) => {
     tctx.stroke();
     tctx.globalAlpha = 1;
 });
-cv.addEventListener('pointercancel', () => {
-    pts = null;
-    SFX.hush(false);
-});
+// Stop the browser from turning a swipe into scrolling or a pull-to-refresh.
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 cv.addEventListener('pointerup', (e) => {
     if (!pts) return;
     const a = pts;
     pts = null;
     a.push(pxy(e));
+    release(a);
+});
+// iOS cancels a pointer when a swipe looks like a system gesture: still shoot if it was a real swipe.
+cv.addEventListener('pointercancel', () => {
+    if (!pts) return;
+    const a = pts;
+    pts = null;
+    release(a);
+});
+
+function release(a) {
     if (state !== 'aim' || a.length < 2) return SFX.hush(false);
 
     const p0 = a[0], p1 = a[a.length - 1], dx = p1.x - p0.x, dy = p1.y - p0.y;
@@ -377,7 +397,7 @@ cv.addEventListener('pointerup', (e) => {
         points,
         webdriver: navigator.webdriver === true,
     });
-});
+}
 
 function flashHint() {
     const h = $('#gHint');
@@ -396,11 +416,18 @@ function shoot(input) {
     }
     SFX.crowdTo(0.45, 0.4, 850);
 
-    pending = { result: null, error: null };
+    pending = { result: null, error: null, at: performance.now() };
     const req = pending;
-    call(C.urls.shot.replace('__ATTEMPT__', attempt.id), { method: 'POST', i18n: T, body: input })
+    const url = C.urls.shot.replace('__ATTEMPT__', attempt.id);
+    const send = (retry) => call(url, { method: 'POST', i18n: T, body: input, timeout: 9000 })
         .then((res) => (req.result = res))
-        .catch((e) => (req.error = e));
+        .catch((e) => {
+            // a dropped or slow connection: ask once more (if the first one got through, the
+            // server answers with the same, already-decided shot)
+            if (retry && e.status === 0 && pending === req) return send(false);
+            req.error = e;
+        });
+    send(true);
 
     striker.onContact = () => kick(req.result);
     striker.run(() => {
@@ -432,6 +459,16 @@ function shotFailed(error) {
 async function endToMenu(message) {
     state = 'menu';
     attempt = null;
+    flight = null;
+    intro = null;
+    pending = null;
+    timeScale = 1;
+    stadium.setTrail(false);
+    striker.place();
+    keeper.reset();
+    ball.position.copy(SPOT);
+    camera.position.copy(CAM);
+    camera.lookAt(LOOK);
     $('#gHud').hidden = true;
     await refreshPlayer();
     show('start');
@@ -440,6 +477,7 @@ async function endToMenu(message) {
 
 /* ---- the server's shot, animated ---- */
 function kick(res) {
+    stadium.setTrail(true);
     const g = 9.8, v = res.flight.speed, Tf = res.flight.time;
     const aim = res.aim;
     const vy = (aim.y - BR + 0.5 * g * Tf * Tf) / Tf, vx = aim.x / Tf;
@@ -458,7 +496,8 @@ function resolve(f) {
     const s = Math.sign(f.aim.x) || 1;
     if (outcome === 'goal') {
         f.vel.set(f.vx * 0.9, vyT, -f.v);
-        netKick = 1;
+        stadium.netImpact(f.aim.x, Math.min(f.aim.y, GH - 0.2));
+        stadium.confetti(new THREE.Vector3(clamp(f.aim.x, -3, 3), 2.2, -0.6));
     } else if (outcome === 'save') f.vel.set((Math.random() < 0.5 ? -1 : 1) * (2 + Math.random() * 3), Math.abs(vyT) * 0.3 + 2.5, f.v * 0.28);
     else if (outcome === 'post') {
         if (f.aim.y > GH - BR) f.vel.set(f.vx * 0.4, 2 + Math.random() * 2, f.v * 0.35);
@@ -469,6 +508,9 @@ function resolve(f) {
 
     attempt.results.push({ n: res.n, outcome });
     updateHud();
+    keeper.react(outcome);
+    striker.react(outcome);
+    later(() => stadium.setTrail(false), 350);
     ({
         goal: () => { SFX.net(); SFX.roar(); shake = 0.35; buzz([40, 60, 80]); },
         save: () => { SFX.glove(); SFX.ooh(); buzz(60); },
@@ -479,7 +521,7 @@ function resolve(f) {
     showBanner(outcome === 'goal' ? 'goal' : 'bad', t(outcome), t('power') + ' ' + Math.round(Math.min(res.power, 1) * 100) + '%' + (res.power > 1 ? ' +' : ''));
 
     if (res.done) attempt.endedAt = performance.now();
-    setTimeout(() => (res.done ? finish(res.result) : resetShot()), 1700);
+    later(() => (res.done ? finish(res.result) : resetShot()), 1700);
 }
 
 function flightUpdate(dt) {
@@ -515,7 +557,8 @@ function flightUpdate(dt) {
         ball.position.copy(p);
         ball.rotation.x -= (v.z * dt) / BR * 0.3;
     }
-    camera.position.x = lerp(camera.position.x, ball.position.x * 0.18, 0.08);
+    // a little to the right of the striker, so the keeper's dive is never hidden behind him
+    camera.position.x = lerp(camera.position.x, 0.55 + ball.position.x * 0.18, 0.08);
     camera.position.z = lerp(camera.position.z, f.phase === 'air' ? CAM.z - 1.2 : CAM.z - 0.8, 0.04);
     camera.lookAt(LOOK.x + ball.position.x * 0.1, LOOK.y, LOOK.z);
     if (shake > 0) {
@@ -610,18 +653,33 @@ $('#gSound').addEventListener('click', () => {
 
 /* ================= LOOP ================= */
 const clock = new THREE.Clock();
-let time = 0;
+let time = 0, frameErrors = 0;
 function loop() {
+    // scheduled first: an error in one frame must not stop the game
+    requestAnimationFrame(loop);
+    try {
+        frame();
+        frameErrors = 0;
+    } catch (e) {
+        console.error(e);
+        if (++frameErrors === 3 && state !== 'menu') endToMenu(t('generic'));
+    }
+}
+
+function frame() {
     const rdt = Math.min(clock.getDelta(), 0.05), dt = rdt * timeScale;
     time += dt;
     keeper.update(dt, time);
     striker.update(dt, time);
     flightUpdate(dt);
     introUpdate(rdt);
-    if (netKick > 0) {
-        netKick = Math.max(0, netKick - dt * 2.2);
-        netBack.position.z = -1.5 - 0.35 * Math.sin(netKick * Math.PI);
+    stadium.update(dt, rdt);
+
+    // the server has not answered for 15 s (requests time out sooner, so this is a last resort)
+    if (state === 'runup' && pending && !pending.result && !pending.error && performance.now() - pending.at > 15000) {
+        pending.error = { status: 0, message: t('network') };
     }
+
     if (state === 'menu' || state === 'over') {
         camera.position.x = Math.sin(time * 0.15) * 1.2;
         camera.lookAt(LOOK);
@@ -636,7 +694,6 @@ function loop() {
     tctx.fillRect(0, 0, trail.width, trail.height);
     tctx.restore();
     stadium.render();
-    requestAnimationFrame(loop);
 }
 
 $('#gLoading').hidden = true;

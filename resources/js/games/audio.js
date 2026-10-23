@@ -1,13 +1,71 @@
 // Procedural stadium sound (no audio files): crowd bed, claps, whistle, kick, net, post, roars.
-// Starts on the first user gesture (browsers block audio before one).
+// Browsers only allow audio after a user gesture, and iPhones mute Web Audio with the silent
+// switch and suspend it in the background: unlock() runs on every touch and visibility change.
+
+/** A short silent WAV, played in a loop on older iPhones so Web Audio ignores the silent switch. */
+function silentWavUrl() {
+    const rate = 8000, n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const w = (o, str) => [...str].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, n * 2, true);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 export function createAudio(isClapping) {
     const SFX = {
-        ctx: null, out: null, crowd: null, crowdF: null, muted: false, noise: null, clapT: null,
+        ctx: null, out: null, crowd: null, crowdF: null, muted: false, noise: null, clapT: null, keepAlive: null, started: false,
+
+        /** Call from inside a user gesture (tap, click, key): creates or wakes the audio. */
+        unlock() {
+            try {
+                // Safari 17+: play through the silent switch, like a video would
+                if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback';
+            } catch (e) { /* not supported */ }
+
+            if (!navigator.audioSession && isIOS() && !this.keepAlive) {
+                try {
+                    this.keepAlive = new Audio(silentWavUrl());
+                    this.keepAlive.loop = true;
+                    this.keepAlive.setAttribute('playsinline', '');
+                } catch (e) {
+                    this.keepAlive = null;
+                }
+            }
+            if (this.keepAlive && this.keepAlive.paused && !document.hidden) this.keepAlive.play().catch(() => {});
+
+            this.init();
+            if (!this.ctx) return;
+            if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+
+            // a one-sample buffer played inside the gesture is what finally unlocks iOS
+            try {
+                const b = this.ctx.createBuffer(1, 1, this.ctx.sampleRate), src = this.ctx.createBufferSource();
+                src.buffer = b;
+                src.connect(this.ctx.destination);
+                src.start(0);
+            } catch (e) { /* ignore */ }
+        },
+
+        /** The page went to the background or came back. */
+        visibility(hidden) {
+            if (!this.ctx) return;
+            if (hidden) {
+                this.keepAlive && this.keepAlive.pause();
+                this.ctx.suspend().catch(() => {});
+            } else {
+                this.ctx.resume().catch(() => {});
+                if (this.keepAlive && this.started) this.keepAlive.play().catch(() => {});
+            }
+        },
 
         init() {
             if (this.ctx) {
-                if (this.ctx.state === 'suspended') this.ctx.resume();
+                // "suspended" (autoplay, background) or "interrupted" (iOS phone call, Siri)
+                if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
                 return;
             }
             const C = window.AudioContext || window.webkitAudioContext;
@@ -57,7 +115,7 @@ export function createAudio(isClapping) {
             });
         },
 
-        ok() { return this.ctx && !this.muted; },
+        ok() { return this.ctx && this.noise && !this.muted; },
 
         src(dur) {
             const s = this.ctx.createBufferSource();
@@ -101,7 +159,7 @@ export function createAudio(isClapping) {
         },
 
         crowdTo(v, secs, freq) {
-            if (!this.ctx) return;
+            if (!this.ctx || !this.crowd) return;
             const t = this.ctx.currentTime, g = this.crowd.gain;
             g.cancelScheduledValues(t);
             g.setValueAtTime(g.value, t);
@@ -113,7 +171,12 @@ export function createAudio(isClapping) {
             }
         },
 
-        start() { this.crowdTo(0.38, 1.5, 700); this.claps(true); },
+        start() {
+            this.started = true;
+            if (this.ctx && this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+            this.crowdTo(0.38, 1.5, 700);
+            this.claps(true);
+        },
 
         claps(on) {
             clearInterval(this.clapT);
@@ -168,7 +231,10 @@ export function createAudio(isClapping) {
         },
         setMuted(m) {
             this.muted = m;
-            if (this.ctx) this.crowd.gain.setTargetAtTime(m ? 0 : 0.38, this.ctx.currentTime, 0.1);
+            if (this.ctx && this.crowd) {
+                this.crowd.gain.cancelScheduledValues(this.ctx.currentTime);
+                this.crowd.gain.setTargetAtTime(m ? 0 : 0.38, this.ctx.currentTime, 0.1);
+            }
         },
     };
 

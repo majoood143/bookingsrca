@@ -111,6 +111,16 @@ class GameAttemptService
             $attempt = GameAttempt::query()->whereKey($attempt->id)->lockForUpdate()->firstOrFail();
             $campaign = $attempt->campaign;
 
+            // The same shot again (the browser retried after a dropped connection): answer with the
+            // shot already decided, never decide it twice.
+            if ($n >= 1 && $n === $attempt->shots_taken && $stored = $attempt->shots()->where('n', $n)->first()) {
+                return [
+                    'shot' => $this->replay($stored),
+                    'attempt' => $attempt,
+                    'done' => $attempt->status === GameAttempt::STATUS_COMPLETED && $n === $campaign->shots_per_attempt,
+                ];
+            }
+
             if (! $attempt->isOpen()) {
                 throw new GameException('attempt_closed');
             }
@@ -205,6 +215,20 @@ class GameAttemptService
             'standing' => $standing,
             'shots' => $attempt->shots()->get(['n', 'outcome'])->map(fn (GameShot $s) => ['n' => $s->n, 'outcome' => $s->outcome])->all(),
             'remaining' => $this->remaining($attempt->campaign, $attempt->player),
+        ];
+    }
+
+    /** A stored shot in the engine's answer format, for a retried request. */
+    private function replay(GameShot $shot): array
+    {
+        $speed = 15 + min($shot->power, 1.4) * 17;
+
+        return [
+            'aim' => ['x' => $shot->aim_x, 'y' => $shot->aim_y],
+            'power' => $shot->power,
+            'outcome' => $shot->outcome,
+            'keeper' => $shot->keeper,
+            'flight' => ['speed' => round($speed, 3), 'time' => round(PenaltyEngine::SPOT_DISTANCE / $speed, 4)],
         ];
     }
 

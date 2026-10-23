@@ -144,12 +144,19 @@ if (webglAvailable()) {
     const clock = new THREE.Clock();
     let time = 0;
     const loop = () => {
-        time += Math.min(clock.getDelta(), 0.05);
-        camera.position.set(base.x + Math.sin(time * 0.12) * 2.2, base.y + Math.sin(time * 0.2) * 0.15, base.z);
-        camera.lookAt(target.x, target.y, target.z);
-        podium.animate(time);
-        stadium.render();
+        // scheduled first: a stadium screen must keep running whatever happens in one frame
         requestAnimationFrame(loop);
+        try {
+            const dt = Math.min(clock.getDelta(), 0.05);
+            time += dt;
+            camera.position.set(base.x + Math.sin(time * 0.12) * 2.2, base.y + Math.sin(time * 0.2) * 0.15, base.z);
+            camera.lookAt(target.x, target.y, target.z);
+            podium.animate(time);
+            stadium.update(dt);
+            stadium.render();
+        } catch (e) {
+            console.error(e);
+        }
     };
     loop();
 }

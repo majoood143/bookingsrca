@@ -1,7 +1,10 @@
 // The floodlit stadium shared by the game and the public leaderboard: pitch, goal and net, crowd
 // stands, a tifo and LED boards painted with the client's branding (logo, colors, texts), the
-// goalkeeper and the striker. Everything brand-specific comes from `brand` and `texts`.
+// goalkeeper and the striker (characters.js), and the effects (net bulge, confetti, ball trail).
+// Everything brand-specific comes from `brand` and `texts`.
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { createKeeper, createStriker } from './characters.js';
 
 export const GW = 3.66; // half goal width (m)
 export const GH = 2.44; // goal height
@@ -63,8 +66,15 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     renderer.shadowMap.enabled = !lowEnd;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
 
     const scene = new THREE.Scene();
+    // soft image-based light for the players' kits and skin
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environmentIntensity = 0.35;
+    pmrem.dispose();
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 250);
     camera.position.copy(CAM);
     camera.lookAt(LOOK);
@@ -183,7 +193,7 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     };
     const netMat = (t) => new THREE.MeshBasicMaterial({ map: t, transparent: true, side: THREE.DoubleSide, depthWrite: false, opacity: 0.9 });
     const backLen = Math.hypot(GH, 1);
-    const netBack = new THREE.Mesh(new THREE.PlaneGeometry(2 * GW, backLen), netMat(netTex([(2 * GW) / CELL, backLen / CELL])));
+    const netBack = new THREE.Mesh(new THREE.PlaneGeometry(2 * GW, backLen, 40, 14), netMat(netTex([(2 * GW) / CELL, backLen / CELL])));
     netBack.rotation.x = Math.atan2(1, GH);
     netBack.position.set(0, GH / 2, -1.5);
     scene.add(netBack);
@@ -218,7 +228,7 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     });
     crowd.wrapS = THREE.RepeatWrapping;
     crowd.repeat.set(2, 1);
-    const stand = new THREE.Mesh(new THREE.PlaneGeometry(130, 24), new THREE.MeshBasicMaterial({ map: crowd, color: 0x8e9890 }));
+    const stand = new THREE.Mesh(new THREE.PlaneGeometry(130, 24), new THREE.MeshBasicMaterial({ map: crowd, color: 0x8e9890, toneMapped: false }));
     stand.position.set(0, 9.5, -22);
     stand.rotation.x = -0.42;
     scene.add(stand);
@@ -272,7 +282,7 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
         g.direction = 'ltr';
         tifoTex.needsUpdate = true;
     };
-    const tifo = new THREE.Mesh(new THREE.PlaneGeometry(22, 9), new THREE.MeshBasicMaterial({ map: tifoTex, color: 0xc9d3cb }));
+    const tifo = new THREE.Mesh(new THREE.PlaneGeometry(22, 9), new THREE.MeshBasicMaterial({ map: tifoTex, color: 0xc9d3cb, toneMapped: false }));
     tifo.position.set(0, 8.2, -19.9);
     tifo.rotation.x = -0.42;
     scene.add(tifo);
@@ -311,7 +321,7 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
         });
         adTex.needsUpdate = true;
     };
-    const ads = new THREE.Mesh(new THREE.PlaneGeometry(44, 0.9), new THREE.MeshBasicMaterial({ map: adTex }));
+    const ads = new THREE.Mesh(new THREE.PlaneGeometry(44, 0.9), new THREE.MeshBasicMaterial({ map: adTex, toneMapped: false }));
     ads.position.set(0, 0.45, -5);
     scene.add(ads);
 
@@ -356,279 +366,9 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     ball.position.copy(SPOT);
     scene.add(ball);
 
-    const box = (w, h, d, c) => {
-        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: c }));
-        m.castShadow = true;
-        return m;
-    };
-
-    const logoTex = new THREE.Texture();
-    logoTex.colorSpace = THREE.SRGBColorSpace;
-
-    // goalkeeper
-    const keeper = (() => {
-        const KIT = new THREE.Color(brand.keeper_kit), SHORTS = 0x14181a, SKIN = 0x9a6a46, GLOVE = 0xf3f6ef;
-        const root = new THREE.Group(), piv = new THREE.Group();
-        root.add(piv);
-        piv.position.y = 1.0;
-        const torso = box(0.52, 0.62, 0.26, KIT);
-        torso.position.y = 0.28;
-        piv.add(torso);
-        const crest = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.15), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true }));
-        crest.position.set(-0.12, 0.4, 0.131);
-        crest.visible = false;
-        piv.add(crest);
-        const shorts = box(0.5, 0.28, 0.27, SHORTS);
-        shorts.position.y = -0.1;
-        piv.add(shorts);
-        [-1, 1].forEach((s) => {
-            const leg = box(0.17, 0.62, 0.18, KIT);
-            leg.position.set(s * 0.13, -0.55, 0);
-            piv.add(leg);
-            const thigh = box(0.18, 0.2, 0.19, SKIN);
-            thigh.position.set(s * 0.13, -0.32, 0);
-            piv.add(thigh);
-            const boot = box(0.16, 0.1, 0.28, 0x111111);
-            boot.position.set(s * 0.13, -0.94, 0.05);
-            piv.add(boot);
-        });
-        const neck = box(0.12, 0.1, 0.12, SKIN);
-        neck.position.y = 0.63;
-        piv.add(neck);
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), new THREE.MeshLambertMaterial({ color: SKIN }));
-        head.position.y = 0.77;
-        head.castShadow = true;
-        piv.add(head);
-        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.135, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2.2), new THREE.MeshLambertMaterial({ color: 0x1a1410 }));
-        hair.position.y = 0.79;
-        piv.add(hair);
-        const arm = (s) => {
-            const g = new THREE.Group();
-            g.position.set(s * 0.32, 0.52, 0);
-            const a = box(0.13, 0.56, 0.13, KIT);
-            a.position.y = -0.28;
-            g.add(a);
-            const gl = new THREE.Mesh(new THREE.SphereGeometry(0.095, 14, 10), new THREE.MeshLambertMaterial({ color: GLOVE }));
-            gl.position.y = -0.6;
-            gl.scale.set(1, 1.2, 0.6);
-            gl.castShadow = true;
-            g.add(gl);
-            piv.add(g);
-            return g;
-        };
-        const armL = arm(-1), armR = arm(1);
-        root.position.set(0, 0, 0.4);
-        scene.add(root);
-
-        const K = { dive: null, startX: 0, root, piv, armL, armR, crest };
-        K.reset = () => {
-            K.dive = null;
-            root.position.set(0, 0, 0.4);
-            piv.position.y = 1.0;
-            piv.rotation.set(0, 0, 0);
-            armL.rotation.z = -0.35;
-            armR.rotation.z = 0.35;
-        };
-        K.diveTo = (d) => {
-            K.startX = root.position.x;
-            K.dive = { ...d, t: 0 };
-        };
-        K.update = (dt, time) => {
-            if (!K.dive) {
-                root.position.x = 0.32 * Math.sin(time * 1.5);
-                piv.position.y = 1.0 - 0.04 * Math.abs(Math.sin(time * 3));
-                armL.rotation.z = -0.45 - 0.12 * Math.sin(time * 3);
-                armR.rotation.z = 0.45 + 0.12 * Math.sin(time * 3);
-                return;
-            }
-            const d = K.dive;
-            d.t += dt;
-            const q = easeOut(clamp((d.t - d.delay) / d.dur, 0, 1));
-            const side = Math.sign(d.x) || 1, high = d.y > 1.2;
-            if (Math.abs(d.x) > 1.0) {
-                root.position.x = lerp(K.startX, d.x - side * 1.1, q);
-                piv.rotation.z = -side * (high ? 1.15 : 1.42) * q;
-                piv.position.y = lerp(1.0, high ? 1.5 : 0.52, q);
-                armL.rotation.z = lerp(-0.45, -(Math.PI - 0.15), q);
-                armR.rotation.z = lerp(0.45, Math.PI - 0.15, q);
-            } else {
-                root.position.x = lerp(K.startX, d.x, q);
-                piv.position.y = lerp(1.0, high ? 1.45 : 0.85, q);
-                armL.rotation.z = lerp(-0.45, high ? -(Math.PI - 0.3) : -0.9, q);
-                armR.rotation.z = lerp(0.45, high ? Math.PI - 0.3 : 0.9, q);
-            }
-        };
-        K.reset();
-        return K;
-    })();
-
-    // striker in the brand's kit, the player's name on the back
-    const striker = (() => {
-        const KIT = brand.kit, WHITE = 0xf2f5ee, SKIN = 0x8d5e3c;
-        const root = new THREE.Group();
-        scene.add(root);
-        const body = new THREE.Group();
-        root.add(body);
-        const t = box(0.5, 0.62, 0.26, new THREE.Color(KIT));
-        t.position.y = 1.28;
-        body.add(t);
-        const collar = box(0.3, 0.05, 0.27, WHITE);
-        collar.position.y = 1.6;
-        body.add(collar);
-        const shorts = box(0.48, 0.28, 0.27, WHITE);
-        shorts.position.y = 0.9;
-        body.add(shorts);
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.125, 20, 16), new THREE.MeshLambertMaterial({ color: SKIN }));
-        head.position.y = 1.76;
-        head.castShadow = true;
-        body.add(head);
-        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0x14100c }));
-        hair.position.y = 1.78;
-        body.add(hair);
-        const leg = (x) => {
-            const g = new THREE.Group();
-            g.position.set(x, 0.8, 0);
-            const th = box(0.17, 0.32, 0.18, SKIN);
-            th.position.y = -0.16;
-            g.add(th);
-            const sock = box(0.16, 0.44, 0.17, new THREE.Color(KIT));
-            sock.position.y = -0.52;
-            g.add(sock);
-            const bt = box(0.15, 0.09, 0.27, 0x0d0d0d);
-            bt.position.set(0, -0.76, 0.05);
-            g.add(bt);
-            body.add(g);
-            return g;
-        };
-        const legL = leg(0.13), legR = leg(-0.13); // model faces +z, so its right side is local -x
-        const arm = (x) => {
-            const g = new THREE.Group();
-            g.position.set(x, 1.52, 0);
-            const a = box(0.12, 0.3, 0.13, new THREE.Color(KIT));
-            a.position.y = -0.15;
-            g.add(a);
-            const f = box(0.11, 0.28, 0.12, SKIN);
-            f.position.y = -0.43;
-            g.add(f);
-            g.rotation.z = x > 0 ? 0.12 : -0.12;
-            body.add(g);
-            return g;
-        };
-        const armL = arm(0.31), armR = arm(-0.31);
-
-        const shirtCanvas = document.createElement('canvas');
-        shirtCanvas.width = 256;
-        shirtCanvas.height = 320;
-        const shirtTex = new THREE.CanvasTexture(shirtCanvas);
-        shirtTex.colorSpace = THREE.SRGBColorSpace;
-        let shirtName = '';
-        const drawShirt = () => {
-            const g = shirtCanvas.getContext('2d'), w = 256, h = 320;
-            g.fillStyle = KIT;
-            g.fillRect(0, 0, w, h);
-            g.fillStyle = shade(KIT, -0.05);
-            for (let x = 0; x < w; x += 32) g.fillRect(x, 0, 16, h);
-            g.fillStyle = '#f2f5ee';
-            g.fillRect(0, 0, 10, h);
-            g.fillRect(w - 10, 0, 10, h);
-            if (logoImg) {
-                const lw = 40, lh = (lw * logoImg.naturalHeight) / logoImg.naturalWidth;
-                g.drawImage(logoImg, w / 2 - lw / 2, 12, lw, Math.min(lh, 48));
-            }
-            const n = (shirtName || texts.siteName || '').trim().split(/\s+/)[0].toUpperCase().slice(0, 12);
-            g.fillStyle = '#ffffff';
-            g.textAlign = 'center';
-            g.textBaseline = 'middle';
-            fitText(g, n, w - 40, 56);
-            g.fillText(n, w / 2, 92);
-            g.direction = 'ltr';
-            g.font = `800 160px ${FONT}`;
-            g.lineWidth = 8;
-            g.strokeStyle = brand.accent;
-            g.strokeText('10', w / 2, 214);
-            g.fillText('10', w / 2, 214);
-            shirtTex.needsUpdate = true;
-        };
-        drawShirt();
-        const back = new THREE.Mesh(new THREE.PlaneGeometry(0.48, 0.6), new THREE.MeshBasicMaterial({ map: shirtTex }));
-        back.position.set(0, 1.28, -0.132);
-        back.rotation.y = Math.PI;
-        body.add(back);
-
-        const REST = new THREE.Vector3(-1.7, 0, 13.4), KICK = new THREE.Vector3(-0.3, 0, 11.4), OFF = new THREE.Vector3(-2.6, 0, 12.2);
-        const S = { mode: 'rest', t: 0, onContact: null, root, body, legL, legR, REST, KICK };
-        S.place = (v = REST) => {
-            root.position.copy(v);
-            root.rotation.y = Math.PI - 0.35;
-            body.position.y = 0;
-            legL.rotation.x = legR.rotation.x = 0;
-            armL.rotation.x = armR.rotation.x = 0;
-            S.mode = 'rest';
-        };
-        // Runs up; holds the swing at the ball until `ready` resolves (the server's decision).
-        S.run = (ready) => {
-            S.mode = 'run';
-            S.t = 0;
-            S.ready = ready;
-        };
-        S.setName = (name) => {
-            shirtName = name || '';
-            drawShirt();
-        };
-        S.redraw = drawShirt;
-        S.update = (dt, time) => {
-            if (S.mode === 'rest') {
-                body.position.y = 0.015 * Math.sin(time * 3);
-                armL.rotation.x = 0.08 * Math.sin(time * 2);
-                armR.rotation.x = -0.08 * Math.sin(time * 2);
-                return;
-            }
-            if (S.mode === 'hold') {
-                legR.rotation.x = 1.1;
-                if (S.ready && S.ready()) {
-                    S.mode = 'swing';
-                    S.t = 0;
-                }
-                return;
-            }
-            S.t += dt;
-            if (S.mode === 'run') {
-                const q = clamp(S.t / 0.42, 0, 1);
-                root.position.lerpVectors(REST, KICK, q * q * (3 - 2 * q));
-                root.rotation.y = Math.PI - 0.35 * (1 - q) + 0.15 * q;
-                const stride = Math.sin(q * Math.PI * 3);
-                body.position.y = 0.05 * Math.abs(stride);
-                legL.rotation.x = 0.6 * stride;
-                armL.rotation.x = -0.6 * stride;
-                armR.rotation.x = 0.6 * stride;
-                legR.rotation.x = q < 0.7 ? -0.6 * stride + 0.9 * q : lerp(0.63, 1.1, (q - 0.7) / 0.3);
-                if (q >= 1) {
-                    S.mode = S.ready && S.ready() ? 'swing' : 'hold';
-                    S.t = 0;
-                }
-            } else if (S.mode === 'swing') {
-                const q = clamp(S.t / 0.08, 0, 1);
-                legR.rotation.x = lerp(1.1, -1.35, q);
-                if (q >= 1) {
-                    S.mode = 'follow';
-                    S.t = 0;
-                    const cb = S.onContact;
-                    S.onContact = null;
-                    cb && cb();
-                }
-            } else if (S.mode === 'follow') {
-                const q = clamp(S.t / 0.9, 0, 1);
-                legR.rotation.x = lerp(-1.35, 0, Math.min(1, q * 2.5));
-                legL.rotation.x = 0.4 * Math.sin(q * Math.PI * 4);
-                if (q > 0.25) {
-                    root.position.lerpVectors(KICK, OFF, (q - 0.25) / 0.75);
-                    root.rotation.y = -1.2;
-                }
-            }
-        };
-        S.place();
-        return S;
-    })();
+    const castShadow = renderer.shadowMap.enabled;
+    const keeper = createKeeper(scene, { kit: brand.keeper_kit, trim: '#14181a', castShadow });
+    const striker = createStriker(scene, { kit: brand.kit, trim: brand.accent, castShadow });
 
     keeper.root.visible = withPlayers;
     striker.root.visible = withPlayers;
@@ -639,23 +379,165 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     loadImage(brand.logo).then((img) => {
         if (!img) return;
         logoImg = img;
-        logoTex.image = img;
-        logoTex.needsUpdate = true;
-        keeper.crest.visible = true;
+        keeper.setLogo(img);
+        striker.setLogo(img);
         drawTifo();
         drawAds();
-        striker.redraw();
     });
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => {
             drawTifo();
             drawAds();
             striker.redraw();
+            keeper.body.redraw();
         });
     }
 
+    /* ---- effects ---- */
+
+    // net bulge where the ball hits the back net
+    const netPos = netBack.geometry.attributes.position;
+    const netBase = netPos.array.slice();
+    let bulge = null;
+    const netImpact = (x, y) => {
+        bulge = { x, y: ((y - GH / 2) * backLen) / GH, t: 0 };
+    };
+    const updateNet = (dt) => {
+        if (!bulge) return;
+        bulge.t += dt;
+        const k = bulge.t / 0.9;
+        const amp = k >= 1 ? 0 : 0.5 * Math.sin(Math.min(1, k * 2.2) * Math.PI) * (1 - k) + 0.06 * Math.sin(k * 18) * (1 - k);
+        for (let i = 0; i < netPos.count; i++) {
+            const dx = netBase[i * 3] - bulge.x, dy = netBase[i * 3 + 1] - bulge.y;
+            netPos.array[i * 3 + 2] = netBase[i * 3 + 2] - amp * Math.exp(-(dx * dx + dy * dy) / 0.55);
+        }
+        netPos.needsUpdate = true;
+        if (k >= 1) bulge = null;
+    };
+
+    // confetti in the club's colors
+    const CONF = 180;
+    const confGeo = new THREE.BufferGeometry();
+    const confPos = new Float32Array(CONF * 3), confCol = new Float32Array(CONF * 3), confVel = new Float32Array(CONF * 3);
+    confGeo.setAttribute('position', new THREE.BufferAttribute(confPos, 3));
+    confGeo.setAttribute('color', new THREE.BufferAttribute(confCol, 3));
+    const confMat = new THREE.PointsMaterial({ size: 0.085, vertexColors: true, transparent: true, depthWrite: false, toneMapped: false });
+    const confetti = new THREE.Points(confGeo, confMat);
+    confetti.frustumCulled = false;
+    confetti.visible = false;
+    scene.add(confetti);
+    let confLife = 0;
+    const palette = [brand.primary, brand.secondary, brand.accent, '#ffffff'].map((c) => new THREE.Color(c));
+    const burst = (origin) => {
+        for (let i = 0; i < CONF; i++) {
+            confPos[i * 3] = origin.x + (Math.random() - 0.5) * 1.2;
+            confPos[i * 3 + 1] = origin.y + Math.random() * 0.4;
+            confPos[i * 3 + 2] = origin.z + (Math.random() - 0.5) * 0.6;
+            confVel[i * 3] = (Math.random() - 0.5) * 6;
+            confVel[i * 3 + 1] = 2.5 + Math.random() * 4.5;
+            confVel[i * 3 + 2] = 0.5 + Math.random() * 3.5;
+            const c = palette[(Math.random() * palette.length) | 0];
+            confCol[i * 3] = c.r;
+            confCol[i * 3 + 1] = c.g;
+            confCol[i * 3 + 2] = c.b;
+        }
+        confGeo.attributes.color.needsUpdate = true;
+        confLife = 2.4;
+        confetti.visible = true;
+    };
+    const updateConfetti = (dt) => {
+        if (confLife <= 0) return;
+        confLife -= dt;
+        const drag = Math.exp(-1.6 * dt);
+        for (let i = 0; i < CONF; i++) {
+            confVel[i * 3 + 1] -= 5.5 * dt;
+            confVel[i * 3] *= drag;
+            confVel[i * 3 + 1] *= drag;
+            confVel[i * 3 + 2] *= drag;
+            confPos[i * 3] += confVel[i * 3] * dt + Math.sin((confLife + i) * 9) * 0.004;
+            confPos[i * 3 + 1] = Math.max(0.02, confPos[i * 3 + 1] + confVel[i * 3 + 1] * dt);
+            confPos[i * 3 + 2] += confVel[i * 3 + 2] * dt;
+        }
+        confGeo.attributes.position.needsUpdate = true;
+        confMat.opacity = Math.min(1, confLife / 0.6);
+        if (confLife <= 0) confetti.visible = false;
+    };
+
+    // a fading trail behind the ball while it flies
+    const trailTex = canvasTex(64, 64, (g, w, h) => {
+        const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+        gr.addColorStop(0, 'rgba(255,255,255,1)');
+        gr.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = gr;
+        g.fillRect(0, 0, w, h);
+    });
+    const TRAIL = 12;
+    const trailSprites = Array.from({ length: TRAIL }, () => {
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: trailTex, color: brand.accent, transparent: true, depthWrite: false, toneMapped: false }));
+        sp.visible = false;
+        scene.add(sp);
+        return sp;
+    });
+    const history = [];
+    let trailOn = false;
+    const setTrail = (on) => {
+        trailOn = on;
+        if (!on) history.length = 0;
+    };
+    const updateTrail = () => {
+        if (trailOn) {
+            history.unshift(ball.position.clone());
+            if (history.length > TRAIL) history.length = TRAIL;
+        } else if (history.length) {
+            history.pop();
+        }
+        trailSprites.forEach((sp, i) => {
+            const p = history[i];
+            sp.visible = !!p && i > 0;
+            if (!p) return;
+            const k = 1 - i / TRAIL;
+            sp.position.copy(p);
+            sp.scale.setScalar(0.26 * k + 0.04);
+            sp.material.opacity = 0.55 * k;
+        });
+    };
+
+    // phones that cannot keep a smooth frame rate drop resolution and shadows instead of stuttering
+    const perf = { frames: 0, time: 0, warm: 90, degraded: lowEnd };
+    let sizedEl = null;
+    const degrade = () => {
+        perf.degraded = true;
+        renderer.setPixelRatio(1);
+        sun.castShadow = false;
+        keeper.setShadows(false);
+        striker.setShadows(false);
+        if (sizedEl) resize(sizedEl);
+    };
+    const monitor = (rdt) => {
+        if (perf.degraded) return;
+        if (perf.warm > 0) {
+            perf.warm -= 1;
+            return;
+        }
+        perf.frames += 1;
+        perf.time += rdt;
+        if (perf.frames >= 120) {
+            if (perf.time / perf.frames > 1 / 36) degrade();
+            perf.frames = 0;
+            perf.time = 0;
+        }
+    };
+
+    const update = (dt, rdt = dt) => {
+        updateNet(dt);
+        updateConfetti(dt);
+        updateTrail();
+        monitor(rdt);
+    };
+
     let W = 1, H = 1;
     const resize = (el) => {
+        sizedEl = el;
         W = el.clientWidth;
         H = el.clientHeight;
         renderer.setSize(W, H, false);
@@ -671,7 +553,8 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
 
     return {
         THREE, renderer, scene, camera, ball, netBack, keeper, striker,
-        resize, toScreen,
+        resize, toScreen, update, netImpact, setTrail,
+        confetti: burst,
         size: () => ({ W, H }),
         render: () => renderer.render(scene, camera),
     };

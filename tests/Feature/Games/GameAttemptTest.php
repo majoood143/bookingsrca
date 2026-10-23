@@ -66,15 +66,23 @@ class GameAttemptTest extends GameTestCase
         $this->assertStringNotContainsString('seed', $shot->getContent());
     }
 
-    public function test_shots_must_come_in_order_and_only_once(): void
+    public function test_shots_must_come_in_order_and_are_decided_only_once(): void
     {
         $this->campaign();
         $this->signIn($this->player());
         $uuid = $this->postJson(route('games.api.start', 'penalty'))->json('attempt');
 
         $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(2))->assertStatus(409);
-        $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(1))->assertOk();
-        $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(1))->assertStatus(409);
+        $first = $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(1))->assertOk()->json();
+
+        // a retry after a dropped connection (even with another swipe) gets the same shot back
+        $retry = $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(1, -0.4, 0.5))->assertOk()->json();
+        $this->assertSame($first['outcome'], $retry['outcome']);
+        $this->assertEquals($first['keeper'], $retry['keeper']);
+        $this->assertEquals($first['aim'], $retry['aim']);
+        $this->assertSame(1, GameAttempt::firstOrFail()->shots()->count());
+
+        $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(3))->assertStatus(409);
     }
 
     public function test_another_players_attempt_cannot_be_played(): void

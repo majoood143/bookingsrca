@@ -13,12 +13,19 @@ export class GameApiError extends Error {
 
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-export async function call(url, { method = 'GET', body = null, i18n = {} } = {}) {
+/**
+ * A request that gives up after `timeout` ms (mobile networks can stall forever otherwise); a
+ * timeout or a dropped connection comes back as status 0 / code "network".
+ */
+export async function call(url, { method = 'GET', body = null, i18n = {}, timeout = 12000 } = {}) {
     let response;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeout) : null;
 
     try {
         response = await fetch(url, {
             method,
+            signal: controller ? controller.signal : undefined,
             credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
@@ -29,6 +36,8 @@ export async function call(url, { method = 'GET', body = null, i18n = {} } = {})
         });
     } catch (e) {
         throw new GameApiError(i18n.network || 'Network error', { status: 0, code: 'network' });
+    } finally {
+        if (timer) clearTimeout(timer);
     }
 
     let data = null;

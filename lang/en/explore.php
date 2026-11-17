@@ -1,0 +1,82 @@
+<?php
+
+return [
+    'nav' => [
+        'group' => 'AR Explore',
+        'explore' => 'Explore',
+    ],
+    'index' => [
+        'title' => 'Explore',
+        'subtitle' => 'Discover our destinations. Open the camera and point it at an item to read or listen to its story.',
+        'empty' => 'No destinations yet.',
+    ],
+    'item' => [
+        'listen' => 'Listen',
+        'pause' => 'Pause',
+        'has_audio' => 'Audio guide',
+    ],
+    'scan' => [
+        'open_camera' => 'Open camera',
+        'back' => 'Back',
+        'close' => 'Close',
+        'read_more' => 'Read more',
+        'loading' => 'Starting the camera…',
+        'point' => 'Point the camera at an item',
+        'camera_denied' => 'Camera access is needed. Allow it in your browser settings and reload the page.',
+        'error' => 'The scanner could not start on this device. Use the list instead.',
+    ],
+    'destination' => [
+        'label' => 'Destination',
+        'plural' => 'Destinations',
+    ],
+    'zone' => [
+        'label' => 'Zone',
+        'plural' => 'Zones',
+        'helper' => 'Each zone is scanned separately. Keep up to :max items with a target image per zone.',
+    ],
+    'item_resource' => [
+        'label' => 'Item',
+        'plural' => 'Items',
+    ],
+    'fields' => [
+        'title' => 'Title (:locale)',
+        'summary' => 'Summary (:locale)',
+        'description' => 'Description (:locale)',
+        'body' => 'Full text (:locale)',
+        'audio' => 'Narration (:locale)',
+        'slug' => 'Slug',
+        'sort_order' => 'Sort order',
+        'is_published' => 'Published',
+        'cover' => 'Cover image',
+        'gallery' => 'Gallery',
+        'target' => 'Target image (what the camera recognises)',
+        'target_helper' => 'A sharp, detailed, flat photo of the real object or sign, about 1000px wide. Plain or repetitive images are hard to recognise.',
+        'zone' => 'Zone',
+        'destination' => 'Destination',
+    ],
+    'tabs' => [
+        'content' => 'Content',
+        'media' => 'Media',
+        'audio' => 'Audio',
+    ],
+    'columns' => [
+        'title' => 'Title',
+        'items' => 'Items',
+        'targets' => 'AR targets',
+        'compiled' => 'Up to date',
+        'needs_compile' => 'Needs compiling',
+    ],
+    'compile' => [
+        'action' => 'Compile AR targets',
+        'heading' => 'Compile AR targets: :zone',
+        'intro' => ':count published items with a target image will be compiled in this browser. Keep this window open until it finishes.',
+        'too_many' => 'This zone has :count targets. Keep it to :max or fewer, or move some items to another zone, for reliable scanning.',
+        'none' => 'This zone has no published items with a target image yet.',
+        'start' => 'Start compiling',
+        'running' => 'Compiling… :progress%',
+        'done' => 'Done. The camera now recognises these items.',
+        'failed' => 'Compiling failed:',
+        'out_of_date' => 'The zone\'s items changed while compiling. Close this window and compile again.',
+        'open_scanner' => 'Open scanner',
+    ],
+];

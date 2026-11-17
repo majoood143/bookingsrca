@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Installer;
 
+use App\Http\Middleware\EnsureAppIsInstalled;
 use App\Models\BookingSetting;
 use App\Models\User;
 use App\Support\Installer\DatabaseConnectionTester;
@@ -79,9 +80,18 @@ class InstallWizard extends Component
     // Step 7 — Finish
     public bool $seed_demo_data = false;
 
+    // Runs on every follow-up Livewire request: a stale or replayed snapshot
+    // must not reach saveDatabase()/createAdmin() once the app is installed.
+    public function hydrate(): void
+    {
+        if (EnsureAppIsInstalled::isInstalled()) {
+            abort(403);
+        }
+    }
+
     public function mount(): void
     {
-        if (File::exists(storage_path('installed'))) {
+        if (EnsureAppIsInstalled::isInstalled()) {
             $this->redirect('/admin/login');
 
             return;

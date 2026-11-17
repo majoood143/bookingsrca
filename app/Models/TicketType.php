@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Translatable\HasTranslations;
+
 class TicketType extends Model
 {
-
     use HasFactory, HasTranslations, LogsActivity;
 
     protected $fillable = [
@@ -76,17 +76,21 @@ class TicketType extends Model
     // Helper methods
 
     // Mirrors TimeSlot::getActiveBookedQuantity() - counts confirmed bookings
-    // plus pending ones still awaiting payment, computed live.
+    // plus pending ones still awaiting payment, computed live. Counted per
+    // attendee: a mixed booking (1 adult + 3 child) stores only its first type
+    // on bookings.ticket_type_id, so summing bookings.quantity would charge all
+    // four tickets to that one type.
     public function getActiveSoldQuantity(): int
     {
-        return (int) $this->bookings()
+        return BookingAttendee::where('booking_attendees.ticket_type_id', $this->id)
+            ->join('bookings', 'bookings.id', '=', 'booking_attendees.booking_id')
             ->where(function ($query) {
-                $query->where('status', 'confirmed')
+                $query->where('bookings.status', 'confirmed')
                     ->orWhere(function ($query) {
-                        $query->where('status', 'pending')->where('payment_status', '!=', 'failed');
+                        $query->where('bookings.status', 'pending')->where('bookings.payment_status', '!=', 'failed');
                     });
             })
-            ->sum('quantity');
+            ->count();
     }
 
     public function getRemainingQuantity()
@@ -96,7 +100,7 @@ class TicketType extends Model
 
     public function isAvailable($quantity = 1)
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 

@@ -124,9 +124,6 @@
         <meta name="description" content="{{ $eventDescription }}">
         <meta name="robots" content="index, follow">
         <link rel="canonical" href="{{ $canonicalUrl }}">
-        <link rel="alternate" hreflang="en" href="{{ $canonicalUrl }}">
-        <link rel="alternate" hreflang="ar" href="{{ $canonicalUrl }}">
-        <link rel="alternate" hreflang="x-default" href="{{ $canonicalUrl }}">
 
         <meta property="og:type" content="website">
         <meta property="og:title" content="{{ $eventTitle }} | {{ $siteName }}">

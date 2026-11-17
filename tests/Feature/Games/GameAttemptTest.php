@@ -85,6 +85,21 @@ class GameAttemptTest extends GameTestCase
         $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(3))->assertStatus(409);
     }
 
+    public function test_a_retried_last_shot_still_finishes_the_attempt(): void
+    {
+        $this->campaign();
+        $this->signIn($this->player());
+        $last = $this->playAttempt(goals: 3)->json();
+
+        $uuid = GameAttempt::firstOrFail()->uuid;
+        $this->postJson(route('games.api.shot', ['penalty', $uuid]), $this->swipe(5))->assertOk()
+            ->assertJsonPath('done', true)
+            ->assertJsonPath('outcome', $last['outcome'])
+            ->assertJsonPath('flight', $last['flight'])
+            ->assertJsonPath('result.goals', 3);
+        $this->assertSame(5, GameAttempt::firstOrFail()->shots()->count());
+    }
+
     public function test_another_players_attempt_cannot_be_played(): void
     {
         $this->campaign();

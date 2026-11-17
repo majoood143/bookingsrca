@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use App\Models\Booking;
 use App\Models\PaymentGatewayLog;
 use App\Services\CCAvenueService;
+use App\Services\ThawaniService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class CCAvenueCallbackController extends Controller
 {
-    public function __construct(private readonly CCAvenueService $ccavenue) {}
+    public function __construct(
+        private readonly CCAvenueService $ccavenue,
+        private readonly ThawaniService $settlement,
+    ) {}
 
     // ──────────────────────────────────────────────────────────────────────────
     // POST /booking/payment/callback/ccavenue
@@ -34,8 +38,9 @@ class CCAvenueCallbackController extends Controller
     {
         $encResp = $request->input('encResp');
 
-        if (!$encResp) {
+        if (! $encResp) {
             Log::warning('CCAvenue callback: missing encResp', $this->loggableRequest($request));
+
             return redirect('/')->with('error', __('Invalid payment callback.'));
         }
 
@@ -45,18 +50,20 @@ class CCAvenueCallbackController extends Controller
         } catch (Exception $e) {
             Log::error('CCAvenue callback decryption error', ['error' => $e->getMessage()]);
             PaymentGatewayLog::log(null, 'ccavenue', 'callback', $this->loggableRequest($request), ['error' => $e->getMessage()]);
+
             return redirect('/')->with('error', __('An error occurred while verifying your payment. Please contact support.'));
         }
 
         $orderId = $data['order_id'] ?? null;
-        $status  = strtolower((string) ($data['order_status'] ?? ''));
-        $amount  = $data['amount'] ?? null;
+        $status = strtolower((string) ($data['order_status'] ?? ''));
+        $amount = $data['amount'] ?? null;
 
         $booking = $orderId ? Booking::where('payment_session_id', $orderId)->first() : null;
 
-        if (!$booking) {
+        if (! $booking) {
             Log::warning('CCAvenue callback: no booking found for order_id', ['order_id' => $orderId]);
             PaymentGatewayLog::log(null, 'ccavenue', 'callback', $this->loggableRequest($request), $data);
+
             return redirect('/')->with('error', __('Booking not found.'));
         }
 
@@ -74,37 +81,33 @@ class CCAvenueCallbackController extends Controller
         if ($status === 'success' && $amountMatches) {
             $reference = $data['tracking_id'] ?? $data['bank_ref_no'] ?? null;
 
-            $booking->update([
-                'payment_status'    => 'paid',
-                'payment_reference' => $reference,
-            ]);
+            // Locked settle: a repeated callback can't confirm twice, and a booking the
+            // expiry sweep already cancelled is only revived if its seats are still free.
+            $this->settlement->applyPaidSession($booking, ['payment_ref' => $reference], gateway: 'ccavenue');
 
-            $booking->payments()->firstOrCreate(
-                ['payment_method' => 'ccavenue'],
-                [
-                    'amount'    => $booking->total_price,
-                    'reference' => $reference,
-                    'notes'     => 'Online payment via CCAvenue (Bank Muscat).',
-                ]
-            );
+            if ($booking->status === 'confirmed') {
+                return redirect()->route('booking.success', $booking->booking_reference);
+            }
 
-            $booking->confirm();
-
-            return redirect()->route('booking.success', $booking->booking_reference);
+            return redirect()
+                ->route('event.booking', $booking->event->slug)
+                ->with('error', __('Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.'));
         }
 
-        if ($status === 'success' && !$amountMatches) {
+        if ($status === 'success' && ! $amountMatches) {
             Log::warning('CCAvenue callback: amount mismatch, treating as failed', [
                 'booking_id' => $booking->id,
-                'expected'   => $booking->total_price,
-                'received'   => $amount,
+                'expected' => $booking->total_price,
+                'received' => $amount,
             ]);
         }
 
-        $booking->update(['payment_status' => 'failed']);
+        if ($booking->status === 'pending') {
+            $booking->update(['payment_status' => 'failed']);
 
-        if ($status === 'aborted') {
-            $booking->cancel();
+            if ($status === 'aborted') {
+                $booking->cancel('gateway');
+            }
         }
 
         $message = $data['failure_message'] ?? $data['status_message'] ?? __('Payment was not completed. Please try again.');
@@ -121,7 +124,7 @@ class CCAvenueCallbackController extends Controller
     {
         return [
             'content_type' => $request->header('Content-Type'),
-            'all'          => $request->all(),
+            'all' => $request->all(),
         ];
     }
 }

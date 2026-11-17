@@ -23,9 +23,7 @@
     <meta name="description" content="{{ $description }}">
 @endif
 <meta name="robots" content="{{ $robots }}">
-@if ($model->canonical_url)
-    <link rel="canonical" href="{{ $model->canonical_url }}">
-@endif
+<link rel="canonical" href="{{ $model->canonical_url ?: url()->current() }}">
 
 <meta property="og:type" content="{{ $model->og_type }}">
 <meta property="og:title" content="{{ $title }}">

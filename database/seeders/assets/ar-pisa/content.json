@@ -1,0 +1,82 @@
+{
+    "destination": {
+        "slug": "pisa-piazza-dei-miracoli",
+        "cover": "cover.jpg",
+        "title": {
+            "en": "Tower of Pisa & Piazza dei Miracoli",
+            "ar": "برج بيزا وساحة المعجزات"
+        },
+        "summary": {
+            "en": "The square of miracles in Pisa, Italy: the Leaning Tower, the Cathedral, the Baptistery and the Monumental Cemetery.",
+            "ar": "ساحة المعجزات في مدينة بيزا الإيطالية: البرج المائل والكاتدرائية والمعمودية والمقبرة الأثرية."
+        },
+        "description": {
+            "en": "Piazza dei Miracoli is a walled square in Pisa that holds four masterpieces of medieval architecture. It has been a UNESCO World Heritage Site since 1987.\n\nOpen the camera in a zone and point it at a monument, or at a photo of it, to read and listen to its story.",
+            "ar": "ساحة المعجزات ساحة مسوّرة في مدينة بيزا تضم أربع روائع من العمارة في العصور الوسطى، وهي مدرجة في قائمة اليونسكو للتراث العالمي منذ عام 1987.\n\nافتح الكاميرا في إحدى المناطق ووجّهها نحو أحد المعالم أو نحو صورته لتقرأ قصته وتستمع إليها."
+        }
+    },
+    "zones": [
+        {
+            "title": { "en": "The Tower & Cathedral", "ar": "البرج والكاتدرائية" },
+            "items": [
+                {
+                    "slug": "leaning-tower-of-pisa",
+                    "image": "tower.jpg",
+                    "title": { "en": "The Leaning Tower", "ar": "البرج المائل" },
+                    "summary": {
+                        "en": "The bell tower of Pisa Cathedral, famous worldwide for its tilt.",
+                        "ar": "برج أجراس كاتدرائية بيزا، المشهور في العالم كله بميلانه."
+                    },
+                    "body": {
+                        "en": "Work on the tower began in 1173 and took almost two hundred years. It started to lean while it was still being built, because the soft ground under one side could not carry its weight.\n\nThe tower is about 56 metres tall, has eight levels and holds seven bells. Between 1990 and 2001 engineers removed soil from under the higher side and reduced the tilt from about five and a half degrees to about four, so it will stand for centuries to come.",
+                        "ar": "بدأ بناء البرج عام 1173 واستغرق نحو مئتي عام. وبدأ يميل أثناء بنائه، لأن التربة الطرية تحت أحد جانبيه لم تتحمل ثقله.\n\nيبلغ ارتفاع البرج نحو 56 متراً، وله ثمانية طوابق، ويضم سبعة أجراس. وبين عامي 1990 و2001 أزال المهندسون جزءاً من التربة تحت الجانب المرتفع، فخفّضوا الميل من نحو خمس درجات ونصف إلى نحو أربع درجات، ليبقى البرج قائماً لقرون قادمة."
+                    }
+                },
+                {
+                    "slug": "pisa-cathedral",
+                    "image": "cathedral.jpg",
+                    "title": { "en": "Pisa Cathedral", "ar": "كاتدرائية بيزا" },
+                    "summary": {
+                        "en": "The heart of the square, a masterpiece of Pisan Romanesque style.",
+                        "ar": "قلب الساحة، وتحفة من طراز العمارة الرومانسكية البيزية."
+                    },
+                    "body": {
+                        "en": "Building started in 1064, paid for by the riches Pisa won as a sea power, and the cathedral was consecrated in 1118. Its facade of white and grey marble, with rows of small arches, became the model for the Pisan Romanesque style.\n\nInside, the carved marble pulpit by Giovanni Pisano, finished in 1310, is one of the great works of medieval sculpture.",
+                        "ar": "بدأ بناؤها عام 1064 بفضل الثروات التي جنتها بيزا بوصفها قوة بحرية، وكُرّست عام 1118. وصارت واجهتها من الرخام الأبيض والرمادي، بصفوف أقواسها الصغيرة، نموذجاً لطراز العمارة الرومانسكية البيزية.\n\nوفي داخلها منبر رخامي منحوت من صنع جوفاني بيزانو، اكتمل عام 1310، ويُعد من أعظم أعمال النحت في العصور الوسطى."
+                    }
+                }
+            ]
+        },
+        {
+            "title": { "en": "Baptistery & Camposanto", "ar": "المعمودية والمقبرة الأثرية" },
+            "items": [
+                {
+                    "slug": "pisa-baptistery",
+                    "image": "baptistery.jpg",
+                    "title": { "en": "The Baptistery", "ar": "المعمودية" },
+                    "summary": {
+                        "en": "The largest baptistery in Italy, known for its remarkable echo.",
+                        "ar": "أكبر معمودية في إيطاليا، وتشتهر بصداها المدهش."
+                    },
+                    "body": {
+                        "en": "The round Baptistery of Saint John was begun in 1152 and is the largest in Italy, with a circumference of more than 107 metres. Galileo Galilei was baptised here in 1564.\n\nIts dome makes an extraordinary echo: a single voice can hold a note that seems to go on and on, and guards still sing a few notes for visitors to show it.",
+                        "ar": "بدأ بناء معمودية القديس يوحنا الدائرية عام 1152، وهي الأكبر في إيطاليا، إذ يزيد محيطها على 107 أمتار. وفيها جرت معمودية غاليليو غاليلي عام 1564.\n\nتصنع قبتها صدى استثنائياً، فصوت واحد يمكن أن يبدو كأنه يمتد طويلاً، ولا يزال الحراس يغنّون بعض النغمات للزوار ليُظهروا ذلك."
+                    }
+                },
+                {
+                    "slug": "camposanto-monumentale",
+                    "image": "camposanto.jpg",
+                    "title": { "en": "The Monumental Cemetery", "ar": "المقبرة الأثرية" },
+                    "summary": {
+                        "en": "A marble cloister that closes the north side of the square.",
+                        "ar": "رواق رخامي يغلق الجانب الشمالي من الساحة."
+                    },
+                    "body": {
+                        "en": "The Camposanto was begun in 1278. Legend says it was built around soil brought back from Golgotha during the Crusades.\n\nIts walls were once covered with great frescoes, such as the Triumph of Death. A fire in July 1944, during the Second World War, badly damaged them, and restoring them took decades.",
+                        "ar": "بدأ بناء المقبرة الأثرية عام 1278، وتقول الأسطورة إنها بُنيت حول تربة جُلبت من الجلجثة خلال الحروب الصليبية.\n\nكانت جدرانها مغطاة بلوحات جدارية عظيمة، مثل لوحة انتصار الموت. وقد ألحق بها حريق في يوليو 1944، خلال الحرب العالمية الثانية، أضراراً بالغة، واستغرق ترميمها عقوداً."
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -552,7 +552,7 @@ export function createStadium({ canvas, brand, texts, withPlayers = true }) {
     };
 
     return {
-        THREE, renderer, scene, camera, ball, netBack, keeper, striker,
+        THREE, renderer, scene, camera, ball, keeper, striker,
         resize, toScreen, update, netImpact, setTrail,
         confetti: burst,
         size: () => ({ W, H }),

@@ -23,8 +23,7 @@ class PosOrderPaymentController extends Controller
     public function __construct(
         private readonly ThawaniService $thawani,
         private readonly CCAvenueService $ccavenue,
-    ) {
-    }
+    ) {}
 
     // GET /shop/payment/callback — Thawani redirects here after checkout.
     public function thawaniCallback(Request $request)
@@ -32,7 +31,7 @@ class PosOrderPaymentController extends Controller
         $orderNumber = $request->query('reference');
         $order = $orderNumber ? PosOrder::where('order_number', $orderNumber)->first() : null;
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('shop.checkout')->with('error', __('pos.order.payment.not_found'));
         }
 
@@ -40,7 +39,7 @@ class PosOrderPaymentController extends Controller
             return redirect()->route('shop.order.success', $order->order_number);
         }
 
-        if (!$order->payment_reference) {
+        if (! $order->payment_reference) {
             return redirect()->route('shop.checkout')->with('error', __('pos.order.payment.session_missing'));
         }
 
@@ -72,7 +71,7 @@ class PosOrderPaymentController extends Controller
         $payload = $request->getContent();
         $signature = $request->header('thawani-signature', '');
 
-        if (!$this->thawani->verifyWebhookSignature($payload, $signature)) {
+        if (! $this->thawani->verifyWebhookSignature($payload, $signature)) {
             return response()->json(['message' => 'Invalid signature'], 401);
         }
 
@@ -84,10 +83,18 @@ class PosOrderPaymentController extends Controller
 
         PosOrderGatewayLog::log($order, 'thawani', 'webhook', $data, ['event_type' => $event, 'session_id' => $sessionId]);
 
-        if ($event === 'payment_completed' && $order && !$order->isPaid()) {
-            $reference = $data['data']['payment_ref'] ?? null;
-            $order->markPaid('thawani', $reference);
-            ShopCart::clear();
+        // Don't trust the event name: the signature check passes everything when no
+        // webhook secret is set — ask Thawani for the session's real status instead.
+        if ($order && ! $order->isPaid()) {
+            try {
+                $session = $this->thawani->getSession($sessionId, $order)['data'] ?? [];
+
+                if (($session['payment_status'] ?? null) === 'paid') {
+                    $order->markPaid('thawani', $session['payment_ref'] ?? $session['invoice'] ?? null);
+                }
+            } catch (Exception $e) {
+                Log::error('POS shop Thawani webhook resync failed', ['session_id' => $sessionId, 'error' => $e->getMessage()]);
+            }
         }
 
         return response()->json(['message' => 'ok']);
@@ -107,7 +114,7 @@ class PosOrderPaymentController extends Controller
             return redirect()->route('shop.order.success', $order->order_number);
         }
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('shop.checkout')->with('error', __('pos.order.payment.not_found'));
         }
 
@@ -148,7 +155,7 @@ class PosOrderPaymentController extends Controller
     {
         $encResp = $request->input('encResp');
 
-        if (!$encResp) {
+        if (! $encResp) {
             return redirect()->route('shop.checkout')->with('error', __('pos.order.payment.not_found'));
         }
 
@@ -167,7 +174,7 @@ class PosOrderPaymentController extends Controller
 
         $order = $orderId ? PosOrder::where('payment_reference', $orderId)->first() : null;
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('shop.checkout')->with('error', __('pos.order.payment.not_found'));
         }
 

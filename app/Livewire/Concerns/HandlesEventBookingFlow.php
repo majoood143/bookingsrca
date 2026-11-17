@@ -2,17 +2,19 @@
 
 namespace App\Livewire\Concerns;
 
-use Exception;
-use App\Models\Event;
-use App\Models\TimeSlot;
-use App\Models\BookingAttendee;
 use App\Models\Booking;
+use App\Models\BookingAttendee;
 use App\Models\BookingSetting;
+use App\Models\Event;
 use App\Models\PromoCode;
+use App\Models\TimeSlot;
 use App\Services\PromoCodeService;
 use App\Services\SeatAllocationService;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\WithFileUploads;
 
 // Domain logic shared by every booking wizard screen (public web + kiosk):
@@ -30,7 +32,9 @@ trait HandlesEventBookingFlow
     // uninitialized typed property, so `null` is the safe default everywhere.
     // The web flow always receives it via route-model binding before mount().
     public ?Event $event = null;
+
     public $selectedDate = null;
+
     public $selectedSlot = null;
 
     /** @var array [ticket_type_id => qty] */
@@ -50,37 +54,76 @@ trait HandlesEventBookingFlow
 
     public bool $copyContactToAll = false;
 
+    #[Locked]
     public $maxTickets;
+
+    #[Locked]
     public $minTickets;
 
     // Field visibility from settings
-    public bool $showEmail       = true;
-    public bool $showPhone       = true;
+    #[Locked]
+    public bool $showEmail = true;
+
+    #[Locked]
+    public bool $showPhone = true;
+
+    #[Locked]
     public bool $showDateOfBirth = true;
-    public bool $showGender      = true;
+
+    #[Locked]
+    public bool $showGender = true;
+
+    #[Locked]
     public bool $showNationality = true;
+
+    #[Locked]
     public bool $showIdentityNumber = true;
-    public int  $maxAttendeeAge  = 75;
+
+    #[Locked]
+    public int $maxAttendeeAge = 75;
+
     public bool $showSlotEndTime = true;
 
     // Passport/ID document fields — unlike the fields above, these have no
     // global BookingSetting default and are hidden unless an event explicitly
     // turns them on via a per-event/kiosk field-visibility override.
+    #[Locked]
     public bool $showPassportNumber = false;
+
+    #[Locked]
     public bool $showIdentityCardUpload = false;
+
+    #[Locked]
     public bool $showPassportUpload = false;
 
     // Whether each shown field is required — independent of visibility so a
     // field can be shown but optional (defaults mirror the previous hardcoded
     // behavior: date of birth and nationality were never required).
-    public bool $requireEmail       = true;
-    public bool $requirePhone       = true;
+    #[Locked]
+    public bool $requireEmail = true;
+
+    #[Locked]
+    public bool $requirePhone = true;
+
+    #[Locked]
     public bool $requireDateOfBirth = false;
-    public bool $requireGender      = true;
+
+    #[Locked]
+    public bool $requireGender = true;
+
+    #[Locked]
     public bool $requireNationality = false;
+
+    #[Locked]
     public bool $requireIdentityNumber = true;
+
+    #[Locked]
     public bool $requirePassportNumber = false;
+
+    #[Locked]
     public bool $requireIdentityCardUpload = false;
+
+    #[Locked]
     public bool $requirePassportUpload = false;
 
     // Which per-event override scope applies to this component — "event_booking"
@@ -121,25 +164,37 @@ trait HandlesEventBookingFlow
     }
 
     // Terms and conditions
-    public string $termsEn       = '';
-    public string $termsAr       = '';
-    public string $termsUrlEn    = '';
-    public string $termsUrlAr    = '';
-    public bool   $agreedToTerms = false;
+    #[Locked]
+    public string $termsEn = '';
 
-    public $step       = 1;
+    #[Locked]
+    public string $termsAr = '';
+
+    public string $termsUrlEn = '';
+
+    public string $termsUrlAr = '';
+
+    public bool $agreedToTerms = false;
+
+    public $step = 1;
+
     public $totalPrice = 0;
 
     // Promo code
-    public string $promoCode      = '';
-    public ?int   $promoCodeId    = null;
-    public float  $discountAmount = 0;
-    public ?string $promoMessage  = null;
-    public bool   $promoApplied   = false;
+    public string $promoCode = '';
+
+    public ?int $promoCodeId = null;
+
+    public float $discountAmount = 0;
+
+    public ?string $promoMessage = null;
+
+    public bool $promoApplied = false;
 
     // Per-request in-memory cache — not serialized by Livewire, so these are
     // refreshed each Livewire request but shared across all methods within it.
-    private ?Collection $cachedTicketTypes   = null;
+    private ?Collection $cachedTicketTypes = null;
+
     private ?Collection $cachedExtraServices = null;
 
     protected function loadedTicketTypes(): Collection
@@ -161,28 +216,28 @@ trait HandlesEventBookingFlow
         ];
 
         foreach ($this->attendees as $i => $attendee) {
-            $rules["attendees.$i.first_name"]    = 'required|string|max:255';
-            $rules["attendees.$i.last_name"]     = 'required|string|max:255';
-            $rules["attendees.$i.email"]         = $this->showEmail
-                ? ($this->requireEmail ? 'required' : 'nullable') . '|email|max:255'
+            $rules["attendees.$i.first_name"] = 'required|string|max:255';
+            $rules["attendees.$i.last_name"] = 'required|string|max:255';
+            $rules["attendees.$i.email"] = $this->showEmail
+                ? ($this->requireEmail ? 'required' : 'nullable').'|email|max:255'
                 : 'nullable';
-            $rules["attendees.$i.phone"]         = $this->showPhone
+            $rules["attendees.$i.phone"] = $this->showPhone
                 ? [$this->requirePhone ? 'required' : 'nullable', 'string', 'regex:/^\+?\d{7,15}$/']
                 : 'nullable';
             $rules["attendees.$i.date_of_birth"] = $this->showDateOfBirth
-                ? ($this->requireDateOfBirth ? 'required' : 'nullable') . "|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
+                ? ($this->requireDateOfBirth ? 'required' : 'nullable')."|date|before_or_equal:today|after_or_equal:{$this->minBirthDate()}"
                 : 'nullable';
-            $rules["attendees.$i.gender"]        = $this->showGender
-                ? ($this->requireGender ? 'required' : 'nullable') . '|in:male,female'
+            $rules["attendees.$i.gender"] = $this->showGender
+                ? ($this->requireGender ? 'required' : 'nullable').'|in:male,female'
                 : 'nullable';
-            $rules["attendees.$i.nationality"]   = $this->showNationality
-                ? ($this->requireNationality ? 'required' : 'nullable') . '|string|max:100'
+            $rules["attendees.$i.nationality"] = $this->showNationality
+                ? ($this->requireNationality ? 'required' : 'nullable').'|string|max:100'
                 : 'nullable';
             $rules["attendees.$i.identity_number"] = $this->showIdentityNumber
-                ? ($this->requireIdentityNumber ? 'required' : 'nullable') . '|string|max:50'
+                ? ($this->requireIdentityNumber ? 'required' : 'nullable').'|string|max:50'
                 : 'nullable';
             $rules["attendees.$i.passport_number"] = $this->showPassportNumber
-                ? ($this->requirePassportNumber ? 'required' : 'nullable') . '|string|max:50'
+                ? ($this->requirePassportNumber ? 'required' : 'nullable').'|string|max:50'
                 : 'nullable';
             $rules["attendees.$i.identity_card_upload"] = $this->showIdentityCardUpload
                 ? [$this->requireIdentityCardUpload ? 'required' : 'nullable', 'image', 'max:5120']
@@ -198,26 +253,26 @@ trait HandlesEventBookingFlow
     public function messages(): array
     {
         return [
-            'attendees.*.date_of_birth.date'            => __('event_booking.step5.date_of_birth_invalid'),
-            'attendees.*.date_of_birth.after_or_equal'  => __('event_booking.step5.date_of_birth_max_age', ['age' => $this->maxAttendeeAge]),
+            'attendees.*.date_of_birth.date' => __('event_booking.step5.date_of_birth_invalid'),
+            'attendees.*.date_of_birth.after_or_equal' => __('event_booking.step5.date_of_birth_max_age', ['age' => $this->maxAttendeeAge]),
             'attendees.*.date_of_birth.before_or_equal' => __('event_booking.step5.date_of_birth_future'),
-            'attendees.*.phone.regex'                   => __('event_booking.step5.phone_invalid'),
+            'attendees.*.phone.regex' => __('event_booking.step5.phone_invalid'),
         ];
     }
 
     public function validationAttributes(): array
     {
         return [
-            'selectedDate'                => __('event_booking.step1.heading'),
-            'selectedSlot'                => __('event_booking.step2.heading'),
-            'agreedToTerms'                => __('event_booking.step5.terms_heading'),
-            'attendees.*.first_name'      => __('event_booking.step5.first_name'),
-            'attendees.*.last_name'       => __('event_booking.step5.last_name'),
-            'attendees.*.email'          => __('event_booking.step5.email_address'),
-            'attendees.*.phone'          => __('event_booking.step5.phone_number'),
-            'attendees.*.date_of_birth'  => __('event_booking.step5.date_of_birth'),
-            'attendees.*.gender'          => __('event_booking.step5.gender'),
-            'attendees.*.nationality'    => __('event_booking.step5.nationality'),
+            'selectedDate' => __('event_booking.step1.heading'),
+            'selectedSlot' => __('event_booking.step2.heading'),
+            'agreedToTerms' => __('event_booking.step5.terms_heading'),
+            'attendees.*.first_name' => __('event_booking.step5.first_name'),
+            'attendees.*.last_name' => __('event_booking.step5.last_name'),
+            'attendees.*.email' => __('event_booking.step5.email_address'),
+            'attendees.*.phone' => __('event_booking.step5.phone_number'),
+            'attendees.*.date_of_birth' => __('event_booking.step5.date_of_birth'),
+            'attendees.*.gender' => __('event_booking.step5.gender'),
+            'attendees.*.nationality' => __('event_booking.step5.nationality'),
             'attendees.*.identity_number' => __('event_booking.step5.identity_number'),
             'attendees.*.passport_number' => __('event_booking.step5.passport_number'),
             'attendees.*.identity_card_upload' => __('event_booking.step5.identity_card_upload'),
@@ -238,13 +293,13 @@ trait HandlesEventBookingFlow
         $this->maxTickets = BookingSetting::get('max_tickets_per_booking', 10);
         $this->minTickets = BookingSetting::get('min_tickets_per_booking', 1);
 
-        $this->showEmail       = (bool) BookingSetting::get('show_email', true);
-        $this->showPhone       = (bool) BookingSetting::get('show_phone', true);
+        $this->showEmail = (bool) BookingSetting::get('show_email', true);
+        $this->showPhone = (bool) BookingSetting::get('show_phone', true);
         $this->showDateOfBirth = (bool) BookingSetting::get('show_date_of_birth', true);
-        $this->showGender      = (bool) BookingSetting::get('show_gender', true);
+        $this->showGender = (bool) BookingSetting::get('show_gender', true);
         $this->showNationality = (bool) BookingSetting::get('show_nationality', true);
         $this->showIdentityNumber = (bool) BookingSetting::get('show_identity_number', true);
-        $this->maxAttendeeAge  = (int) BookingSetting::get('max_attendee_age_years', 75);
+        $this->maxAttendeeAge = (int) BookingSetting::get('max_attendee_age_years', 75);
         $this->showSlotEndTime = (bool) BookingSetting::get('show_slot_end_time', true);
 
         // A kiosk may replace any subset of the global min/max tickets, max
@@ -275,45 +330,45 @@ trait HandlesEventBookingFlow
         // requiring it everywhere except date of birth and nationality.
         // Kept as the default here so global-only events behave exactly as
         // before; per-event overrides (below) can change this independently.
-        $this->requireEmail          = true;
-        $this->requirePhone          = true;
-        $this->requireDateOfBirth    = false;
-        $this->requireGender         = true;
-        $this->requireNationality    = false;
+        $this->requireEmail = true;
+        $this->requirePhone = true;
+        $this->requireDateOfBirth = false;
+        $this->requireGender = true;
+        $this->requireNationality = false;
         $this->requireIdentityNumber = true;
 
         // Passport/ID document fields have no global default at all — hidden
         // unless an event's per-flow override explicitly turns them on.
-        $this->showPassportNumber        = false;
-        $this->requirePassportNumber     = false;
-        $this->showIdentityCardUpload    = false;
+        $this->showPassportNumber = false;
+        $this->requirePassportNumber = false;
+        $this->showIdentityCardUpload = false;
         $this->requireIdentityCardUpload = false;
-        $this->showPassportUpload        = false;
-        $this->requirePassportUpload     = false;
+        $this->showPassportUpload = false;
+        $this->requirePassportUpload = false;
 
         // An event-level override for this flow (event booking page vs kiosk)
         // fully replaces the global show/require values above for that flow only.
         $overrides = $this->event?->fieldVisibilityOverridesFor($this->fieldVisibilityScope());
 
         if ($overrides !== null) {
-            $this->showEmail             = $overrides['show_email'];
-            $this->requireEmail          = $overrides['require_email'];
-            $this->showPhone             = $overrides['show_phone'];
-            $this->requirePhone          = $overrides['require_phone'];
-            $this->showDateOfBirth       = $overrides['show_date_of_birth'];
-            $this->requireDateOfBirth    = $overrides['require_date_of_birth'];
-            $this->showGender            = $overrides['show_gender'];
-            $this->requireGender         = $overrides['require_gender'];
-            $this->showNationality       = $overrides['show_nationality'];
-            $this->requireNationality    = $overrides['require_nationality'];
-            $this->showIdentityNumber    = $overrides['show_identity_number'];
+            $this->showEmail = $overrides['show_email'];
+            $this->requireEmail = $overrides['require_email'];
+            $this->showPhone = $overrides['show_phone'];
+            $this->requirePhone = $overrides['require_phone'];
+            $this->showDateOfBirth = $overrides['show_date_of_birth'];
+            $this->requireDateOfBirth = $overrides['require_date_of_birth'];
+            $this->showGender = $overrides['show_gender'];
+            $this->requireGender = $overrides['require_gender'];
+            $this->showNationality = $overrides['show_nationality'];
+            $this->requireNationality = $overrides['require_nationality'];
+            $this->showIdentityNumber = $overrides['show_identity_number'];
             $this->requireIdentityNumber = $overrides['require_identity_number'];
-            $this->showPassportNumber        = $overrides['show_passport_number'];
-            $this->requirePassportNumber     = $overrides['require_passport_number'];
-            $this->showIdentityCardUpload    = $overrides['show_identity_card_upload'];
+            $this->showPassportNumber = $overrides['show_passport_number'];
+            $this->requirePassportNumber = $overrides['require_passport_number'];
+            $this->showIdentityCardUpload = $overrides['show_identity_card_upload'];
             $this->requireIdentityCardUpload = $overrides['require_identity_card_upload'];
-            $this->showPassportUpload        = $overrides['show_passport_upload'];
-            $this->requirePassportUpload     = $overrides['require_passport_upload'];
+            $this->showPassportUpload = $overrides['show_passport_upload'];
+            $this->requirePassportUpload = $overrides['require_passport_upload'];
         }
 
         // An event with its own terms & conditions (in either language)
@@ -347,13 +402,15 @@ trait HandlesEventBookingFlow
 
     public function selectDate($date)
     {
-        if (!in_array($date, $this->event->getBookableDates())) {
+        if (! in_array($date, $this->event->getBookableDates())) {
             session()->flash('error', __('That date is no longer available. Please choose another date.'));
+
             return;
         }
 
         if ($this->enforcesCapacity() && in_array($date, $this->event->getSoldOutDates())) {
             session()->flash('error', __('event_booking.step1.sold_out_error'));
+
             return;
         }
 
@@ -370,11 +427,13 @@ trait HandlesEventBookingFlow
 
         if ($slot && $slot->is_active && $this->isBookingCutoffPassed($slot)) {
             session()->flash('error', $this->bookingCutoffMessage($slot));
+
             return;
         }
 
-        if (!$slot || !$this->isSlotBookable($slot)) {
+        if (! $slot || ! $this->isSlotBookable($slot)) {
             session()->flash('error', __('That time slot is no longer available. Please choose another.'));
+
             return;
         }
 
@@ -385,7 +444,7 @@ trait HandlesEventBookingFlow
         // each type's remaining stock at the moment the customer starts picking
         // tickets, so the stepper can be capped without re-querying on every click.
         foreach ($this->loadedTicketTypes() as $type) {
-            if (!array_key_exists($type->id, $this->ticketQuantities)) {
+            if (! array_key_exists($type->id, $this->ticketQuantities)) {
                 $this->ticketQuantities[$type->id] = 0;
             }
             $this->ticketTypeRemaining[$type->id] = $type->getRemainingQuantity();
@@ -406,23 +465,23 @@ trait HandlesEventBookingFlow
     // booking cutoff window (if configured) hasn't closed it yet.
     protected function isSlotBookable(TimeSlot $slot): bool
     {
-        if (!$slot->is_active) {
+        if (! $slot->is_active) {
             return false;
         }
 
-        if ($this->isKioskContext() ? !$slot->isBookableAtKiosk() : !$slot->isBookableOnline()) {
+        if ($this->isKioskContext() ? ! $slot->isBookableAtKiosk() : ! $slot->isBookableOnline()) {
             return false;
         }
 
-        $slotStart = \Carbon\Carbon::parse(
-            $slot->date->format('Y-m-d') . ' ' . $slot->start_time->format('H:i:s')
+        $slotStart = Carbon::parse(
+            $slot->date->format('Y-m-d').' '.$slot->start_time->format('H:i:s')
         );
 
-        if (!$slotStart->isFuture()) {
+        if (! $slotStart->isFuture()) {
             return false;
         }
 
-        return !$this->isBookingCutoffPassed($slot);
+        return ! $this->isBookingCutoffPassed($slot);
     }
 
     // Friendly "closed N hours ago" message for a slot whose booking cutoff has passed.
@@ -450,7 +509,7 @@ trait HandlesEventBookingFlow
         return $this->event->isBookingCutoffPassed($slot);
     }
 
-    protected function bookingClosesAt(TimeSlot $slot): ?\Carbon\Carbon
+    protected function bookingClosesAt(TimeSlot $slot): ?Carbon
     {
         if ($override = $this->bookingCutoffOverride()) {
             return Event::cutoffClosesAtFor(
@@ -466,14 +525,14 @@ trait HandlesEventBookingFlow
 
     public function incrementQuantity($typeId)
     {
-        $current   = $this->ticketQuantities[$typeId] ?? 0;
-        $total     = array_sum($this->ticketQuantities);
+        $current = $this->ticketQuantities[$typeId] ?? 0;
+        $total = array_sum($this->ticketQuantities);
         $remaining = $this->ticketTypeRemaining[$typeId] ?? 0;
 
         // maxTickets/minTickets are a business policy (per-booking limit) and
         // stay enforced everywhere; remaining stock is real-world capacity,
         // which the kiosk deliberately ignores (see enforcesCapacity()).
-        $withinStock = !$this->enforcesCapacity() || ($current < $remaining && $total < $this->slotRemainingCapacity);
+        $withinStock = ! $this->enforcesCapacity() || ($current < $remaining && $total < $this->slotRemainingCapacity);
 
         if ($current < $this->maxTickets
             && $total < $this->maxTickets
@@ -497,7 +556,7 @@ trait HandlesEventBookingFlow
                 foreach ($this->loadedTicketTypes() as $type) {
                     $dependencyIds = $type->dependsOnMany->pluck('id')->all();
 
-                    if (!in_array((int) $typeId, $dependencyIds)
+                    if (! in_array((int) $typeId, $dependencyIds)
                         || ($this->ticketQuantities[$type->id] ?? 0) <= 0
                     ) {
                         continue;
@@ -506,7 +565,7 @@ trait HandlesEventBookingFlow
                     $stillSatisfied = collect($dependencyIds)
                         ->contains(fn ($id) => ($this->ticketQuantities[$id] ?? 0) > 0);
 
-                    if (!$stillSatisfied) {
+                    if (! $stillSatisfied) {
                         $this->ticketQuantities[$type->id] = 0;
                         $this->clampServiceQuantities($type->id);
                     }
@@ -563,11 +622,13 @@ trait HandlesEventBookingFlow
     {
         $this->totalPrice = 0;
 
-        $ticketTypes   = $this->loadedTicketTypes()->keyBy('id');
+        $ticketTypes = $this->loadedTicketTypes()->keyBy('id');
         $extraServices = $this->loadedExtraServices()->keyBy('id');
 
         foreach ($this->ticketQuantities as $typeId => $qty) {
-            if ($qty <= 0) continue;
+            if ($qty <= 0) {
+                continue;
+            }
 
             $ticketType = $ticketTypes[$typeId] ?? null;
             if ($ticketType) {
@@ -598,33 +659,35 @@ trait HandlesEventBookingFlow
 
         if (blank($this->promoCode)) {
             $this->promoMessage = __('promo.invalid_code');
+
             return;
         }
 
         // The first attendee's phone: a game winner's voucher only works with the winner's mobile.
         $result = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, (float) $this->totalPrice, $this->attendees[0]['phone'] ?? null);
 
-        if (!$result['valid']) {
-            $this->promoApplied    = false;
-            $this->promoCodeId     = null;
-            $this->discountAmount  = 0;
-            $this->promoMessage    = $result['message'];
+        if (! $result['valid']) {
+            $this->promoApplied = false;
+            $this->promoCodeId = null;
+            $this->discountAmount = 0;
+            $this->promoMessage = $result['message'];
+
             return;
         }
 
-        $this->promoCodeId    = $result['promo_code_id'];
+        $this->promoCodeId = $result['promo_code_id'];
         $this->discountAmount = $result['discount_amount'];
-        $this->promoApplied   = true;
-        $this->promoMessage   = $result['message'];
+        $this->promoApplied = true;
+        $this->promoMessage = $result['message'];
     }
 
     public function removePromoCode(): void
     {
-        $this->promoCode      = '';
-        $this->promoCodeId    = null;
+        $this->promoCode = '';
+        $this->promoCodeId = null;
         $this->discountAmount = 0;
-        $this->promoApplied   = false;
-        $this->promoMessage   = null;
+        $this->promoApplied = false;
+        $this->promoMessage = null;
     }
 
     // Re-derives the discount whenever totalPrice changes (ticket/service
@@ -632,14 +695,15 @@ trait HandlesEventBookingFlow
     // (e.g. it expired or hit its usage limit while the customer was shopping).
     protected function recalculatePromoDiscount(): void
     {
-        if (!$this->promoApplied || !$this->promoCodeId) {
+        if (! $this->promoApplied || ! $this->promoCodeId) {
             return;
         }
 
         $promoCode = PromoCode::find($this->promoCodeId);
 
-        if (!$promoCode || !$promoCode->isValid($this->event->id)) {
+        if (! $promoCode || ! $promoCode->isValid($this->event->id)) {
             $this->removePromoCode();
+
             return;
         }
 
@@ -656,13 +720,13 @@ trait HandlesEventBookingFlow
             for ($i = 0; $i < $qty; $i++) {
                 $newAttendees[] = [
                     'ticket_type_id' => $typeId,
-                    'first_name'     => '',
-                    'last_name'      => '',
-                    'email'          => '',
-                    'phone'          => '',
-                    'date_of_birth'  => null,
-                    'gender'         => null,
-                    'nationality'    => '',
+                    'first_name' => '',
+                    'last_name' => '',
+                    'email' => '',
+                    'phone' => '',
+                    'date_of_birth' => null,
+                    'gender' => null,
+                    'nationality' => '',
                     'identity_number' => '',
                     'passport_number' => '',
                     'identity_card_upload' => null,
@@ -687,7 +751,7 @@ trait HandlesEventBookingFlow
     // When the checkbox is toggled, copy email + phone from attendee 0 to the rest
     public function updatedCopyContactToAll(bool $value): void
     {
-        if ($value && !empty($this->attendees)) {
+        if ($value && ! empty($this->attendees)) {
             $email = $this->attendees[0]['email'] ?? '';
             $phone = $this->attendees[0]['phone'] ?? '';
 
@@ -703,11 +767,17 @@ trait HandlesEventBookingFlow
     // Propagate first-attendee email/phone changes when the copy option is on
     public function updatedAttendees($value, $key): void
     {
-        if (!$this->copyContactToAll) return;
+        if (! $this->copyContactToAll) {
+            return;
+        }
 
         $parts = explode('.', $key);
-        if (($parts[0] ?? '') !== '0') return;
-        if (!in_array($parts[1] ?? '', ['email', 'phone'])) return;
+        if (($parts[0] ?? '') !== '0') {
+            return;
+        }
+        if (! in_array($parts[1] ?? '', ['email', 'phone'])) {
+            return;
+        }
 
         $field = $parts[1];
         $newValue = $this->attendees[0][$field] ?? '';
@@ -724,49 +794,63 @@ trait HandlesEventBookingFlow
     public function nextStep(): void
     {
         if ($this->step === 3) {
-            if ($this->getTotalQuantity() < $this->minTickets) {
-                $this->addError('ticketQuantities', __('Please select at least :n ticket(s).', ['n' => $this->minTickets]));
+            if ($error = $this->ticketSelectionError()) {
+                $this->addError('ticketQuantities', $error);
+
                 return;
-            }
-
-            // Enforce ticket dependencies — at least one of the required
-            // dependency ticket types must be selected (OR logic).
-            foreach ($this->loadedTicketTypes() as $type) {
-                $dependencyIds = $type->dependsOnMany->pluck('id')->all();
-
-                if (empty($dependencyIds) || ($this->ticketQuantities[$type->id] ?? 0) <= 0) {
-                    continue;
-                }
-
-                $satisfied = collect($dependencyIds)
-                    ->contains(fn ($id) => ($this->ticketQuantities[$id] ?? 0) > 0);
-
-                if (!$satisfied) {
-                    $parentNames = $this->loadedTicketTypes()
-                        ->whereIn('id', $dependencyIds)
-                        ->map(fn ($t) => $t->getTranslation('name', app()->getLocale()))
-                        ->implode(', ');
-
-                    $this->addError('ticketQuantities', __('event_booking.step3.dependency_required', [
-                        'child'  => $type->getTranslation('name', app()->getLocale()),
-                        'parent' => $parentNames,
-                    ]));
-                    return;
-                }
             }
 
             $this->buildAttendees();
             $this->step = $this->hasExtraServices() ? 4 : 5;
+
             return;
         }
 
         $this->step++;
     }
 
+    // Min-ticket and dependency rules for the current selection, or null when
+    // it's fine. Checked again in persistBooking(), since every public Livewire
+    // method can be called without stepping through nextStep() first.
+    protected function ticketSelectionError(): ?string
+    {
+        if ($this->getTotalQuantity() < $this->minTickets) {
+            return __('Please select at least :n ticket(s).', ['n' => $this->minTickets]);
+        }
+
+        // Enforce ticket dependencies — at least one of the required
+        // dependency ticket types must be selected (OR logic).
+        foreach ($this->loadedTicketTypes() as $type) {
+            $dependencyIds = $type->dependsOnMany->pluck('id')->all();
+
+            if (empty($dependencyIds) || ($this->ticketQuantities[$type->id] ?? 0) <= 0) {
+                continue;
+            }
+
+            $satisfied = collect($dependencyIds)
+                ->contains(fn ($id) => ($this->ticketQuantities[$id] ?? 0) > 0);
+
+            if (! $satisfied) {
+                $parentNames = $this->loadedTicketTypes()
+                    ->whereIn('id', $dependencyIds)
+                    ->map(fn ($t) => $t->getTranslation('name', app()->getLocale()))
+                    ->implode(', ');
+
+                return __('event_booking.step3.dependency_required', [
+                    'child' => $type->getTranslation('name', app()->getLocale()),
+                    'parent' => $parentNames,
+                ]);
+            }
+        }
+
+        return null;
+    }
+
     public function previousStep(): void
     {
-        if ($this->step === 5 && !$this->hasExtraServices()) {
+        if ($this->step === 5 && ! $this->hasExtraServices()) {
             $this->step = 3;
+
             return;
         }
 
@@ -813,7 +897,11 @@ trait HandlesEventBookingFlow
             throw new Exception(__('Please select at least one ticket.'));
         }
 
-        if (!in_array($this->selectedDate, $this->event->getBookableDates())) {
+        if ($error = $this->ticketSelectionError()) {
+            throw new Exception($error);
+        }
+
+        if (! in_array($this->selectedDate, $this->event->getBookableDates())) {
             throw new Exception(__('The selected date is no longer available. Please start over.'));
         }
 
@@ -830,34 +918,34 @@ trait HandlesEventBookingFlow
                         throw new Exception($this->bookingCutoffMessage($timeSlot));
                     }
 
-                    if (!$this->isSlotBookable($timeSlot)) {
+                    if (! $this->isSlotBookable($timeSlot)) {
                         throw new Exception(__('Time slot is no longer available.'));
                     }
                 },
             );
 
-            $ticketPrice   = $allocation['ticketPrice'];
+            $ticketPrice = $allocation['ticketPrice'];
             $servicesPrice = $allocation['servicesPrice'];
 
             // Primary ticket type = first selected type (for backward-compat column)
             $primaryTypeId = collect($this->ticketQuantities)
-                ->filter(fn($q) => $q > 0)
+                ->filter(fn ($q) => $q > 0)
                 ->keys()
                 ->first();
 
             // Re-validate the promo code against the DB-locked subtotal rather than
             // trusting the client-side discount, so a stale/expired/exhausted code
             // never slips through.
-            $subtotal       = $ticketPrice + $servicesPrice;
+            $subtotal = $ticketPrice + $servicesPrice;
             $discountAmount = 0;
-            $promoCodeId    = null;
+            $promoCodeId = null;
 
             if ($this->promoApplied && $this->promoCodeId) {
                 $promoResult = app(PromoCodeService::class)->validate($this->promoCode, $this->event->id, $subtotal, $this->attendees[0]['phone'] ?? null);
 
                 if ($promoResult['valid']) {
                     $discountAmount = $promoResult['discount_amount'];
-                    $promoCodeId    = $promoResult['promo_code_id'];
+                    $promoCodeId = $promoResult['promo_code_id'];
                 } elseif (($promoResult['reason'] ?? null) === 'restricted_mobile') {
                     // A winner's voucher whose phone was changed after applying it: stop rather
                     // than silently charging the full price.
@@ -866,21 +954,21 @@ trait HandlesEventBookingFlow
             }
 
             $booking = Booking::create(array_merge([
-                'event_id'        => $this->event->id,
-                'time_slot_id'    => $this->selectedSlot,
-                'ticket_type_id'  => $primaryTypeId,
-                'event_date'      => $this->selectedDate,
-                'quantity'        => $totalQty,
-                'ticket_price'    => $ticketPrice,
-                'services_price'  => $servicesPrice,
-                'total_price'     => max(0, $subtotal - $discountAmount),
-                'promo_code_id'   => $promoCodeId,
+                'event_id' => $this->event->id,
+                'time_slot_id' => $this->selectedSlot,
+                'ticket_type_id' => $primaryTypeId,
+                'event_date' => $this->selectedDate,
+                'quantity' => $totalQty,
+                'ticket_price' => $ticketPrice,
+                'services_price' => $servicesPrice,
+                'total_price' => max(0, $subtotal - $discountAmount),
+                'promo_code_id' => $promoCodeId,
                 'discount_amount' => $discountAmount,
-                'locale'          => app()->getLocale(),
-                'status'          => 'pending',
-                'payment_status'  => 'pending',
-                'ip_address'      => request()->ip(),
-                'user_agent'      => request()->userAgent(),
+                'locale' => app()->getLocale(),
+                'status' => 'pending',
+                'payment_status' => 'pending',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
             ], $resolveAttributes($ticketPrice, $servicesPrice, $discountAmount)));
 
             // Create one BookingAttendee per ticket
@@ -892,30 +980,30 @@ trait HandlesEventBookingFlow
                 // one used for QR codes/tickets — these are sensitive personal
                 // documents and must never get a guessable public URL.
                 $identityCardPath = null;
-                if ($this->showIdentityCardUpload && !empty($attendeeData['identity_card_upload'])) {
+                if ($this->showIdentityCardUpload && ! empty($attendeeData['identity_card_upload'])) {
                     $identityCardPath = $attendeeData['identity_card_upload']->store('attendee-documents', 'local');
                 }
 
                 $passportPath = null;
-                if ($this->showPassportUpload && !empty($attendeeData['passport_upload'])) {
+                if ($this->showPassportUpload && ! empty($attendeeData['passport_upload'])) {
                     $passportPath = $attendeeData['passport_upload']->store('attendee-documents', 'local');
                 }
 
                 BookingAttendee::create([
-                    'booking_id'     => $booking->id,
+                    'booking_id' => $booking->id,
                     'ticket_type_id' => $attendeeData['ticket_type_id'],
-                    'ticket_price'   => $ticketType?->price ?? 0,
-                    'first_name'     => $attendeeData['first_name'],
-                    'last_name'      => $attendeeData['last_name'],
-                    'email'          => $this->showEmail       ? ($attendeeData['email'] ?? '')         : '',
-                    'phone'          => $this->showPhone       ? ($attendeeData['phone'] ?? null)        : null,
-                    'date_of_birth'  => $this->showDateOfBirth ? ($attendeeData['date_of_birth'] ?? null) : null,
-                    'gender'         => $this->showGender      ? ($attendeeData['gender'] ?? null)       : null,
-                    'nationality'    => $this->showNationality ? ($attendeeData['nationality'] ?? null)  : null,
+                    'ticket_price' => $ticketType?->price ?? 0,
+                    'first_name' => $attendeeData['first_name'],
+                    'last_name' => $attendeeData['last_name'],
+                    'email' => $this->showEmail ? ($attendeeData['email'] ?? '') : '',
+                    'phone' => $this->showPhone ? ($attendeeData['phone'] ?? null) : null,
+                    'date_of_birth' => $this->showDateOfBirth ? ($attendeeData['date_of_birth'] ?? null) : null,
+                    'gender' => $this->showGender ? ($attendeeData['gender'] ?? null) : null,
+                    'nationality' => $this->showNationality ? ($attendeeData['nationality'] ?? null) : null,
                     'identity_number' => $this->showIdentityNumber ? ($attendeeData['identity_number'] ?? null) : null,
                     'passport_number' => $this->showPassportNumber ? ($attendeeData['passport_number'] ?? null) : null,
                     'identity_card_path' => $identityCardPath,
-                    'passport_path'      => $passportPath,
+                    'passport_path' => $passportPath,
                 ]);
             }
 
@@ -924,10 +1012,14 @@ trait HandlesEventBookingFlow
             $aggregated = [];
             foreach ($this->ticketTypeServices as $typeId => $serviceCounts) {
                 $qty = $this->ticketQuantities[$typeId] ?? 0;
-                if ($qty <= 0 || empty($serviceCounts)) continue;
+                if ($qty <= 0 || empty($serviceCounts)) {
+                    continue;
+                }
 
                 foreach ($serviceCounts as $serviceId => $count) {
-                    if ($count <= 0) continue;
+                    if ($count <= 0) {
+                        continue;
+                    }
 
                     if (isset($aggregated[$serviceId])) {
                         $aggregated[$serviceId]['quantity'] += $count;

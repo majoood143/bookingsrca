@@ -3,6 +3,7 @@
 namespace App\Livewire\Concerns;
 
 use App\Models\Event;
+use Livewire\Attributes\Locked;
 
 // Shared by the public /events/{slug} pages (booking + signage): keeps
 // draft/cancelled events 404 for guests, and gates 'private' events behind
@@ -11,6 +12,7 @@ use App\Models\Event;
 // posts rather than being a real auth credential.
 trait GuardsPrivateEvents
 {
+    #[Locked]
     public bool $passwordRequired = false;
 
     public string $eventPasswordInput = '';
@@ -36,6 +38,7 @@ trait GuardsPrivateEvents
 
         if (! $event || ! $event->checkPassword($this->eventPasswordInput)) {
             $this->eventPasswordError = __('event_booking.private.incorrect');
+
             return;
         }
 

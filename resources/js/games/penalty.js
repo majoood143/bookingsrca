@@ -675,8 +675,8 @@ function frame() {
     introUpdate(rdt);
     stadium.update(dt, rdt);
 
-    // the server has not answered for 15 s (requests time out sooner, so this is a last resort)
-    if (state === 'runup' && pending && !pending.result && !pending.error && performance.now() - pending.at > 15000) {
+    // the server has not answered for 20 s (two 9 s tries end sooner, so this is a last resort)
+    if (state === 'runup' && pending && !pending.result && !pending.error && performance.now() - pending.at > 20000) {
         pending.error = { status: 0, message: t('network') };
     }
 

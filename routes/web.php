@@ -1,29 +1,32 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Livewire\EventBooking;
-use App\Livewire\EventSignageDashboard;
-use App\Livewire\Installer\InstallWizard;
-use App\Livewire\Kiosk\KioskBooking;
-use App\Livewire\Cms\CmsBlogIndex;
-use App\Livewire\Cms\CmsPageShow;
-use App\Livewire\Cms\CmsPostShow;
-use App\Models\CmsRedirect;
-use App\Models\Event;
-use App\Http\Controllers\ThawaniCallbackController;
-use App\Http\Controllers\NboCallbackController;
-use App\Http\Controllers\CCAvenueRedirectController;
+use App\Http\Controllers\ArExploreController;
+use App\Http\Controllers\ArZoneTargetsController;
 use App\Http\Controllers\CCAvenueCallbackController;
+use App\Http\Controllers\CCAvenueRedirectController;
 use App\Http\Controllers\CmsFrontendController;
 use App\Http\Controllers\Games\GameApiController;
 use App\Http\Controllers\Games\GamePageController;
 use App\Http\Controllers\KioskHeartbeatController;
+use App\Http\Controllers\NboCallbackController;
 use App\Http\Controllers\PosOrderPaymentController;
 use App\Http\Controllers\PrintAgentController;
+use App\Http\Controllers\ThawaniCallbackController;
+use App\Livewire\Cms\CmsBlogIndex;
+use App\Livewire\Cms\CmsPageShow;
+use App\Livewire\Cms\CmsPostShow;
+use App\Livewire\EventBooking;
+use App\Livewire\EventSignageDashboard;
+use App\Livewire\Installer\InstallWizard;
+use App\Livewire\Kiosk\KioskBooking;
 use App\Livewire\Shop\Checkout as ShopCheckout;
 use App\Livewire\Shop\ProductDetail as ShopProductDetail;
 use App\Livewire\Shop\ShopCatalog;
+use App\Models\Booking;
+use App\Models\CmsRedirect;
+use App\Models\Event;
 use App\Models\PosOrder;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/install', InstallWizard::class)->name('install');
 
@@ -31,7 +34,7 @@ Route::get('/', function () {
     $events = Event::published()
         ->upcoming()
         ->with('ticketTypes')
-        ->withSum(['bookings as booked_quantity' => fn($query) => $query->where('status', '!=', 'cancelled')], 'quantity')
+        ->withSum(['bookings as booked_quantity' => fn ($query) => $query->where('status', '!=', 'cancelled')], 'quantity')
         ->orderBy('start_date')
         ->get();
 
@@ -49,7 +52,8 @@ Route::get('/kiosk/{kiosk:code}', KioskBooking::class)->name('kiosk.booking');
 Route::post('/kiosk/{kiosk:code}/heartbeat', [KioskHeartbeatController::class, 'store'])->name('kiosk.heartbeat');
 
 Route::get('/booking/success/{reference}', function ($reference) {
-    $booking = \App\Models\Booking::where('booking_reference', $reference)->firstOrFail();
+    $booking = Booking::where('booking_reference', $reference)->firstOrFail();
+
     return view('booking.success', compact('booking'));
 })->name('booking.success');
 
@@ -83,6 +87,7 @@ Route::get('/shop', ShopCatalog::class)->name('shop.index');
 Route::get('/shop/checkout', ShopCheckout::class)->name('shop.checkout');
 Route::get('/shop/order/{order:order_number}/success', function (PosOrder $order) {
     abort_unless($order->isPaid(), 404);
+
     return view('shop.order-success', compact('order'));
 })->name('shop.order.success');
 Route::get('/shop/{product:slug}', ShopProductDetail::class)->name('shop.product.show');
@@ -131,6 +136,7 @@ Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'ar'])) {
         session(['locale' => $locale]);
     }
+
     return redirect()->back();
 })->name('lang.switch');
 
@@ -142,6 +148,19 @@ Route::middleware(['throttle:120,1'])->group(function () {
     Route::get('/print-agent/jobs/next', [PrintAgentController::class, 'next'])->name('print-agent.next');
     Route::post('/print-agent/jobs/{job}/ack', [PrintAgentController::class, 'ack'])->name('print-agent.ack');
 });
+
+// ── AR explore (MindAR): public destination / item pages and the camera scanner ──
+Route::prefix('explore')->scopeBindings()->group(function () {
+    Route::get('/', [ArExploreController::class, 'index'])->name('ar.index');
+    Route::get('/{destination:slug}', [ArExploreController::class, 'destination'])->name('ar.destination');
+    Route::get('/{destination:slug}/scan/{zone}', [ArExploreController::class, 'scan'])->name('ar.scan');
+    Route::get('/{destination:slug}/{item:slug}', [ArExploreController::class, 'item'])->name('ar.item');
+});
+
+// The admin's browser compiles the MindAR target file and uploads it here.
+Route::post('/admin/ar-zones/{zone}/targets', [ArZoneTargetsController::class, 'store'])
+    ->middleware('auth')
+    ->name('ar.zone.targets');
 
 // ── CMS ───────────────────────────────────────────────────────────────────────
 Route::get('/sitemap.xml', [CmsFrontendController::class, 'sitemap'])->name('cms.sitemap');

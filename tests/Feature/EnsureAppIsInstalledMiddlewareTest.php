@@ -7,6 +7,29 @@ use Tests\TestCase;
 
 class EnsureAppIsInstalledMiddlewareTest extends TestCase
 {
+    // The real storage/installed marker, put back after the class: deleting it
+    // for good sent every later HTTP test (and the local app) to /install.
+    private static ?string $installedMarker = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (self::$installedMarker === null && File::exists(storage_path('installed'))) {
+            self::$installedMarker = File::get(storage_path('installed'));
+        }
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if (self::$installedMarker !== null) {
+            file_put_contents(dirname(__DIR__, 2).'/storage/installed', self::$installedMarker);
+            self::$installedMarker = null;
+        }
+
+        parent::tearDownAfterClass();
+    }
+
     protected function tearDown(): void
     {
         File::delete(storage_path('installed'));

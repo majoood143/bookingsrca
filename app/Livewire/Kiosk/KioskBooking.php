@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Kiosk;
 
-use Exception;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use App\Livewire\Concerns\HandlesEventBookingFlow;
+use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Kiosk;
 use App\Models\KioskCard;
-use App\Models\Booking;
+use Exception;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class KioskBooking extends Component
 {
@@ -19,10 +20,12 @@ class KioskBooking extends Component
 
     public ?Booking $confirmedBooking = null;
 
+    #[Locked]
     public bool $awaitingCardTap = false;
 
     // Set in mount() when the kiosk isn't pinned to one event — step 0 shows
     // an event picker before entering the normal date/slot/tickets flow.
+    #[Locked]
     public bool $eventLocked = true;
 
     // Kiosk never shows the date-picker calendar the public site uses — it's
@@ -45,10 +48,19 @@ class KioskBooking extends Component
     // screen shows. $applySameToAll is null while attendee 0's "use my
     // details for everyone?" decision hasn't been made yet.
     public int $focusedAttendee = 0;
+
     public ?bool $applySameToAll = null;
 
     public function mount(Kiosk $kiosk)
     {
+        // The kiosk URL is public; a device token (when set) proves this is the
+        // real device. It arrives once as ?token= and is then kept in the session.
+        if ($kiosk->acceptsDeviceToken(request()->query('token'))) {
+            session()->put($this->deviceSessionKey($kiosk), true);
+        }
+
+        abort_unless($this->isTrustedDevice($kiosk), 403);
+
         $this->kiosk = $kiosk;
         $this->eventLocked = $kiosk->event_id !== null;
 
@@ -62,6 +74,23 @@ class KioskBooking extends Component
         // Runs after $this->event is set (when pinned) so event-level terms
         // & conditions overrides are picked up from the start.
         $this->loadBookingFieldSettings();
+    }
+
+    // Every follow-up request (card taps included) re-checks the session, so a
+    // snapshot can't be replayed from a browser that never presented the token.
+    public function hydrate(): void
+    {
+        abort_unless($this->isTrustedDevice($this->kiosk), 403);
+    }
+
+    protected function isTrustedDevice(Kiosk $kiosk): bool
+    {
+        return blank($kiosk->device_token) || session()->get($this->deviceSessionKey($kiosk)) === true;
+    }
+
+    protected function deviceSessionKey(Kiosk $kiosk): string
+    {
+        return 'kiosk_device_'.$kiosk->id.'_'.substr(hash('sha256', (string) $kiosk->device_token), 0, 12);
     }
 
     // ── Step 0 — event picker (only shown when the kiosk isn't pinned) ───────
@@ -204,9 +233,13 @@ class KioskBooking extends Component
         $source = $this->attendees[0];
 
         foreach ($this->attendees as $i => &$attendee) {
-            if ($i === 0) continue;
+            if ($i === 0) {
+                continue;
+            }
             foreach ($source as $field => $value) {
-                if (in_array($field, $skip, true)) continue;
+                if (in_array($field, $skip, true)) {
+                    continue;
+                }
                 $attendee[$field] = $value;
             }
         }
@@ -264,7 +297,7 @@ class KioskBooking extends Component
     #[On('card-tapped')]
     public function onCardTapped($uid): void
     {
-        if (!$this->awaitingCardTap) {
+        if (! $this->awaitingCardTap) {
             return;
         }
 
@@ -281,8 +314,8 @@ class KioskBooking extends Component
                     $isFree = ($ticketPrice + $servicesPrice) <= 0;
 
                     return [
-                        'source'         => 'kiosk',
-                        'kiosk_id'       => $this->kiosk->id,
+                        'source' => 'kiosk',
+                        'kiosk_id' => $this->kiosk->id,
                         'payment_method' => $isFree ? 'free' : 'kiosk_wallet',
                     ];
                 },
@@ -295,20 +328,20 @@ class KioskBooking extends Component
 
                     $card = KioskCard::where('uid', $uid)->lockForUpdate()->first();
 
-                    if (!$card) {
+                    if (! $card) {
                         throw new Exception(__('kiosk_booking.wallet.card_not_found'));
                     }
 
-                    if (!$card->isActive()) {
+                    if (! $card->isActive()) {
                         throw new Exception(__('kiosk_booking.wallet.card_blocked'));
                     }
 
-                    if (!$card->hasSufficientBalance($total)) {
+                    if (! $card->hasSufficientBalance($total)) {
                         throw new Exception(__('kiosk_booking.wallet.insufficient_balance'));
                     }
 
                     $card->applyTransaction('payment', -$total, [
-                        'kiosk_id'   => $this->kiosk->id,
+                        'kiosk_id' => $this->kiosk->id,
                         'booking_id' => $booking->id,
                     ]);
 
@@ -317,6 +350,7 @@ class KioskBooking extends Component
             );
         } catch (Exception $e) {
             session()->flash('error', $e->getMessage());
+
             return;
         }
 
@@ -334,13 +368,14 @@ class KioskBooking extends Component
                 $isFree = ($ticketPrice + $servicesPrice) <= 0;
 
                 return [
-                    'source'         => 'kiosk',
-                    'kiosk_id'       => $this->kiosk->id,
+                    'source' => 'kiosk',
+                    'kiosk_id' => $this->kiosk->id,
                     'payment_method' => $isFree ? 'free' : 'cash',
                 ];
             });
         } catch (Exception $e) {
             session()->flash('error', $e->getMessage());
+
             return;
         }
 
@@ -393,12 +428,12 @@ class KioskBooking extends Component
 
         $this->dispatch('print-receipt', receipt: [
             'booking_reference' => $booking->booking_reference,
-            'event_title'       => $this->event->getTranslation('title', app()->getLocale()),
-            'quantity'          => $booking->quantity,
-            'total_price'       => (float) $booking->total_price,
-            'payment_method'    => $booking->payment_method,
-            'payment_status'    => $booking->payment_status,
-            'footer'            => $this->kiosk->getTranslation('receipt_footer_text', app()->getLocale()),
+            'event_title' => $this->event->getTranslation('title', app()->getLocale()),
+            'quantity' => $booking->quantity,
+            'total_price' => (float) $booking->total_price,
+            'payment_method' => $booking->payment_method,
+            'payment_status' => $booking->payment_status,
+            'footer' => $this->kiosk->getTranslation('receipt_footer_text', app()->getLocale()),
         ]);
     }
 
@@ -415,36 +450,36 @@ class KioskBooking extends Component
             : collect();
 
         return view('livewire.kiosk.kiosk-booking', [
-            'pickableEvents'  => $this->eventLocked ? collect() : Event::published()->upcoming()->orderBy('start_date')->get(),
-            'availableDates'  => $availableDates,
-            'soldOutDates'    => $soldOutDates,
-            'timeSlots'       => $timeSlots,
+            'pickableEvents' => $this->eventLocked ? collect() : Event::published()->upcoming()->orderBy('start_date')->get(),
+            'availableDates' => $availableDates,
+            'soldOutDates' => $soldOutDates,
+            'timeSlots' => $timeSlots,
             'enforceCapacity' => $this->enforcesCapacity(),
             'progressiveAttendees' => true,
-            'kioskMode'       => true,
-            'ticketTypes'     => isset($this->event) ? $this->loadedTicketTypes() : collect(),
-            'extraServices'   => isset($this->event) ? $this->loadedExtraServices() : collect(),
-            'showEmail'       => $this->showEmail,
-            'showPhone'       => $this->showPhone,
+            'kioskMode' => true,
+            'ticketTypes' => isset($this->event) ? $this->loadedTicketTypes() : collect(),
+            'extraServices' => isset($this->event) ? $this->loadedExtraServices() : collect(),
+            'showEmail' => $this->showEmail,
+            'showPhone' => $this->showPhone,
             'showDateOfBirth' => $this->showDateOfBirth,
-            'showGender'      => $this->showGender,
+            'showGender' => $this->showGender,
             'showNationality' => $this->showNationality,
             'showIdentityNumber' => $this->showIdentityNumber,
-            'requireEmail'       => $this->requireEmail,
-            'requirePhone'       => $this->requirePhone,
+            'requireEmail' => $this->requireEmail,
+            'requirePhone' => $this->requirePhone,
             'requireDateOfBirth' => $this->requireDateOfBirth,
-            'requireGender'      => $this->requireGender,
+            'requireGender' => $this->requireGender,
             'requireNationality' => $this->requireNationality,
             'requireIdentityNumber' => $this->requireIdentityNumber,
-            'showPassportNumber'       => $this->showPassportNumber,
-            'requirePassportNumber'    => $this->requirePassportNumber,
-            'showIdentityCardUpload'   => $this->showIdentityCardUpload,
+            'showPassportNumber' => $this->showPassportNumber,
+            'requirePassportNumber' => $this->requirePassportNumber,
+            'showIdentityCardUpload' => $this->showIdentityCardUpload,
             'requireIdentityCardUpload' => $this->requireIdentityCardUpload,
-            'showPassportUpload'       => $this->showPassportUpload,
-            'requirePassportUpload'    => $this->requirePassportUpload,
+            'showPassportUpload' => $this->showPassportUpload,
+            'requirePassportUpload' => $this->requirePassportUpload,
             'showSlotEndTime' => $this->showSlotEndTime,
-            'minBirthDate'    => $this->minBirthDate(),
-            'maxBirthDate'    => now()->format('Y-m-d'),
+            'minBirthDate' => $this->minBirthDate(),
+            'maxBirthDate' => now()->format('Y-m-d'),
         ]);
     }
 }

@@ -12,6 +12,8 @@ export default defineConfig({
                 'resources/css/games.css',
                 'resources/js/games/penalty.js',
                 'resources/js/games/leaderboard.js',
+                'resources/js/ar/scanner.js',
+                'resources/js/ar/compiler.js',
             ],
             refresh: true,
         }),

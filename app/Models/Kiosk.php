@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Translatable\HasTranslations;
@@ -15,6 +15,7 @@ class Kiosk extends Model
     protected $fillable = [
         'name',
         'code',
+        'device_token',
         'event_id',
         'is_active',
         'idle_timeout_seconds',
@@ -71,6 +72,14 @@ class Kiosk extends Model
         'override_capacity_enforcement' => 'boolean',
         'enforce_capacity' => 'boolean',
     ];
+
+    // True when this kiosk has no device token (open, as before) or the given
+    // token matches it.
+    public function acceptsDeviceToken(?string $token): bool
+    {
+        return blank($this->device_token)
+            || (filled($token) && hash_equals($this->device_token, $token));
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -152,7 +161,7 @@ class Kiosk extends Model
     // bookings made on this device — see Event::cutoffMinutesFor()/cutoffClosesAtFor().
     public function bookingCutoffOverride(): ?array
     {
-        if (!$this->override_booking_cutoff) {
+        if (! $this->override_booking_cutoff) {
             return null;
         }
 
@@ -167,7 +176,7 @@ class Kiosk extends Model
     // context's default" (kiosks never enforce capacity unless this is set).
     public function enforcesCapacityOverride(): ?bool
     {
-        if (!$this->override_capacity_enforcement) {
+        if (! $this->override_capacity_enforcement) {
             return null;
         }
 

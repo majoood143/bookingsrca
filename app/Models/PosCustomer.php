@@ -68,17 +68,13 @@ class PosCustomer extends Model
     }
 
     // Matches a returning guest shopper by email so repeat orders land on the
-    // same contact record instead of creating a duplicate every checkout.
+    // same contact record instead of creating a duplicate every checkout. The
+    // existing record is not updated: an unverified guest typing someone else's
+    // email must not rewrite that customer's name, phone or address (each order
+    // keeps the contact details it was placed with).
     public static function findOrCreateForGuestCheckout(array $data): self
     {
-        $customer = static::where('email', $data['email'])->where('is_walk_in', false)->first();
-
-        if ($customer) {
-            $customer->update($data);
-
-            return $customer;
-        }
-
-        return static::create(array_merge($data, ['type' => 'individual']));
+        return static::where('email', $data['email'])->where('is_walk_in', false)->first()
+            ?? static::create(array_merge($data, ['type' => 'individual']));
     }
 }

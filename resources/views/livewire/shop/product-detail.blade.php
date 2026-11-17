@@ -7,8 +7,46 @@
     $primaryColor = BookingSetting::get('primary_color', '#05602b');
     $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
     $galleryUrls = $product->gallery_urls;
+    $canonicalUrl = route('shop.product.show', $product->slug);
+    $metaDescription = (string) Str::of(strip_tags((string) $product->display_description))->squish()->limit(160);
+    $productJsonLd = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $product->display_name,
+        'description' => $metaDescription ?: null,
+        'sku' => $product->sku ?: null,
+        'image' => $galleryUrls ?: null,
+        'url' => $canonicalUrl,
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => (string) $product->price,
+            'priceCurrency' => BookingSetting::get('currency_code', 'OMR'),
+            'availability' => $product->stock_quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'url' => $canonicalUrl,
+        ],
+        'aggregateRating' => $product->reviews_count > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => $product->average_rating,
+            'reviewCount' => $product->reviews_count,
+        ] : null,
+    ]);
 @endphp
 <div dir="{{ $isRtl ? 'rtl' : 'ltr' }}" style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};">
+    @push('meta')
+        @if ($metaDescription)
+            <meta name="description" content="{{ $metaDescription }}">
+            <meta property="og:description" content="{{ $metaDescription }}">
+        @endif
+        <link rel="canonical" href="{{ $canonicalUrl }}">
+        <meta property="og:type" content="product">
+        <meta property="og:title" content="{{ $product->display_name }}">
+        <meta property="og:url" content="{{ $canonicalUrl }}">
+        @if ($galleryUrls)
+            <meta property="og:image" content="{{ $galleryUrls[0] }}">
+        @endif
+        <meta name="twitter:card" content="summary_large_image">
+        <script type="application/ld+json">{!! json_encode($productJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endpush
     @include('shop.partials.header')
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">

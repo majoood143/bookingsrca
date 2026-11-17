@@ -2,30 +2,34 @@
 
 namespace App\Services;
 
-use RuntimeException;
 use App\Models\Booking;
 use App\Models\BookingSetting;
 use App\Models\PaymentGatewayLog;
 use App\Models\PosOrder;
 use App\Models\PosOrderGatewayLog;
+use App\Models\TicketType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class ThawaniService
 {
     private string $secretKey;
+
     private string $publishableKey;
+
     private string $baseUrl;
+
     private bool $testMode;
 
     public function __construct()
     {
-        $this->secretKey      = (string) BookingSetting::get('thawani.secret_key', '');
+        $this->secretKey = (string) BookingSetting::get('thawani.secret_key', '');
         $this->publishableKey = (string) BookingSetting::get('thawani.publishable_key', '');
-        $this->testMode       = (bool)   BookingSetting::get('thawani.test_mode', true);
+        $this->testMode = (bool) BookingSetting::get('thawani.test_mode', true);
 
-        $override      = rtrim((string) BookingSetting::get('thawani.base_url', ''), '/');
+        $override = rtrim((string) BookingSetting::get('thawani.base_url', ''), '/');
         $this->baseUrl = $override !== '' ? $override : ($this->testMode
             ? 'https://uatcheckout.thawani.om/api/v1'
             : 'https://checkout.thawani.om/api/v1');
@@ -42,23 +46,24 @@ class ThawaniService
      *   metadata?: array<string, mixed>
      * } $params
      * @return array<string, mixed>
+     *
      * @throws RuntimeException
      */
     public function createSession(array $params, Booking|PosOrder|null $payable = null): array
     {
         $response = Http::withHeaders([
             'thawani-api-key' => $this->secretKey,
-            'Content-Type'    => 'application/json',
+            'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/checkout/session", $params);
 
         $this->logGatewayCall($payable, 'create_session', $params, $response->json() ?? ['raw' => $response->body()], $response->status());
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Thawani createSession failed', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
-            throw new RuntimeException('Thawani payment gateway error: ' . $response->body());
+            throw new RuntimeException('Thawani payment gateway error: '.$response->body());
         }
 
         return $response->json();
@@ -68,6 +73,7 @@ class ThawaniService
      * Retrieve a Thawani checkout session by ID.
      *
      * @return array<string, mixed>
+     *
      * @throws RuntimeException
      */
     public function getSession(string $sessionId, Booking|PosOrder|null $payable = null): array
@@ -78,13 +84,13 @@ class ThawaniService
 
         $this->logGatewayCall($payable, 'get_session', ['session_id' => $sessionId], $response->json() ?? ['raw' => $response->body()], $response->status());
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Thawani getSession failed', [
                 'session_id' => $sessionId,
-                'status'     => $response->status(),
-                'body'       => $response->body(),
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
-            throw new RuntimeException('Thawani session fetch failed: ' . $response->body());
+            throw new RuntimeException('Thawani session fetch failed: '.$response->body());
         }
 
         return $response->json();
@@ -103,11 +109,16 @@ class ThawaniService
 
     // What applying a "paid" Thawani session to a booking will do. Kept as named
     // outcomes so the repair command can report them before applying anything.
-    public const ACTION_NONE            = 'none';
-    public const ACTION_CONFIRM         = 'confirm';          // pending -> confirmed
-    public const ACTION_RECOVER         = 'recover';          // cancelled by the system -> confirmed
-    public const ACTION_NO_CAPACITY     = 'no_capacity';      // paid, but the seats went to someone else
+    public const ACTION_NONE = 'none';
+
+    public const ACTION_CONFIRM = 'confirm';          // pending -> confirmed
+
+    public const ACTION_RECOVER = 'recover';          // cancelled by the system -> confirmed
+
+    public const ACTION_NO_CAPACITY = 'no_capacity';      // paid, but the seats went to someone else
+
     public const ACTION_ADMIN_CANCELLED = 'admin_cancelled';  // paid, but an admin cancelled it on purpose
+
     public const ACTION_COMPLETE_MANUAL = 'complete_manual';  // status edited to confirmed by hand, side effects skipped
 
     /**
@@ -124,12 +135,12 @@ class ThawaniService
      */
     public function reconcileBooking(Booking $booking): ?string
     {
-        if (!$booking->payment_session_id) {
+        if (! $booking->payment_session_id) {
             return null;
         }
 
-        $response      = $this->getSession($booking->payment_session_id, $booking);
-        $data          = $response['data'] ?? [];
+        $response = $this->getSession($booking->payment_session_id, $booking);
+        $data = $response['data'] ?? [];
         $paymentStatus = $data['payment_status'] ?? null;
 
         if ($paymentStatus === 'paid') {
@@ -145,16 +156,16 @@ class ThawaniService
     public function decidePaidAction(Booking $booking): string
     {
         return match ($booking->status) {
-            'pending'   => self::ACTION_CONFIRM,
+            'pending' => self::ACTION_CONFIRM,
             'confirmed' => $booking->confirmed_at === null ? self::ACTION_COMPLETE_MANUAL : self::ACTION_NONE,
             'cancelled' => match (true) {
                 // Already flagged (or settled) by an earlier pass — don't re-alert on every sweep.
                 $booking->payment_status === 'paid' => self::ACTION_NONE,
                 // Cancelled before cancellation_source existed: leave it exactly as it is.
                 $booking->cancellation_source === null => self::ACTION_NONE,
-                !$booking->isSystemCancelled()      => self::ACTION_ADMIN_CANCELLED,
-                $this->hasCapacityFor($booking)     => self::ACTION_RECOVER,
-                default                             => self::ACTION_NO_CAPACITY,
+                ! $booking->isSystemCancelled() => self::ACTION_ADMIN_CANCELLED,
+                $this->hasCapacityFor($booking) => self::ACTION_RECOVER,
+                default => self::ACTION_NO_CAPACITY,
             },
             default => self::ACTION_NONE, // checked_in / refunded
         };
@@ -163,24 +174,26 @@ class ThawaniService
     /**
      * Apply a paid session to the booking under a row lock, so the browser
      * callback, webhook and sweeps can't confirm (and email) it twice.
+     * Also used by the NBO and CCAvenue callbacks ($gateway), so a late or
+     * repeated callback from any gateway gets the same lock and capacity check.
      *
      * @param  array<string, mixed>  $sessionData  the `data` node of a Thawani session response
      * @param  bool  $notify  false to confirm without emailing the customer
      * @return string one of the ACTION_* constants
      */
-    public function applyPaidSession(Booking $booking, array $sessionData, bool $notify = true): string
+    public function applyPaidSession(Booking $booking, array $sessionData, bool $notify = true, string $gateway = 'thawani'): string
     {
         // The session response carries no `payment_ref`; `invoice` is Thawani's
         // reference for the payment and is what shows up on their dashboard.
         $reference = $sessionData['payment_ref'] ?? $sessionData['invoice'] ?? null;
 
-        $action = DB::transaction(function () use ($booking, $reference, $notify) {
+        $action = DB::transaction(function () use ($booking, $reference, $notify, $gateway) {
             $locked = Booking::with(['timeSlot', 'ticketType', 'extraServices'])
                 ->whereKey($booking->id)
                 ->lockForUpdate()
                 ->first();
 
-            if (!$locked) {
+            if (! $locked) {
                 return self::ACTION_NONE;
             }
 
@@ -189,23 +202,24 @@ class ThawaniService
             switch ($action) {
                 case self::ACTION_CONFIRM:
                     $locked->update(['payment_status' => 'paid', 'payment_reference' => $reference]);
-                    $this->recordPayment($locked, $reference);
+                    $this->recordPayment($locked, $reference, $gateway);
                     $locked->confirm($notify);
                     break;
 
                 case self::ACTION_RECOVER:
                     $locked->update([
-                        'cancelled_at'        => null,
+                        'cancelled_at' => null,
                         'cancellation_source' => null,
-                        'payment_status'      => 'paid',
-                        'payment_reference'   => $reference,
+                        'payment_status' => 'paid',
+                        'payment_reference' => $reference,
                     ]);
-                    $this->recordPayment($locked, $reference);
+                    $this->recordPayment($locked, $reference, $gateway);
                     $locked->confirm($notify);
 
-                    PaymentGatewayLog::log($locked, 'thawani', 'late_payment_recovered', ['session_id' => $locked->payment_session_id], ['reference' => $reference]);
-                    Log::info('Thawani late payment recovered a cancelled booking', [
-                        'booking_id'        => $locked->id,
+                    PaymentGatewayLog::log($locked, $gateway, 'late_payment_recovered', ['session_id' => $locked->payment_session_id], ['reference' => $reference]);
+                    Log::info('Late payment recovered a cancelled booking', [
+                        'gateway' => $gateway,
+                        'booking_id' => $locked->id,
                         'booking_reference' => $locked->booking_reference,
                     ]);
                     break;
@@ -217,13 +231,14 @@ class ThawaniService
                     // manual refund, and so later sweeps skip it.
                     $locked->update(['payment_status' => 'paid', 'payment_reference' => $reference]);
 
-                    PaymentGatewayLog::log($locked, 'thawani', 'paid_needs_manual_action', ['session_id' => $locked->payment_session_id], ['reason' => $action, 'reference' => $reference]);
-                    Log::critical('Thawani payment captured for a cancelled booking that could not be revived — needs refund or manual confirmation', [
-                        'booking_id'        => $locked->id,
+                    PaymentGatewayLog::log($locked, $gateway, 'paid_needs_manual_action', ['session_id' => $locked->payment_session_id], ['reason' => $action, 'reference' => $reference]);
+                    Log::critical('Payment captured for a cancelled booking that could not be revived — needs refund or manual confirmation', [
+                        'gateway' => $gateway,
+                        'booking_id' => $locked->id,
                         'booking_reference' => $locked->booking_reference,
-                        'reason'            => $action,
-                        'session_id'        => $locked->payment_session_id,
-                        'payment_ref'       => $reference,
+                        'reason' => $action,
+                        'session_id' => $locked->payment_session_id,
+                        'payment_ref' => $reference,
                     ]);
                     break;
 
@@ -233,13 +248,13 @@ class ThawaniService
                     // those in. The timestamp is the row's last touch — the closest
                     // record of when it was fixed. Notifications are left to the caller.
                     $locked->update([
-                        'confirmed_at'        => $locked->updated_at ?? now(),
-                        'cancelled_at'        => null,
+                        'confirmed_at' => $locked->updated_at ?? now(),
+                        'cancelled_at' => null,
                         'cancellation_source' => null,
-                        'payment_status'      => 'paid',
-                        'payment_reference'   => $locked->payment_reference ?? $reference,
+                        'payment_status' => 'paid',
+                        'payment_reference' => $locked->payment_reference ?? $reference,
                     ]);
-                    $this->recordPayment($locked, $reference);
+                    $this->recordPayment($locked, $reference, $gateway);
                     $locked->applyConfirmationCounters();
                     break;
             }
@@ -252,14 +267,20 @@ class ThawaniService
         return $action;
     }
 
-    private function recordPayment(Booking $booking, ?string $reference): void
+    private const PAYMENT_NOTES = [
+        'thawani' => 'Online payment via Thawani.',
+        'nbo' => 'Online payment via NBO.',
+        'ccavenue' => 'Online payment via CCAvenue (Bank Muscat).',
+    ];
+
+    private function recordPayment(Booking $booking, ?string $reference, string $gateway): void
     {
         $booking->payments()->firstOrCreate(
-            ['payment_method' => 'thawani'],
+            ['payment_method' => $gateway],
             [
-                'amount'    => $booking->total_price,
+                'amount' => $booking->total_price,
                 'reference' => $reference,
-                'notes'     => 'Online payment via Thawani.',
+                'notes' => self::PAYMENT_NOTES[$gateway] ?? null,
             ]
         );
     }
@@ -272,8 +293,16 @@ class ThawaniService
             return false;
         }
 
-        if ($booking->ticketType->getRemainingQuantity() < $booking->quantity) {
-            return false;
+        $perType = $booking->attendees->whereNotNull('ticket_type_id')->countBy('ticket_type_id');
+
+        if ($perType->isEmpty()) {
+            $perType = collect([$booking->ticket_type_id => $booking->quantity]);
+        }
+
+        foreach ($perType as $typeId => $count) {
+            if (TicketType::find($typeId)?->getRemainingQuantity() < $count) {
+                return false;
+            }
         }
 
         foreach ($booking->extraServices as $service) {
@@ -296,7 +325,7 @@ class ThawaniService
 
     public function isConfigured(): bool
     {
-        return !empty($this->secretKey) && !empty($this->publishableKey);
+        return ! empty($this->secretKey) && ! empty($this->publishableKey);
     }
 
     public function getPublishableKey(): string

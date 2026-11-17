@@ -21,17 +21,15 @@ use Illuminate\Support\Collection;
 class SeatAllocationService
 {
     /**
-     * @param int $timeSlotId
-     * @param int $eventId
-     * @param array<int,int> $ticketQuantities [ticketTypeId => quantity]
-     * @param array<int,array<int,int>> $extraServiceCounts [ticketTypeId => [serviceId => count]]
-     * @param bool $enforceCapacity when false, locks and prices without rejecting on availability (admin override)
-     * @param array<string,mixed> $extraTimeSlotConstraints extra equality where() clauses applied to the
-     *        TimeSlot lookup (e.g. ['date' => $selectedDate]) — a mismatch makes the slot resolve to "not
-     *        found" the same way it would if the id didn't exist, for callers that need that guard.
-     * @param callable|null $afterSlotLocked receives the locked TimeSlot immediately after it's fetched,
-     *        before the capacity check — for channel-specific policy (cutoff windows, booking_channel
-     *        visibility) that has nothing to do with the lock itself. Throw from here to abort.
+     * @param  array<int,int>  $ticketQuantities  [ticketTypeId => quantity]
+     * @param  array<int,array<int,int>>  $extraServiceCounts  [ticketTypeId => [serviceId => count]]
+     * @param  bool  $enforceCapacity  when false, locks and prices without rejecting on availability (admin override)
+     * @param  array<string,mixed>  $extraTimeSlotConstraints  extra equality where() clauses applied to the
+     *                                                         TimeSlot lookup (e.g. ['date' => $selectedDate]) — a mismatch makes the slot resolve to "not
+     *                                                         found" the same way it would if the id didn't exist, for callers that need that guard.
+     * @param  callable|null  $afterSlotLocked  receives the locked TimeSlot immediately after it's fetched,
+     *                                          before the capacity check — for channel-specific policy (cutoff windows, booking_channel
+     *                                          visibility) that has nothing to do with the lock itself. Throw from here to abort.
      * @return array{
      *     timeSlot: TimeSlot,
      *     ticketTypes: Collection<int,TicketType>,
@@ -56,7 +54,7 @@ class SeatAllocationService
             ->lockForUpdate()
             ->find($timeSlotId);
 
-        if (!$timeSlot) {
+        if (! $timeSlot) {
             throw new Exception(__('Time slot is no longer available.'));
         }
 
@@ -66,7 +64,7 @@ class SeatAllocationService
 
         $totalQty = array_sum($ticketQuantities);
 
-        if ($enforceCapacity && !$timeSlot->isAvailable($totalQty)) {
+        if ($enforceCapacity && ! $timeSlot->isAvailable($totalQty)) {
             throw new Exception(__('Time slot is not available for the requested quantity.'));
         }
 
@@ -80,13 +78,15 @@ class SeatAllocationService
                 continue;
             }
 
-            $ticketType = TicketType::where('id', $typeId)->lockForUpdate()->first();
+            // Scoped to the event: the ids come from the client, and a cheaper type
+            // from another event must not price this booking.
+            $ticketType = TicketType::where('id', $typeId)->where('event_id', $eventId)->lockForUpdate()->first();
 
-            if (!$ticketType) {
+            if (! $ticketType) {
                 throw new Exception(__('Ticket type not found.'));
             }
 
-            if ($enforceCapacity && !$ticketType->isAvailable($qty)) {
+            if ($enforceCapacity && ! $ticketType->isAvailable($qty)) {
                 throw new Exception(__('Ticket type :name is not available.', [
                     'name' => $ticketType->getTranslation('name', app()->getLocale()),
                 ]));
@@ -95,8 +95,9 @@ class SeatAllocationService
             $ticketPrice += $ticketType->price * $qty;
             $lockedTicketTypes->put($typeId, $ticketType);
 
-            if (!empty($extraServiceCounts[$typeId])) {
+            if (! empty($extraServiceCounts[$typeId])) {
                 $services = ExtraService::whereIn('id', array_keys($extraServiceCounts[$typeId]))
+                    ->where('event_id', $eventId)
                     ->lockForUpdate()
                     ->get()
                     ->keyBy('id');
@@ -108,7 +109,7 @@ class SeatAllocationService
 
                     $service = $services[$serviceId] ?? null;
 
-                    if ($enforceCapacity && (!$service || !$service->isAvailable($count))) {
+                    if (! $service || ($enforceCapacity && ! $service->isAvailable($count))) {
                         throw new Exception(__('Service :name is not available.', [
                             'name' => $service?->getTranslation('name', app()->getLocale()) ?? '',
                         ]));

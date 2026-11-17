@@ -1,4 +1,5 @@
 {
     "Payment was cancelled. Please try again.": "Payment was cancelled. Please try again.",
-    "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.": "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again."
+    "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.": "Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.",
+    "Too many bookings started. Please try again in a few minutes.": "Too many bookings started. Please try again in a few minutes."
 }

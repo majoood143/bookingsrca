@@ -6,6 +6,11 @@
     $secondaryColor = BookingSetting::get('secondary_color', '#0da74c');
 @endphp
 <div dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}" style="--color-brand: {{ $primaryColor }}; --color-brand-hover: {{ $secondaryColor }};">
+    @push('meta')
+        <meta name="description" content="{{ __('shop.catalog.subheading') }}">
+        {{-- Filtered/searched views canonicalise to the plain catalog. --}}
+        <link rel="canonical" href="{{ route('shop.index') }}">
+    @endpush
     @include('shop.partials.header')
 
     <div class="bg-gradient-to-r from-brand to-brand-hover text-white">

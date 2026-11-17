@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Exception;
 use App\Jobs\GenerateAttendeeTicketAssets;
 use App\Jobs\SendBookingTickets;
 use App\Mail\AllTickets;
 use App\Mail\BookingConfirmation;
+use App\Services\PromoCodeService;
 use App\Support\MpdfAlmarai;
 use DeviceDetector\DeviceDetector;
 use Endroid\QrCode\Builder\Builder;
@@ -14,6 +14,7 @@ use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Bus;
@@ -96,7 +97,7 @@ class Booking extends Model
 
         static::creating(function ($booking) {
             if (empty($booking->booking_reference)) {
-                $booking->booking_reference = 'BK-' . strtoupper(Str::random(8));
+                $booking->booking_reference = 'BK-'.strtoupper(Str::random(8));
             }
         });
     }
@@ -122,7 +123,7 @@ class Booking extends Model
         return $this->hasMany(BookingAttendee::class);
     }
 
-     public function firstAttendee()
+    public function firstAttendee()
     {
         return $this->hasOne(BookingAttendee::class)->oldestOfMany();
     }
@@ -232,14 +233,33 @@ class Booking extends Model
     public function applyConfirmationCounters(): void
     {
         $this->timeSlot->increment('current_bookings', $this->quantity);
-        $this->ticketType->increment('quantity_sold', $this->quantity);
+        $this->adjustTicketTypeSold(1);
 
         foreach ($this->extraServices as $service) {
             $service->increment('quantity_used', $service->pivot->quantity);
         }
 
         if ($this->promo_code_id) {
-            app(\App\Services\PromoCodeService::class)->recordUsage($this);
+            app(PromoCodeService::class)->recordUsage($this);
+        }
+    }
+
+    // Moves each ticket type's quantity_sold by its own attendee count, so a
+    // mixed booking doesn't charge every ticket to its first (primary) type.
+    // Bookings without attendee rows fall back to the primary type.
+    protected function adjustTicketTypeSold(int $direction): void
+    {
+        $counts = $this->attendees()->whereNotNull('ticket_type_id')
+            ->selectRaw('ticket_type_id, COUNT(*) as aggregate')
+            ->groupBy('ticket_type_id')
+            ->pluck('aggregate', 'ticket_type_id');
+
+        if ($counts->isEmpty()) {
+            $counts = collect([$this->ticket_type_id => $this->quantity]);
+        }
+
+        foreach ($counts as $typeId => $count) {
+            TicketType::whereKey($typeId)->increment('quantity_sold', $direction * $count);
         }
     }
 
@@ -248,7 +268,7 @@ class Booking extends Model
         // Send booking confirmation to the primary attendee. A mail failure must
         // not undo the confirmation (the payment has already been taken).
         $primary = $this->attendees->first();
-        if ($primary && !empty($primary->email)) {
+        if ($primary && ! empty($primary->email)) {
             try {
                 Mail::to($primary->email)->send(new BookingConfirmation($this));
             } catch (Exception $e) {
@@ -308,7 +328,7 @@ class Booking extends Model
     {
         if ($this->status === 'confirmed') {
             $this->timeSlot->decrement('current_bookings', $this->quantity);
-            $this->ticketType->decrement('quantity_sold', $this->quantity);
+            $this->adjustTicketTypeSold(-1);
 
             foreach ($this->extraServices as $service) {
                 $service->decrement('quantity_used', $service->pivot->quantity);
@@ -337,7 +357,7 @@ class Booking extends Model
     {
         if ($this->status === 'confirmed') {
             $this->timeSlot->decrement('current_bookings', $this->quantity);
-            $this->ticketType->decrement('quantity_sold', $this->quantity);
+            $this->adjustTicketTypeSold(-1);
 
             foreach ($this->extraServices as $service) {
                 $service->decrement('quantity_used', $service->pivot->quantity);
@@ -401,7 +421,7 @@ class Booking extends Model
     public function getSummaryQrCodeBase64(): string
     {
         $result = (new Builder(
-            writer: new PngWriter(),
+            writer: new PngWriter,
             data: route('booking.success', $this->booking_reference),
             encoding: new Encoding('UTF-8'),
             errorCorrectionLevel: ErrorCorrectionLevel::Medium,
@@ -410,20 +430,20 @@ class Booking extends Model
             roundBlockSizeMode: RoundBlockSizeMode::Margin
         ))->build();
 
-        return 'data:image/png;base64,' . base64_encode($result->getString());
+        return 'data:image/png;base64,'.base64_encode($result->getString());
     }
 
     // Base64-encoded Code128 barcode of the booking reference, printed on each attendee ticket receipt.
     public function getBookingReferenceBarcodeBase64(): string
     {
-        $barcode = (new BarcodeGeneratorPNG())->getBarcode(
+        $barcode = (new BarcodeGeneratorPNG)->getBarcode(
             $this->booking_reference,
             BarcodeGenerator::TYPE_CODE_128,
             2,
             60
         );
 
-        return 'data:image/png;base64,' . base64_encode($barcode);
+        return 'data:image/png;base64,'.base64_encode($barcode);
     }
 
     // Base64-encoded ticket header artwork used as the summary PDF banner background.
@@ -438,7 +458,7 @@ class Booking extends Model
                 return null;
             }
 
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($path));
+            return 'data:image/png;base64,'.base64_encode(file_get_contents($path));
         });
     }
 
@@ -471,12 +491,13 @@ class Booking extends Model
             // generation here, so they're suppressed around the mPDF calls.
             @$mpdf->WriteHTML($html);
 
-            return @$mpdf->Output('booking-' . $this->booking_reference . '.pdf', Destination::STRING_RETURN);
+            return @$mpdf->Output('booking-'.$this->booking_reference.'.pdf', Destination::STRING_RETURN);
         } catch (Exception $e) {
             Log::error('PDF Generation Failed', [
                 'booking_id' => $this->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }

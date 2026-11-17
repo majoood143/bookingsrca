@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use App\Models\Booking;
 use App\Models\PaymentGatewayLog;
 use App\Services\NboService;
+use App\Services\ThawaniService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class NboCallbackController extends Controller
 {
-    public function __construct(private readonly NboService $nbo) {}
+    public function __construct(
+        private readonly NboService $nbo,
+        private readonly ThawaniService $settlement,
+    ) {}
 
     // ──────────────────────────────────────────────────────────────────────────
     // POST /booking/payment/callback/nbo
@@ -38,7 +42,7 @@ class NboCallbackController extends Controller
         $input = $this->normalizedInput($request);
 
         $paymentId = $this->pick($input, 'paymentid', 'paymentId');
-        $error     = $this->pick($input, 'error');
+        $error = $this->pick($input, 'error');
         $errorText = $this->pick($input, 'errortext', 'errorText');
 
         $booking = $paymentId
@@ -54,7 +58,7 @@ class NboCallbackController extends Controller
         if ($error && $error !== '0') {
             $errorText = $errorText ?: __('Payment was not completed.');
             Log::warning('NBO callback error response', [
-                'error'      => $error,
+                'error' => $error,
                 'error_text' => $errorText,
                 'payment_id' => $paymentId,
             ]);
@@ -62,7 +66,10 @@ class NboCallbackController extends Controller
             PaymentGatewayLog::log($booking, 'nbo', 'callback', $this->loggableRequest($request), ['error' => $error, 'errorText' => $errorText]);
 
             if ($booking) {
-                $booking->update(['payment_status' => 'failed']);
+                if ($booking->status === 'pending') {
+                    $booking->update(['payment_status' => 'failed']);
+                }
+
                 return redirect()
                     ->route('event.booking', $booking->event->slug)
                     ->with('error', $errorText);
@@ -71,13 +78,15 @@ class NboCallbackController extends Controller
             return redirect('/')->with('error', $errorText);
         }
 
-        if (!$paymentId) {
+        if (! $paymentId) {
             Log::warning('NBO callback: missing paymentId', $this->loggableRequest($request));
+
             return redirect('/')->with('error', __('Invalid payment callback.'));
         }
 
-        if (!$booking) {
+        if (! $booking) {
             Log::warning('NBO callback: no booking found for paymentId', ['payment_id' => $paymentId]);
+
             return redirect('/')->with('error', __('Booking not found.'));
         }
 
@@ -103,8 +112,8 @@ class NboCallbackController extends Controller
 
             Log::info('NBO callback resolved', [
                 'payment_id' => $paymentId,
-                'result'     => $result,
-                'track_id'   => $data['trackId'] ?? null,
+                'result' => $result,
+                'track_id' => $data['trackId'] ?? null,
             ]);
 
             PaymentGatewayLog::log($booking, 'nbo', 'callback', $this->loggableRequest($request), $data);
@@ -113,42 +122,38 @@ class NboCallbackController extends Controller
             // amount matches — NBO's callback body is unencrypted and carries
             // no signature (see the note above), so the amount is the only
             // check standing between a forged POST and a "paid" booking.
-            $amount        = $data['amt'] ?? null;
+            $amount = $data['amt'] ?? null;
             $amountMatches = $amount !== null
                 && round((float) $amount, 2) === round((float) $booking->total_price, 2);
 
             if (($result === 'CAPTURED' || $result === 'APPROVED') && $amountMatches) {
-                $booking->update([
-                    'payment_status'    => 'paid',
-                    'payment_reference' => $paymentId,
-                ]);
+                // Locked settle: a repeated callback can't confirm twice, and a booking the
+                // expiry sweep already cancelled is only revived if its seats are still free.
+                $this->settlement->applyPaidSession($booking, ['payment_ref' => $paymentId], gateway: 'nbo');
 
-                $booking->payments()->firstOrCreate(
-                    ['payment_method' => 'nbo'],
-                    [
-                        'amount'    => $booking->total_price,
-                        'reference' => $paymentId,
-                        'notes'     => 'Online payment via NBO.',
-                    ]
-                );
+                if ($booking->status === 'confirmed') {
+                    return redirect()->route('booking.success', $booking->booking_reference);
+                }
 
-                $booking->confirm();
-
-                return redirect()->route('booking.success', $booking->booking_reference);
+                return redirect()
+                    ->route('event.booking', $booking->event->slug)
+                    ->with('error', __('Your payment was received, but we could not confirm this booking because it is no longer available. Please contact support — do not pay again.'));
             }
 
-            if (($result === 'CAPTURED' || $result === 'APPROVED') && !$amountMatches) {
+            if (($result === 'CAPTURED' || $result === 'APPROVED') && ! $amountMatches) {
                 Log::warning('NBO callback: amount mismatch, treating as failed', [
                     'booking_id' => $booking->id,
-                    'expected'   => $booking->total_price,
-                    'received'   => $amount,
+                    'expected' => $booking->total_price,
+                    'received' => $amount,
                 ]);
             }
 
-            $booking->update(['payment_status' => 'failed']);
+            if ($booking->status === 'pending') {
+                $booking->update(['payment_status' => 'failed']);
 
-            if ($result === 'CANCELED' || $result === 'CANCELLED') {
-                $booking->cancel();
+                if ($result === 'CANCELED' || $result === 'CANCELLED') {
+                    $booking->cancel('gateway');
+                }
             }
 
             return redirect()
@@ -158,7 +163,7 @@ class NboCallbackController extends Controller
         } catch (Exception $e) {
             Log::error('NBO callback decryption error', [
                 'payment_id' => $paymentId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             PaymentGatewayLog::log($booking, 'nbo', 'callback', $this->loggableRequest($request), ['error' => $e->getMessage()]);
@@ -185,21 +190,21 @@ class NboCallbackController extends Controller
 
         $result = $this->pick($input, 'result');
 
-        if (!$result) {
+        if (! $result) {
             return null;
         }
 
         $data = [
-            'result'        => $result,
-            'tranId'        => $this->pick($input, 'tranid', 'tranId'),
-            'ref'           => $this->pick($input, 'ref'),
-            'amt'           => $this->pick($input, 'amt'),
-            'authRespCode'  => $this->pick($input, 'authrespcode', 'authRespCode'),
-            'authCode'      => $this->pick($input, 'authcode', 'authCode', 'auth'),
-            'cardNo'        => $this->pick($input, 'cardno', 'cardNo'),
-            'cardType'      => $this->pick($input, 'cardtype', 'cardType'),
-            'trackId'       => $this->pick($input, 'trackid', 'trackId'),
-            'respDateTime'  => $this->pick($input, 'respdatetime', 'respDateTime', 'postdate'),
+            'result' => $result,
+            'tranId' => $this->pick($input, 'tranid', 'tranId'),
+            'ref' => $this->pick($input, 'ref'),
+            'amt' => $this->pick($input, 'amt'),
+            'authRespCode' => $this->pick($input, 'authrespcode', 'authRespCode'),
+            'authCode' => $this->pick($input, 'authcode', 'authCode', 'auth'),
+            'cardNo' => $this->pick($input, 'cardno', 'cardNo'),
+            'cardType' => $this->pick($input, 'cardtype', 'cardType'),
+            'trackId' => $this->pick($input, 'trackid', 'trackId'),
+            'respDateTime' => $this->pick($input, 'respdatetime', 'respDateTime', 'postdate'),
         ];
 
         foreach (range(1, 5) as $n) {
@@ -220,7 +225,7 @@ class NboCallbackController extends Controller
         $all = $request->all();
 
         if (empty($all)) {
-            $raw     = trim((string) $request->getContent());
+            $raw = trim((string) $request->getContent());
             $decoded = $raw !== '' ? json_decode($raw, true) : null;
 
             if (is_array($decoded)) {
@@ -258,8 +263,8 @@ class NboCallbackController extends Controller
     {
         return [
             'content_type' => $request->header('Content-Type'),
-            'all'          => $request->all(),
-            'raw'          => $request->getContent(),
+            'all' => $request->all(),
+            'raw' => $request->getContent(),
         ];
     }
 }

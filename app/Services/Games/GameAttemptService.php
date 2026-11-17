@@ -117,7 +117,7 @@ class GameAttemptService
                 return [
                     'shot' => $this->replay($stored),
                     'attempt' => $attempt,
-                    'done' => $attempt->status === GameAttempt::STATUS_COMPLETED && $n === $campaign->shots_per_attempt,
+                    'done' => $attempt->status === GameAttempt::STATUS_COMPLETED,
                 ];
             }
 
@@ -221,14 +221,12 @@ class GameAttemptService
     /** A stored shot in the engine's answer format, for a retried request. */
     private function replay(GameShot $shot): array
     {
-        $speed = 15 + min($shot->power, 1.4) * 17;
-
         return [
             'aim' => ['x' => $shot->aim_x, 'y' => $shot->aim_y],
             'power' => $shot->power,
             'outcome' => $shot->outcome,
             'keeper' => $shot->keeper,
-            'flight' => ['speed' => round($speed, 3), 'time' => round(PenaltyEngine::SPOT_DISTANCE / $speed, 4)],
+            'flight' => PenaltyEngine::flight($shot->power),
         ];
     }
 

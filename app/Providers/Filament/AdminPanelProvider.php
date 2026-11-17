@@ -2,15 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use Filament\FontProviders\LocalFontProvider;
-use Filament\Http\Middleware\Authenticate;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Filament\Http\Middleware\AuthenticateSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Panel;
-use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Widgets\BalanceDueBookingsWidget;
 use App\Filament\Widgets\BookingOverviewWidget;
 use App\Filament\Widgets\LowStockAlertsWidget;
@@ -20,26 +12,37 @@ use App\Filament\Widgets\RevenueChartWidget;
 use App\Filament\Widgets\TicketStockWidget;
 use App\Filament\Widgets\TotalBalanceDueWidget;
 use App\Filament\Widgets\UpcomingEventsWidget;
+use App\Http\Middleware\EnsureAppIsInstalled;
+use App\Models\BookingSetting;
+use Backstage\FilamentMails\Facades\FilamentMails;
+use Backstage\FilamentMails\FilamentMailsPlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
+use Filament\FontProviders\LocalFontProvider;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Vite;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use ShuvroRoy\FilamentSpatieLaravelHealth\FilamentSpatieLaravelHealthPlugin;
-use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
-use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
-use Swis\Filament\Backgrounds\ImageProviders\MyImages;
-use Backstage\FilamentMails\Facades\FilamentMails;
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use App\Filament\Pages\Auth\Login;
-use App\Models\BookingSetting;
 use MarcoGermani87\FilamentCaptcha\FilamentCaptcha;
-use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
-use WallaceMartinss\FilamentEvolution\FilamentEvolutionPlugin;
+use RickDBCN\FilamentEmail\FilamentEmail;
 use Rupadana\ApiService\ApiServicePlugin;
+use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
+use ShuvroRoy\FilamentSpatieLaravelHealth\FilamentSpatieLaravelHealthPlugin;
+use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
+use WallaceMartinss\FilamentEvolution\FilamentEvolutionPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -67,7 +70,7 @@ class AdminPanelProvider extends PanelProvider
         try {
             $favicon = BookingSetting::get('favicon');
 
-            return $favicon ? asset('storage/' . $favicon) : asset('favicon.ico');
+            return $favicon ? asset('storage/'.$favicon) : asset('favicon.ico');
         } catch (\Throwable $e) {
             return asset('favicon.ico');
         }
@@ -84,11 +87,13 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->font('Almarai', url: asset('fonts/almarai/almarai.css'), provider: LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->brandLogo(fn() => view('filament.admin.logo'))
+            // Tiny Alpine helper for the AR zone "Compile targets" modal; MindAR itself loads only when run.
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => app(Vite::class)('resources/js/ar/compiler.js'))
+            ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('4rem')
-            ->favicon(fn() => $this->panelFavicon())
+            ->favicon(fn () => $this->panelFavicon())
             ->databaseNotifications()
-            //->routes(fn() => FilamentMails::routes())
+            // ->routes(fn() => FilamentMails::routes())
             ->colors([
                 'primary' => $this->panelPrimaryColor(),
             ])
@@ -97,8 +102,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                //Widgets\AccountWidget::class,
-                //Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
                 BookingOverviewWidget::class,
                 TotalBalanceDueWidget::class,
                 LowStockAlertsWidget::class,
@@ -111,7 +116,7 @@ class AdminPanelProvider extends PanelProvider
 
             ])
             ->middleware([
-                \App\Http\Middleware\EnsureAppIsInstalled::class,
+                EnsureAppIsInstalled::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -126,11 +131,11 @@ class AdminPanelProvider extends PanelProvider
                 FilamentCaptcha::make(),
                 FilamentShieldPlugin::make(),
                 FilamentSpatieLaravelHealthPlugin::make()
-                    ->authorize(fn() => auth()->user()?->can('View:HealthCheckResults') ?? false),
-                //FilamentMailsPlugin::make(),
-                \RickDBCN\FilamentEmail\FilamentEmail::make(),
+                    ->authorize(fn () => auth()->user()?->can('View:HealthCheckResults') ?? false),
+                // FilamentMailsPlugin::make(),
+                FilamentEmail::make(),
                 FilamentSpatieLaravelBackupPlugin::make()
-                    ->authorize(fn() => auth()->user()?->can('View:Backups') ?? false),
+                    ->authorize(fn () => auth()->user()?->can('View:Backups') ?? false),
                 FilamentBackgroundsPlugin::make()
                     ->showAttribution(false),
                 FilamentEditProfilePlugin::make()
@@ -138,7 +143,7 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldShowAvatarForm(
                         value: true,
                         directory: 'avatars', // image will be stored in 'storage/app/public/avatars
-                        rules: 'mimes:jpeg,png|max:1024' //only accept jpeg and png files with a maximum size of 1MB
+                        rules: 'mimes:jpeg,png|max:1024' // only accept jpeg and png files with a maximum size of 1MB
                     ),
                 FilamentJobsMonitorPlugin::make()
                     ->navigationIcon('heroicon-o-queue-list')

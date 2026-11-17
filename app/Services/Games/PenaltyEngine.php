@@ -54,8 +54,9 @@ class PenaltyEngine
         $aim['x'] += ($rng() - 0.5) * 0.30 * $drift;
         $aim['y'] = max(self::BALL_RADIUS, $aim['y'] + ($rng() - 0.5) * 0.20 * $drift);
 
-        $speed = 15 + min($power, 1.4) * 17;
-        $time = self::SPOT_DISTANCE / $speed;
+        // from the stored (3-decimal) power, so a replayed shot flies exactly the same
+        $flight = self::flight(round($power, 3));
+        $time = $flight['time'];
 
         $outcome = $this->woodworkOrOff($aim['x'], $aim['y']);
 
@@ -87,8 +88,16 @@ class PenaltyEngine
             'power' => round($power, 3),
             'outcome' => $outcome,
             'keeper' => ['x' => round($kx, 3), 'y' => round($ky, 3), 'delay' => round($delay, 3), 'dur' => round($dur, 3), 'read' => $read],
-            'flight' => ['speed' => round($speed, 3), 'time' => round($time, 4)],
+            'flight' => $flight,
         ];
+    }
+
+    /** @return array{speed: float, time: float} the ball's speed (m/s) and its time to the goal line */
+    public static function flight(float $power): array
+    {
+        $speed = 15 + min($power, 1.4) * 17;
+
+        return ['speed' => round($speed, 3), 'time' => round(self::SPOT_DISTANCE / $speed, 4)];
     }
 
     /** Swipe speed (px/ms on an 800px-tall screen) to power: 0.05 (a tap) to 1.4 (overhit). */
@@ -135,7 +144,7 @@ class PenaltyEngine
     /** A float in [0, 1) from a generator seeded by the attempt's secret seed and the shot number. */
     private function rng(int $seed, int $shot): \Closure
     {
-        $randomizer = new Randomizer(new Xoshiro256StarStar(hash('sha256', $seed . '|' . $shot, true)));
+        $randomizer = new Randomizer(new Xoshiro256StarStar(hash('sha256', $seed.'|'.$shot, true)));
 
         return fn (): float => $randomizer->getInt(0, (1 << 53) - 1) / (1 << 53);
     }

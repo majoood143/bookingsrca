@@ -2,47 +2,50 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
-use App\Models\BookingSetting;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TernaryFilter;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\CreateAction;
-use Filament\Notifications\Notification;
-use Filament\Support\Enums\Size;
-use App\Filament\Resources\KioskResource\Pages\ListKiosks;
 use App\Filament\Resources\KioskResource\Pages\CreateKiosk;
 use App\Filament\Resources\KioskResource\Pages\EditKiosk;
+use App\Filament\Resources\KioskResource\Pages\ListKiosks;
+use App\Models\BookingSetting;
 use App\Models\Kiosk;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Size;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class KioskResource extends Resource
 {
     protected static ?string $model = Kiosk::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-device-tablet';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-device-tablet';
+
     protected static ?int $navigationSort = 30;
 
     public static function canAccess(): bool
     {
-        return parent::canAccess() && (bool) \App\Models\BookingSetting::get('module_kiosk_enabled', true);
+        return parent::canAccess() && (bool) BookingSetting::get('module_kiosk_enabled', true);
     }
 
     public static function getNavigationGroup(): ?string
@@ -84,15 +87,27 @@ class KioskResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->unique(ignoreRecord: true)
-                                    ->disabled(fn($record) => $record !== null)
+                                    ->disabled(fn ($record) => $record !== null)
                                     ->dehydrated()
                                     ->helperText(__('kiosk.fields.code_helper')),
+
+                                TextInput::make('device_token')
+                                    ->label(__('kiosk.fields.device_token'))
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(255)
+                                    ->suffixAction(
+                                        Action::make('generateDeviceToken')
+                                            ->icon('heroicon-o-arrow-path')
+                                            ->action(fn ($set) => $set('device_token', Str::random(40)))
+                                    )
+                                    ->helperText(__('kiosk.fields.device_token_helper')),
                             ]),
 
                         Select::make('event_id')
                             ->label(__('kiosk.fields.event'))
                             ->relationship('event', 'title')
-                            ->getOptionLabelFromRecordUsing(fn($record) => $record->getTranslation('title', 'en'))
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('title', 'en'))
                             ->searchable(['title->en', 'title->ar'])
                             ->preload()
                             ->native(false)
@@ -249,7 +264,7 @@ class KioskResource extends Resource
                                         Select::make('booking_cutoff_unit')
                                             ->label(__('kiosk.fields.booking_cutoff_unit'))
                                             ->options([
-                                                'hours'   => __('kiosk.fields.booking_cutoff_units.hours'),
+                                                'hours' => __('kiosk.fields.booking_cutoff_units.hours'),
                                                 'minutes' => __('kiosk.fields.booking_cutoff_units.minutes'),
                                             ])
                                             ->default('hours')
@@ -321,23 +336,23 @@ class KioskResource extends Resource
                     ->schema([
                         Placeholder::make('reader_connected')
                             ->label(__('kiosk.columns.reader'))
-                            ->content(fn($record) => $record
+                            ->content(fn ($record) => $record
                                 ? ($record->reader_connected ? __('kiosk.columns.connected') : __('kiosk.columns.disconnected'))
-                                . ' — ' . ($record->reader_last_seen_at?->diffForHumans() ?? __('kiosk.columns.never'))
+                                .' — '.($record->reader_last_seen_at?->diffForHumans() ?? __('kiosk.columns.never'))
                                 : '-'),
 
                         Placeholder::make('printer_connected')
                             ->label(__('kiosk.columns.printer'))
-                            ->content(fn($record) => $record
+                            ->content(fn ($record) => $record
                                 ? ($record->printer_connected ? __('kiosk.columns.connected') : __('kiosk.columns.disconnected'))
-                                . ' — ' . ($record->printer_last_seen_at?->diffForHumans() ?? __('kiosk.columns.never'))
+                                .' — '.($record->printer_last_seen_at?->diffForHumans() ?? __('kiosk.columns.never'))
                                 : '-'),
 
                         Placeholder::make('app_version')
                             ->label(__('kiosk.columns.app_version'))
-                            ->content(fn($record) => $record?->app_version ?? '-'),
+                            ->content(fn ($record) => $record?->app_version ?? '-'),
                     ])
-                    ->visible(fn($record) => $record !== null)
+                    ->visible(fn ($record) => $record !== null)
                     ->collapsible(),
             ])
             ->columns(1);
@@ -360,16 +375,16 @@ class KioskResource extends Resource
 
                 TextColumn::make('event')
                     ->label(__('kiosk.columns.event'))
-                    ->getStateUsing(fn($record) => $record->event
+                    ->getStateUsing(fn ($record) => $record->event
                         ? $record->event->getTranslation('title', app()->getLocale())
                         : __('kiosk.columns.all_events'))
                     ->badge()
-                    ->color(fn($record) => $record->event ? 'gray' : 'info'),
+                    ->color(fn ($record) => $record->event ? 'gray' : 'info'),
 
                 TextColumn::make('enabled_payment_methods')
                     ->label(__('kiosk.columns.payment_methods'))
                     ->badge()
-                    ->formatStateUsing(fn($state) => __('kiosk.payment_methods.' . $state)),
+                    ->formatStateUsing(fn ($state) => __('kiosk.payment_methods.'.$state)),
 
                 IconColumn::make('reader_connected')
                     ->label(__('kiosk.columns.reader'))
@@ -407,7 +422,7 @@ class KioskResource extends Resource
                 SelectFilter::make('event')
                     ->label(__('kiosk.fields.event'))
                     ->relationship('event', 'title')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->getTranslation('title', 'en'))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('title', 'en'))
                     ->searchable()
                     ->preload(),
 
@@ -420,11 +435,11 @@ class KioskResource extends Resource
                     EditAction::make(),
 
                     Action::make('toggle_active')
-                        ->label(fn($record) => $record->is_active ? __('kiosk.actions.deactivate') : __('kiosk.actions.activate'))
-                        ->icon(fn($record) => $record->is_active ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
-                        ->color(fn($record) => $record->is_active ? 'danger' : 'success')
+                        ->label(fn ($record) => $record->is_active ? __('kiosk.actions.deactivate') : __('kiosk.actions.activate'))
+                        ->icon(fn ($record) => $record->is_active ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                        ->color(fn ($record) => $record->is_active ? 'danger' : 'success')
                         ->action(function (Kiosk $record) {
-                            $record->update(['is_active' => !$record->is_active]);
+                            $record->update(['is_active' => ! $record->is_active]);
 
                             Notification::make()
                                 ->success()
@@ -452,9 +467,9 @@ class KioskResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListKiosks::route('/'),
+            'index' => ListKiosks::route('/'),
             'create' => CreateKiosk::route('/create'),
-            'edit'   => EditKiosk::route('/{record}/edit'),
+            'edit' => EditKiosk::route('/{record}/edit'),
         ];
     }
 }

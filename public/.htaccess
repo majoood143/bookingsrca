@@ -41,7 +41,8 @@
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
-    Header set Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+    # camera=(self): the AR scanner (/explore/*/scan/*) uses the phone camera.
+    Header set Permissions-Policy "camera=(self), microphone=(), geolocation=(self)"
     Header always unset X-Powered-By
 
     # Performance (Apply caching only to static asset types)

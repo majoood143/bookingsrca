@@ -56,6 +56,9 @@ async function start() {
     try {
         video.srcObject = stream;
         await video.play();
+        // MindAR reads frames at the element's width/height attributes; unset they are 0 and it sees a blank image.
+        video.setAttribute('width', video.videoWidth);
+        video.setAttribute('height', video.videoHeight);
 
         const { Controller } = await loadMindAR();
         const controller = new Controller({
